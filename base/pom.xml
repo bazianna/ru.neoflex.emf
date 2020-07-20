@@ -17,6 +17,12 @@
     <name>base</name>
     <description>Base project for EMF storages</description>
     <dependencies>
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+            <version>2.2</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

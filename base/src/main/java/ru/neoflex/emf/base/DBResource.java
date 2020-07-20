@@ -1,41 +1,47 @@
-package ru.neoflex.emf.memdb;
+package ru.neoflex.emf.base;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Set;
 
-public class MemDBResource implements Serializable, Cloneable {
+@Entity
+public class DBResource implements Serializable, Cloneable {
+    @Id
+    @Column(length = 32)
     private String id;
-    private int version;
+    @Column(length = 32)
+    private String version;
+    @ElementCollection
+    @Column(name = "names", length = 1024)
+    @CollectionTable(indexes = {
+            @Index(columnList = "names")
+    })
     private Set<String> names;
+    @ElementCollection
+    @Column(name = "references", length = 1024)
+    @CollectionTable(indexes = {
+            @Index(columnList = "references")
+    })
     private Set<String> references;
+    @Column(length = 10485760)
     private byte[] image;
 
-    MemDBResource() {
-        this.id = null;
-        this.version = 0;
-    }
-
-    public MemDBResource clone() {
-        try {
-            MemDBResource copy = (MemDBResource) super.clone();
-            if (image != null) {
-                copy.image = image.clone();
-            }
-            return copy;
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+    public DBResource() {
     }
 
     public String getId() {
         return id;
     }
 
-    public int getVersion() {
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(int version) {
+    public void setVersion(String version) {
         this.version = version;
     }
 
@@ -45,10 +51,6 @@ public class MemDBResource implements Serializable, Cloneable {
 
     public void setImage(byte[] image) {
         this.image = image;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public Set<String> getReferences() {

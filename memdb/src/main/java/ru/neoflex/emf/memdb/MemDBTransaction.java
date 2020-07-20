@@ -7,6 +7,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.prevayler.Transaction;
+import ru.neoflex.emf.base.DBResource;
 import ru.neoflex.emf.base.DBTransaction;
 
 import java.io.ByteArrayInputStream;
@@ -18,19 +19,19 @@ import java.util.stream.Stream;
 
 public class MemDBTransaction extends DBTransaction implements Transaction<MemDBModel> {
     private transient MemDBModel memDBModel;
-    private Map<String, MemDBResource> inserted = new HashMap<>();
-    private Map<String, MemDBResource> updated = new HashMap<>();
+    private Map<String, DBResource> inserted = new HashMap<>();
+    private Map<String, DBResource> updated = new HashMap<>();
     private Set<String> deleted = new HashSet<>();
 
     @Override
     protected void load(String id, Resource resource) {
-        MemDBResource dbResource = get(id);
+        DBResource dbResource = get(id);
         load(dbResource, resource);
         URI uri = getMemDBServer().createURI(id, String.valueOf(dbResource.getVersion()));
         resource.setURI(uri);
     }
 
-    private void load(MemDBResource dbResource, Resource resource) {
+    private void load(DBResource dbResource, Resource resource) {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(dbResource.getImage());
         try {
             resource.load(inputStream, null);
@@ -39,18 +40,18 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
         }
     }
 
-    private Resource createResource(ResourceSet rs, MemDBResource dbResource) {
+    private Resource createResource(ResourceSet rs, DBResource dbResource) {
         URI uri = getMemDBServer().createURI(dbResource.getId(), String.valueOf(dbResource.getVersion()));
         Resource resource = rs.createResource(uri);
         load(dbResource, resource);
         return resource;
     }
 
-    private MemDBResource get(String id) {
+    private DBResource get(String id) {
         if (deleted.contains(id)) {
             throw new IllegalArgumentException(String.format("Can't find object %s", id));
         }
-        MemDBResource dbObject = updated.get(id);
+        DBResource dbObject = updated.get(id);
         if (dbObject == null) {
             dbObject = inserted.get(id);
         }
@@ -62,10 +63,10 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
 
     @Override
     public Stream<Resource> findAll(ResourceSet rs) {
-        Stream<MemDBResource> baseStream = memDBModel.findAll()
+        Stream<DBResource> baseStream = memDBModel.findAll()
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
-        Stream<MemDBResource> insertedStream = inserted.values().stream();
-        Stream<MemDBResource> updatedStream = updated.values().stream();
+        Stream<DBResource> insertedStream = inserted.values().stream();
+        Stream<DBResource> updatedStream = updated.values().stream();
         return Stream.concat(
                 Stream.concat(insertedStream, updatedStream),
                 baseStream
@@ -75,11 +76,11 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     @Override
     public Stream<Resource> findByClass(ResourceSet rs, String classUri) {
         String attributeValue = classUri + ":";
-        Stream<MemDBResource> baseStream = memDBModel.findByClass(classUri)
+        Stream<DBResource> baseStream = memDBModel.findByClass(classUri)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
-        Stream<MemDBResource> insertedStream = inserted.values().stream()
+        Stream<DBResource> insertedStream = inserted.values().stream()
                 .filter(dbResource -> dbResource.getNames().stream().anyMatch(s -> s.startsWith(attributeValue)));
-        Stream<MemDBResource> updatedStream = updated.values().stream()
+        Stream<DBResource> updatedStream = updated.values().stream()
                 .filter(dbResource -> dbResource.getNames().stream().anyMatch(s -> s.startsWith(attributeValue)));
         return Stream.concat(
                 Stream.concat(insertedStream, updatedStream),
@@ -90,11 +91,11 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     @Override
     public Stream<Resource> findByClassAndQName(ResourceSet rs, String classUri, String qName) {
         String attributeValue = classUri + ":" + qName;
-        Stream<MemDBResource> baseStream = memDBModel.findByClassAndQName(classUri, qName)
+        Stream<DBResource> baseStream = memDBModel.findByClassAndQName(classUri, qName)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
-        Stream<MemDBResource> insertedStream = inserted.values().stream()
+        Stream<DBResource> insertedStream = inserted.values().stream()
                 .filter(dbResource -> dbResource.getNames().contains(attributeValue));
-        Stream<MemDBResource> updatedStream = updated.values().stream()
+        Stream<DBResource> updatedStream = updated.values().stream()
                 .filter(dbResource -> dbResource.getNames().contains(attributeValue));
         return Stream.concat(
                 Stream.concat(insertedStream, updatedStream),
@@ -106,11 +107,11 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     public Stream<Resource> findReferencedTo(Resource resource) {
         ResourceSet rs = resource.getResourceSet();
         String id = getMemDBServer().getId(resource.getURI());
-        Stream<MemDBResource> baseStream = memDBModel.findReferencedTo(id)
+        Stream<DBResource> baseStream = memDBModel.findReferencedTo(id)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
-        Stream<MemDBResource> insertedStream = inserted.values().stream()
+        Stream<DBResource> insertedStream = inserted.values().stream()
                 .filter(dbResource -> dbResource.getReferences().contains(id));
-        Stream<MemDBResource> updatedStream = updated.values().stream()
+        Stream<DBResource> updatedStream = updated.values().stream()
                 .filter(dbResource -> dbResource.getReferences().contains(id));
         return Stream.concat(
                 Stream.concat(insertedStream, updatedStream),
@@ -136,8 +137,8 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
         return (MemDBServer) getDbServer();
     }
 
-    private MemDBResource createDBResource(Resource resource, String id, Integer version) {
-        MemDBResource dbResource = new MemDBResource();
+    private DBResource createDBResource(Resource resource, String id, String version) {
+        DBResource dbResource = new DBResource();
         dbResource.setId(id);
         dbResource.setVersion(version);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -160,7 +161,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
 
     @Override
     protected void insert(Resource resource) {
-        MemDBResource dbResource = createDBResource(resource, getNextId(), 0);
+        DBResource dbResource = createDBResource(resource, getNextId(), "0");
         resource.setURI(getMemDBServer().createURI(dbResource.getId(), String.valueOf(dbResource.getVersion())));
         inserted.put(dbResource.getId(), dbResource);
     }
@@ -168,8 +169,8 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     @Override
     protected void update(String id, Resource resource) {
         Integer version = Integer.valueOf(getMemDBServer().getVersion(resource.getURI()));
-        MemDBResource dbResource = createDBResource(resource, id, version + 1);
-        resource.setURI(getMemDBServer().createURI(dbResource.getId(), String.valueOf(dbResource.getVersion())));
+        DBResource dbResource = createDBResource(resource, id, String.valueOf(version + 1));
+        resource.setURI(getMemDBServer().createURI(dbResource.getId(), dbResource.getVersion()));
         updated.put(id, dbResource);
     }
 
