@@ -10,13 +10,69 @@
 
     <properties>
         <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.fork>true</maven.compiler.fork>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <emf-version>2.18.0</emf-version>
+        <emf-xmi-version>2.16.0</emf-xmi-version>
+        <emf-common-version>2.16.0</emf-common-version>
+        <xtext-version>2.21.0</xtext-version>
+        <ecore-xtext-version>1.4.0</ecore-xtext-version>
+        <ecore-xcore-version>1.13.0</ecore-xcore-version>
+        <ecore-xcore-lib-version>1.4.0</ecore-xcore-lib-version>
+        <emf-codegen-version>2.16.0</emf-codegen-version>
+        <emf-codegen-ecore-version>2.18.0</emf-codegen-ecore-version>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.common</artifactId>
+            <version>${emf-common-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.ecore</artifactId>
+            <version>${emf-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
+            <version>${ecore-xcore-lib-version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+            <version>${emf-xmi-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+    </dependencies>
+
     <modules>
+        <module>base</module>
         <module>memdb</module>
     </modules>
 

@@ -1,4 +1,4 @@
-/memdb/src/test/java-gen/
-/parent.iml
-/memdb/memdb.iml
+/**/java-gen/
 /.idea/
+/**/*.iml
+/*/target/

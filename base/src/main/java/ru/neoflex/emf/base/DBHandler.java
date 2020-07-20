@@ -1,4 +1,4 @@
-package ru.neoflex.emf.memdb;
+package ru.neoflex.emf.base;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.impl.URIHandlerImpl;

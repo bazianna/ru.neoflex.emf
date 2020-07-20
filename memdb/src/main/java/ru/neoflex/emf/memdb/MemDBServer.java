@@ -4,6 +4,8 @@ import org.eclipse.emf.ecore.EPackage;
 import org.prevayler.Prevayler;
 import org.prevayler.PrevaylerFactory;
 import org.prevayler.Query;
+import ru.neoflex.emf.base.DBServer;
+import ru.neoflex.emf.base.DBTransaction;
 
 import java.io.IOException;
 import java.util.List;

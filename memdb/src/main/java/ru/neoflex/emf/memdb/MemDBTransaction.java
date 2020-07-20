@@ -7,6 +7,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.prevayler.Transaction;
+import ru.neoflex.emf.base.DBTransaction;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
