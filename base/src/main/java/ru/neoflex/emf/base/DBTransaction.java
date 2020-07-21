@@ -84,6 +84,11 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         this.tenantId = tenantId;
     }
 
+    public Stream<Resource> findAll(ResourceSet rs) {
+        return findAll()
+                .map(dbResource -> createResource(rs, dbResource));
+    }
+
     public Stream<Resource> findByClass(ResourceSet rs, EClass eClass) {
         return findByClass(EcoreUtil.getURI(eClass).toString())
                 .map(dbResource -> createResource(rs, dbResource));
@@ -92,6 +97,11 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     public Stream<Resource> findByClassAndQName(ResourceSet rs, EClass eClass, String qName) {
         return findByClassAndQName(EcoreUtil.getURI(eClass).toString(), qName)
                 .map(dbResource -> createResource(rs, dbResource));
+    }
+
+    public Stream<Resource> findReferencedTo(Resource resource) {
+        return findReferencedTo(getDbServer().getId(resource.getURI()))
+                .map(dbResource -> createResource(resource.getResourceSet(), dbResource));
     }
 
     public void save(Resource resource) {

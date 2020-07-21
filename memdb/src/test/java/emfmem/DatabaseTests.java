@@ -64,9 +64,9 @@ public class DatabaseTests extends TestBase {
             userResource.getContents().add(user);
             userResource.save(null);
             Assert.assertEquals(3, tx.findAll(resourceSet).count());
-            Assert.assertEquals(2, tx.findByClass(resourceSet, EcoreUtil.getURI(TestPackage.Literals.USER).toString()).count());
+            Assert.assertEquals(2, tx.findByClass(resourceSet, TestPackage.Literals.USER).count());
             Assert.assertEquals(2, tx.findReferencedTo(group.eResource()).count());
-            Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, EcoreUtil.getURI(TestPackage.Literals.USER).toString(), "Simanihin").count());
+            Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, TestPackage.Literals.USER, "Simanihin").count());
             return null;
         });
         memDBServer.inTransaction(true, (MemDBServer.TxFunction<Void>) tx -> {
