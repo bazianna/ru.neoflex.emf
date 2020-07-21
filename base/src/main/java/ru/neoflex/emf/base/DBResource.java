@@ -68,4 +68,12 @@ public class DBResource implements Serializable, Cloneable {
     public void setNames(Set<String> names) {
         this.names = names;
     }
+
+    public DBResource clone() {
+        try {
+            return (DBResource) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -1,21 +1,13 @@
 package ru.neoflex.emf.memdb;
 
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.prevayler.Transaction;
 import ru.neoflex.emf.base.DBResource;
 import ru.neoflex.emf.base.DBServer;
 import ru.neoflex.emf.base.DBTransaction;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MemDBTransaction extends DBTransaction implements Transaction<MemDBModel> {
@@ -32,30 +24,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     }
 
     @Override
-    protected void load(String id, Resource resource) {
-        DBResource dbResource = get(id);
-        load(dbResource, resource);
-        URI uri = getMemDBServer().createURI(id, String.valueOf(dbResource.getVersion()));
-        resource.setURI(uri);
-    }
-
-    private void load(DBResource dbResource, Resource resource) {
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(dbResource.getImage());
-        try {
-            resource.load(inputStream, null);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Can't load %s", dbResource.getId()));
-        }
-    }
-
-    private Resource createResource(ResourceSet rs, DBResource dbResource) {
-        URI uri = getMemDBServer().createURI(dbResource.getId(), String.valueOf(dbResource.getVersion()));
-        Resource resource = rs.createResource(uri);
-        load(dbResource, resource);
-        return resource;
-    }
-
-    private DBResource get(String id) {
+    protected DBResource get(String id) {
         if (deleted.contains(id)) {
             throw new IllegalArgumentException(String.format("Can't find object %s", id));
         }
@@ -66,11 +35,11 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
         if (dbObject == null) {
             dbObject = memDBModel.get(getTenantId(), id);
         }
-        return dbObject;
+        return dbObject.clone();
     }
 
     @Override
-    public Stream<Resource> findAll(ResourceSet rs) {
+    public Stream<DBResource> findAll() {
         Stream<DBResource> baseStream = memDBModel.findAll(getTenantId())
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
         Stream<DBResource> insertedStream = inserted.values().stream();
@@ -78,11 +47,11 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
         return Stream.concat(
                 Stream.concat(insertedStream, updatedStream),
                 baseStream
-        ).map(dbResource -> createResource(rs, dbResource));
+        );
     }
 
     @Override
-    public Stream<Resource> findByClass(ResourceSet rs, String classUri) {
+    public Stream<DBResource> findByClass(String classUri) {
         String attributeValue = classUri + ":";
         Stream<DBResource> baseStream = memDBModel.findByClass(getTenantId(), classUri)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
@@ -93,11 +62,11 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
         return Stream.concat(
                 Stream.concat(insertedStream, updatedStream),
                 baseStream
-        ).map(dbResource -> createResource(rs, dbResource));
+        );
     }
 
     @Override
-    public Stream<Resource> findByClassAndQName(ResourceSet rs, String classUri, String qName) {
+    public Stream<DBResource> findByClassAndQName(String classUri, String qName) {
         String attributeValue = classUri + ":" + qName;
         Stream<DBResource> baseStream = memDBModel.findByClassAndQName(getTenantId(), classUri, qName)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
@@ -108,13 +77,11 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
         return Stream.concat(
                 Stream.concat(insertedStream, updatedStream),
                 baseStream
-        ).map(dbResource -> createResource(rs, dbResource));
+        );
     }
 
     @Override
-    public Stream<Resource> findReferencedTo(Resource resource) {
-        ResourceSet rs = resource.getResourceSet();
-        String id = getMemDBServer().getId(resource.getURI());
+    public Stream<DBResource> findReferencedTo(String id) {
         Stream<DBResource> baseStream = memDBModel.findReferencedTo(getTenantId(), id)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
         Stream<DBResource> insertedStream = inserted.values().stream()
@@ -124,7 +91,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
         return Stream.concat(
                 Stream.concat(insertedStream, updatedStream),
                 baseStream
-        ).map(dbResource -> createResource(rs, dbResource));
+        );
     }
 
     @Override
@@ -141,44 +108,19 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
         reset();
     }
 
-    public MemDBServer getMemDBServer() {
+    public MemDBServer getMemDbServer() {
         return (MemDBServer) getDbServer();
     }
 
-    private DBResource createDBResource(Resource resource, String id, String version) {
-        DBResource dbResource = new DBResource();
-        dbResource.setId(id);
-        dbResource.setVersion(version);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try {
-            resource.save(outputStream, null);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        dbResource.setImage(outputStream.toByteArray());
-        Set<String> names = resource.getContents().stream().map(eObject ->
-            EcoreUtil.getURI(eObject.eClass()).toString() + ":" + getMemDBServer().getQName(eObject)
-        ).collect(Collectors.toSet());
-        dbResource.setNames(names);
-        Map<EObject, Collection<EStructuralFeature.Setting>> xrs = EcoreUtil.ExternalCrossReferencer.find(resource);
-        Set<String> references = xrs.keySet().stream()
-                .map(eObject -> getMemDBServer().getId(EcoreUtil.getURI(eObject))).collect(Collectors.toSet());
-        dbResource.setReferences(references);
-        return dbResource;
-    }
-
     @Override
-    protected void insert(Resource resource) {
-        DBResource dbResource = createDBResource(resource, getNextId(), "0");
-        resource.setURI(getMemDBServer().createURI(dbResource.getId(), String.valueOf(dbResource.getVersion())));
+    protected void insert(DBResource dbResource) {
+        dbResource.setVersion("0");
         inserted.put(dbResource.getId(), dbResource);
     }
 
     @Override
-    protected void update(String id, Resource resource) {
-        Integer version = Integer.valueOf(getMemDBServer().getVersion(resource.getURI()));
-        DBResource dbResource = createDBResource(resource, id, String.valueOf(version + 1));
-        resource.setURI(getMemDBServer().createURI(dbResource.getId(), dbResource.getVersion()));
+    protected void update(String id, DBResource dbResource) {
+        dbResource.setVersion(String.valueOf(1 + Integer.parseInt(dbResource.getVersion())));
         updated.put(id, dbResource);
     }
 
@@ -190,7 +132,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     @Override
     public void commit() {
         if (!isReadOnly()) {
-            getMemDBServer().getPrevayler().execute(this);
+            getMemDbServer().getPrevayler().execute(this);
         }
     }
 
