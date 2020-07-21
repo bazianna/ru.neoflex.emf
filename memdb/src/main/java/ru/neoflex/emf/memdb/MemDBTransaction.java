@@ -114,6 +114,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
 
     @Override
     protected void insert(DBResource dbResource) {
+        dbResource.setId(getNextId());
         dbResource.setVersion("0");
         inserted.put(dbResource.getId(), dbResource);
     }

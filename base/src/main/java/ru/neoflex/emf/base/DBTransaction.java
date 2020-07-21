@@ -29,8 +29,14 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     protected abstract Stream<DBResource> findByClass(String classUri);
     protected abstract Stream<DBResource> findByClassAndQName(String classUri, String qName);
     protected abstract Stream<DBResource> findReferencedTo(String id);
+    protected abstract void insert(DBResource dbResource);
+    protected abstract void update(String id, DBResource dbResource);
+    protected abstract void delete(String id);
+    public void begin() {}
+    public void commit() {}
+    public void rollback() {}
 
-    protected void load(DBResource dbResource, Resource resource) {
+    protected void loadImage(DBResource dbResource, Resource resource) {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(dbResource.getImage());
         try {
             resource.load(inputStream, null);
@@ -39,10 +45,16 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         }
     }
 
+    protected void load(DBResource dbResource, Resource resource) {
+        loadImage(dbResource, resource);
+        URI uri = getDbServer().createURI(dbResource.getId(), dbResource.getVersion());
+        resource.setURI(uri);
+    }
+
     protected Resource createResource(ResourceSet rs, DBResource dbResource) {
         URI uri = getDbServer().createURI(dbResource.getId(), dbResource.getVersion());
         Resource resource = rs.createResource(uri);
-        load(dbResource, resource);
+        loadImage(dbResource, resource);
         return resource;
     }
 
@@ -67,13 +79,6 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         dbResource.setReferences(references);
         return dbResource;
     }
-
-    protected abstract void insert(DBResource dbResource);
-    protected abstract void update(String id, DBResource dbResource);
-    protected abstract void delete(String id);
-    public void begin() {}
-    public void commit() {}
-    public void rollback() {}
 
     public DBTransaction() {
     }
@@ -131,6 +136,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
             update(id, dbResource);
         }
         dbServer.getEvents().fireAfterSave(oldResource, resource);
+        resource.setURI(getDbServer().createURI(dbResource.getId(), dbResource.getVersion()));
     }
 
     protected String getNextId() {
