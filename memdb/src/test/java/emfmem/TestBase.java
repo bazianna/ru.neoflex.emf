@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class TestBase {
     public static final String MEMDB = "test-emf-mem";
-    MemDBServer MemDBServer;
+    MemDBServer memDBServer;
 
     public static boolean deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();

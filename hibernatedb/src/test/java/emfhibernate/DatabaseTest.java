@@ -18,6 +18,7 @@ public class DatabaseTest {
     @Test
     public void dbTest() throws IOException {
         try (HBDBServer server = new HBDBServer(new ArrayList<>(), "mydb");) {
+            server.setTenantId("public");
             try (Session session = server.createSession()) {
                 Transaction tx = session.beginTransaction();
                 session.createQuery("from DBResource", DBResource.class).getResultStream().forEach(dbResource -> {

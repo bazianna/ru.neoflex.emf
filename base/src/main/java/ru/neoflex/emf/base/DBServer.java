@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 
 public abstract class DBServer implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(DBServer.class);
+    protected static final ThreadLocal<String> tenantId = new InheritableThreadLocal<>();
     protected final List<EPackage> packages;
     protected final String dbName;
     private final Events events = new Events();
@@ -29,6 +30,15 @@ public abstract class DBServer implements AutoCloseable {
     public DBServer(List<EPackage> packages, String dbName) {
         this.packages = packages;
         this.dbName = dbName;
+        setTenantId("default");
+    }
+
+    public String getTenantId() {
+        return tenantId.get();
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId.set(tenantId);
     }
 
     public String getId(URI uri) {
@@ -71,7 +81,7 @@ public abstract class DBServer implements AutoCloseable {
         return new BinaryResourceImpl(uri);
     }
 
-    protected abstract DBTransaction createDBTransaction(boolean readOnly);
+    protected abstract DBTransaction createDBTransaction(boolean readOnly, DBServer dbServer, String tenantId);
 
     private String createURIString(String id) {
         return getScheme() + "://" + dbName + "/" + (id != null ? id : "");
@@ -104,7 +114,7 @@ public abstract class DBServer implements AutoCloseable {
     }
 
     public <R> R inTransaction(boolean readOnly, TxFunction<R> f) throws Exception {
-        return inTransaction(() -> createDBTransaction(readOnly), f);
+        return inTransaction(() -> createDBTransaction(readOnly, this, tenantId.get()), f);
     }
 
     public static class TxRetryStrategy {

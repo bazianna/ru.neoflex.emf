@@ -10,12 +10,14 @@ import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
-public abstract class DBTransaction implements AutoCloseable {
+public abstract class DBTransaction implements AutoCloseable, Serializable {
     private transient boolean readOnly;
     private transient DBServer dbServer;
+    private String tenantId;
 
     protected abstract void load(String id, Resource resource);
     public abstract Stream<Resource> findAll(ResourceSet rs);
@@ -28,6 +30,15 @@ public abstract class DBTransaction implements AutoCloseable {
     public void begin() {}
     public void commit() {}
     public void rollback() {}
+
+    public DBTransaction() {
+    }
+
+    public DBTransaction(boolean readOnly, DBServer dbServer, String tenantId) {
+        this.readOnly = readOnly;
+        this.dbServer = dbServer;
+        this.tenantId = tenantId;
+    }
 
     public Stream<Resource> findByClass(ResourceSet rs, EClass eClass) {
         return findByClass(rs, EcoreUtil.getURI(eClass).toString());
@@ -138,5 +149,13 @@ public abstract class DBTransaction implements AutoCloseable {
 
     public void setDbServer(DBServer dbServer) {
         this.dbServer = dbServer;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
     }
 }

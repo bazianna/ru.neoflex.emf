@@ -13,71 +13,77 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MemDBModel implements Externalizable {
-    private IndexedCollection<DBResource> indexedCollection;
+    private Map<String, IndexedCollection<DBResource>> indexedCollection = new HashMap<>();
     public static final Attribute<DBResource, String> ID = QueryFactory.attribute("id", DBResource::getId);
     public static final Attribute<DBResource, String> NAMES = QueryFactory.attribute(String.class, "classUri", DBResource::getNames);
     public static final Attribute<DBResource, String> REFERENCES = QueryFactory.attribute(String.class,"references", DBResource::getReferences);
 
-    public DBResource get(String id) {
-        return getIndexedCollection().retrieve(QueryFactory.equal(ID, id)).uniqueResult();
+    public DBResource get(String tenantId, String id) {
+        return getIndexedCollection(tenantId).retrieve(QueryFactory.equal(ID, id)).uniqueResult();
     }
 
-    public Stream<DBResource> findAll() {
-        return getIndexedCollection().retrieve(QueryFactory.all(DBResource.class)).stream();
+    public Stream<DBResource> findAll(String tenantId) {
+        return getIndexedCollection(tenantId).retrieve(QueryFactory.all(DBResource.class)).stream();
     }
 
-    public Stream<DBResource> findByClass(String classUri) {
+    public Stream<DBResource> findByClass(String tenantId, String classUri) {
         String attributeValue = classUri + ":";
-        return getIndexedCollection().retrieve(QueryFactory.startsWith(NAMES, attributeValue)).stream();
+        return getIndexedCollection(tenantId).retrieve(QueryFactory.startsWith(NAMES, attributeValue)).stream();
     }
 
-    public Stream<DBResource> findByClassAndQName(String classUri, String qName) {
+    public Stream<DBResource> findByClassAndQName(String tenantId, String classUri, String qName) {
         String attributeValue = classUri + ":" + qName;
-        return getIndexedCollection().retrieve(QueryFactory.equal(NAMES, attributeValue)).stream();
+        return getIndexedCollection(tenantId).retrieve(QueryFactory.equal(NAMES, attributeValue)).stream();
     }
 
-    public Stream<DBResource> findReferencedTo(String id) {
-        return getIndexedCollection().retrieve(QueryFactory.equal(REFERENCES, id)).stream();
+    public Stream<DBResource> findReferencedTo(String tenantId, String id) {
+        return getIndexedCollection(tenantId).retrieve(QueryFactory.equal(REFERENCES, id)).stream();
     }
 
-    public void insert(DBResource dbResource) {
-        getIndexedCollection().add(dbResource);
+    public void insert(String tenantId, DBResource dbResource) {
+        getIndexedCollection(tenantId).add(dbResource);
     }
 
-    public void update(DBResource dbResource) {
-        delete(dbResource.getId());
-        insert(dbResource);
+    public void update(String tenantId, DBResource dbResource) {
+        delete(tenantId, dbResource.getId());
+        insert(tenantId, dbResource);
     }
 
-    public void delete(String id) {
-        DBResource dbResource = get(id);
-        getIndexedCollection().remove(dbResource);
+    public void delete(String tenantId, String id) {
+        DBResource dbResource = get(tenantId, id);
+        getIndexedCollection(tenantId).remove(dbResource);
     }
 
-    public IndexedCollection<DBResource> getIndexedCollection() {
-        if (indexedCollection == null) {
-            indexedCollection = new ConcurrentIndexedCollection<>();
-            indexedCollection.addIndex(UniqueIndex.onAttribute(ID));
-            indexedCollection.addIndex(RadixTreeIndex.onAttribute(NAMES));
-            indexedCollection.addIndex(HashIndex.onAttribute(REFERENCES));
-        }
-        return indexedCollection;
+    public IndexedCollection<DBResource> getIndexedCollection(String tenantId) {
+        return indexedCollection.computeIfAbsent(tenantId, newTenantId -> {
+            IndexedCollection newCollection = new ConcurrentIndexedCollection<>();
+            newCollection.addIndex(UniqueIndex.onAttribute(ID));
+            newCollection.addIndex(RadixTreeIndex.onAttribute(NAMES));
+            newCollection.addIndex(HashIndex.onAttribute(REFERENCES));
+            return newCollection;
+        });
     }
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        List<DBResource> dbResources = findAll().collect(Collectors.toList());
+        Map<String, List<DBResource>> dbResources = new HashMap<>();
+        indexedCollection.forEach((tenantId, collection) -> {
+            List<DBResource> list = collection.retrieve(QueryFactory.all(DBResource.class)).stream().collect(Collectors.toList());
+            dbResources.put(tenantId, list);
+        });
         out.writeObject(dbResources);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        List<DBResource> dbResources = (List<DBResource>) in.readObject();
-        getIndexedCollection().addAll(dbResources);
+        Map<String, List<DBResource>> dbResources = (Map<String, List<DBResource>>) in.readObject();
+        dbResources.forEach((tenantId, list) -> getIndexedCollection(tenantId).addAll(list));
     }
 }
