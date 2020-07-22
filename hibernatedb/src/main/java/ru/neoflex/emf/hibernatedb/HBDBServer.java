@@ -27,7 +27,11 @@ import java.util.function.Function;
 
 public class HBDBServer extends DBServer {
     private static final Logger logger = LoggerFactory.getLogger(HBDBServer.class);
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
+
+    public SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
 
     public static class HBDBTenantIdentifierResolver implements CurrentTenantIdentifierResolver {
         @Override
@@ -86,7 +90,7 @@ public class HBDBServer extends DBServer {
         settings.put(Environment.HBM2DDL_AUTO, "update");
         settings.put(Environment.SHOW_SQL, "true");
         settings.put(Environment.C3P0_MIN_SIZE, "1");
-        settings.put(Environment.C3P0_MAX_SIZE, "5");
+        settings.put(Environment.C3P0_MAX_SIZE, "500");
         settings.put(Environment.MULTI_TENANT, "SCHEMA");
         settings.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, HBDBTenantIdentifierResolver.class.getName());
         settings.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, HBDBConnectionProvider.class.getName());
@@ -107,7 +111,7 @@ public class HBDBServer extends DBServer {
 
     @Override
     protected DBTransaction createDBTransaction(boolean readOnly, DBServer dbServer, String tenantId) {
-        return null;
+        return new HBDBTransaction(readOnly, dbServer, tenantId);
     }
 
     @Override
