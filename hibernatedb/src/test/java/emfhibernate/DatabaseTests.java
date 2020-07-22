@@ -1,19 +1,17 @@
-package emfmem;
+package emfhibernate;
 
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.neoflex.emf.memdb.MemDBServer;
-import ru.neoflex.emf.memdb.test.Group;
-import ru.neoflex.emf.memdb.test.TestFactory;
-import ru.neoflex.emf.memdb.test.TestPackage;
-import ru.neoflex.emf.memdb.test.User;
+import ru.neoflex.emf.base.DBServer;
+import ru.neoflex.emf.hibernatedb.HBDBServer;
+import ru.neoflex.emf.hibernatedb.test.Group;
+import ru.neoflex.emf.hibernatedb.test.TestFactory;
+import ru.neoflex.emf.hibernatedb.test.TestPackage;
+import ru.neoflex.emf.hibernatedb.test.User;
 
 import java.io.IOException;
 //import java.io.ByteArrayOutputStream;
@@ -23,49 +21,49 @@ import java.io.IOException;
 public class DatabaseTests extends TestBase {
     @Before
     public void startUp() throws Exception {
-        memDBServer = refreshDatabase();
+        hbdbServer = refreshDatabase();
     }
 
     @After
     public void shutDown() throws IOException {
-        memDBServer.close();
+        hbdbServer.close();
     }
 
     @Test
     public void createEMFObject() throws Exception {
         Group group = TestFactory.eINSTANCE.createGroup();
-        String[] ids = memDBServer.inTransaction(false, (MemDBServer.TxFunction<String[]>) tx -> {
+        String[] ids = hbdbServer.inTransaction(false, (DBServer.TxFunction<String[]>) tx -> {
             group.setName("masters");
             ResourceSet resourceSet = tx.createResourceSet();
-            Resource groupResource = resourceSet.createResource(memDBServer.createURI(""));
+            Resource groupResource = resourceSet.createResource(hbdbServer.createURI(""));
             groupResource.getContents().add(group);
             groupResource.save(null);
-            String groupId = memDBServer.getId(groupResource.getURI());
+            String groupId = hbdbServer.getId(groupResource.getURI());
             User user = TestFactory.eINSTANCE.createUser();
             user.setName("Orlov");
             user.setGroup(group);
-            Resource userResource = resourceSet.createResource(memDBServer.createURI(""));
+            Resource userResource = resourceSet.createResource(hbdbServer.createURI(""));
             userResource.getContents().add(user);
             userResource.save(null);
-            String userId = memDBServer.getId(userResource.getURI());
+            String userId = hbdbServer.getId(userResource.getURI());
             Assert.assertNotNull(userId);
             return new String[]{userId, groupId};
         });
-        memDBServer.inTransaction(false, (MemDBServer.TxFunction<Void>) tx -> {
+        hbdbServer.inTransaction(false, (DBServer.TxFunction<Void>) tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
-            Resource userResource = resourceSet.createResource(memDBServer.createURI(ids[0]));
+            Resource userResource = resourceSet.createResource(hbdbServer.createURI(ids[0]));
             userResource.load(null);
             User user = (User) userResource.getContents().get(0);
             user.setName("Simanihin");
             userResource.save(null);
             return null;
         });
-        memDBServer.inTransaction(false, (MemDBServer.TxFunction<Void>) tx -> {
+        hbdbServer.inTransaction(false, (DBServer.TxFunction<Void>) tx -> {
             User user = TestFactory.eINSTANCE.createUser();
             user.setName("Orlov");
             user.setGroup(group);
             ResourceSet resourceSet = tx.createResourceSet();
-            Resource userResource = resourceSet.createResource(memDBServer.createURI(""));
+            Resource userResource = resourceSet.createResource(hbdbServer.createURI(""));
             userResource.getContents().add(user);
             userResource.save(null);
             Assert.assertEquals(3, tx.findAll(resourceSet).count());
@@ -74,7 +72,7 @@ public class DatabaseTests extends TestBase {
             Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, TestPackage.Literals.USER, "Simanihin").count());
             return null;
         });
-        memDBServer.inTransaction(true, (MemDBServer.TxFunction<Void>) tx -> {
+        hbdbServer.inTransaction(true, (DBServer.TxFunction<Void>) tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
             Assert.assertEquals(3, tx.findAll(resourceSet).count());
             Assert.assertEquals(2, tx.findByClass(resourceSet, TestPackage.Literals.USER).count());

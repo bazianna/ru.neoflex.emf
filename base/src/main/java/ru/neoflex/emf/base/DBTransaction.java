@@ -62,6 +62,10 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         DBResource dbResource = new DBResource();
         dbResource.setId(id);
         dbResource.setVersion(version);
+        return fillDbResource(resource, dbResource);
+    }
+
+    private DBResource fillDbResource(Resource resource, DBResource dbResource) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             resource.save(outputStream, null);
@@ -114,11 +118,12 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         String version = dbServer.getVersion(resource.getURI());
         ResourceSet rs = createResourceSet();
         Resource oldResource = rs.createResource(resource.getURI());
+        DBResource oldDbResource = null;
         if (id != null) {
             if (version == null) {
                 throw new IllegalArgumentException(String.format("Version for updated resource %s not defined", id));
             }
-            DBResource oldDbResource = get(id);
+            oldDbResource = get(id);
             String oldVersion = oldDbResource.getVersion();
             if (!version.equals(oldVersion)) {
                 throw new IllegalArgumentException(String.format(
@@ -128,15 +133,17 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
             load(oldDbResource, oldResource);
         }
         dbServer.getEvents().fireBeforeSave(oldResource, resource);
-        DBResource dbResource = createDBResource(resource, id, version);
+        DBResource newDbResource = null;
         if (id == null) {
-            insert(dbResource);
+            newDbResource = createDBResource(resource, id, version);
+            insert(newDbResource);
         }
         else {
-            update(id, dbResource);
+            newDbResource = fillDbResource(resource, oldDbResource);
+            update(id, newDbResource);
         }
         dbServer.getEvents().fireAfterSave(oldResource, resource);
-        resource.setURI(getDbServer().createURI(dbResource.getId(), dbResource.getVersion()));
+        resource.setURI(getDbServer().createURI(newDbResource.getId(), newDbResource.getVersion()));
     }
 
     protected String getNextId() {

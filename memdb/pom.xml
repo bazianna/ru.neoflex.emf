@@ -37,6 +37,18 @@
             <artifactId>cqengine</artifactId>
             <version>3.5.0</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.eclipse.emf</groupId>-->
+<!--            <artifactId>org.eclipse.emf.ecore.xcore</artifactId>-->
+<!--            <version>${ecore-xcore-version}</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.eclipse.xtext</groupId>-->
+<!--            <artifactId>org.eclipse.xtext</artifactId>-->
+<!--            <version>${xtext-version}</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
