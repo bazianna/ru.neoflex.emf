@@ -90,7 +90,7 @@ public class HBDBServer extends DBServer {
         settings.put(Environment.HBM2DDL_AUTO, "update");
         settings.put(Environment.SHOW_SQL, "true");
         settings.put(Environment.C3P0_MIN_SIZE, "1");
-        settings.put(Environment.C3P0_MAX_SIZE, "5");
+        settings.put(Environment.C3P0_MAX_SIZE, "500");
         settings.put(Environment.MULTI_TENANT, "SCHEMA");
         settings.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, HBDBTenantIdentifierResolver.class.getName());
         settings.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, HBDBConnectionProvider.class.getName());
