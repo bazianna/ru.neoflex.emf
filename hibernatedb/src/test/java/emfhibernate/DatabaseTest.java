@@ -13,12 +13,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Properties;
 
 public class DatabaseTest {
     @Test
     public void dbTest() throws IOException {
-        try (HBDBServer server = new HBDBServer(new ArrayList<>(), "mydb");) {
-            server.setTenantId("public");
+        try (HBDBServer server = new HBDBServer("mydb", new Properties(), new ArrayList<>());) {
             try (Session session = server.createSession()) {
                 Transaction tx = session.beginTransaction();
                 session.createQuery("from DBResource", DBResource.class).getResultStream().forEach(dbResource -> {

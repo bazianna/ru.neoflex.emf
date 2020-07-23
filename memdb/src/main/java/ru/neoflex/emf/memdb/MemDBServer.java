@@ -9,13 +9,18 @@ import ru.neoflex.emf.base.DBTransaction;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 public class MemDBServer extends DBServer {
     public static final String MEMDB = "memdb";
+    public static final String CONFIG_DEFAULT_TENANT = "emfdb.mem.defaultTenant";
+    public static final String CONFIG_PREVALENCE_BASE = "emfdb.mem.prevalenceBase";
     protected final Prevayler<MemDBModel> prevayler;
 
-    public MemDBServer(String prevalenceBase, String dbName, List<EPackage> packages) throws Exception {
-        super(packages, dbName);
+    public MemDBServer(String dbName, Properties config, List<EPackage> packages) throws Exception {
+        super(dbName, config, packages);
+        setTenantId(getConfig().getProperty(CONFIG_DEFAULT_TENANT, "default"));
+        String prevalenceBase = config.getProperty(CONFIG_PREVALENCE_BASE, System.getProperty("user.home") + "/.memdb/" + dbName);
         prevayler = PrevaylerFactory.createPrevayler(new MemDBModel(), prevalenceBase);
     }
 
@@ -51,5 +56,4 @@ public class MemDBServer extends DBServer {
             return f.call(tx);
         });
     }
-
 }

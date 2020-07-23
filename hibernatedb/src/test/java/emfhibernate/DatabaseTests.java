@@ -7,13 +7,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.neoflex.emf.base.DBServer;
-import ru.neoflex.emf.hibernatedb.HBDBServer;
+import ru.neoflex.emf.hibernatedb.HBDBTransaction;
 import ru.neoflex.emf.hibernatedb.test.Group;
 import ru.neoflex.emf.hibernatedb.test.TestFactory;
 import ru.neoflex.emf.hibernatedb.test.TestPackage;
 import ru.neoflex.emf.hibernatedb.test.User;
 
 import java.io.IOException;
+import java.sql.Statement;
 //import java.io.ByteArrayOutputStream;
 //import org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup;
 //import org.eclipse.xtext.resource.XtextResourceSet;
@@ -80,6 +81,15 @@ public class DatabaseTests extends TestBase {
             Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, TestPackage.Literals.USER, "Simanihin").count());
             return null;
         });
+        hbdbServer.inTransaction(true, (DBServer.TxFunction<Void>) tx -> {
+            ((HBDBTransaction)tx).getSession().doWork(connection -> {
+                try(Statement statement = connection.createStatement()) {
+                    statement.executeUpdate("create schema TEST");
+                }
+            });
+        return null;
+        });
+        hbdbServer.setSchema("TEST");
 //        memBDServer.inTransaction(true, (MemBDServer.TxFunction<Void>) tx -> {
 //            return null;
 //        });

@@ -6,6 +6,7 @@ import ru.neoflex.emf.memdb.test.TestPackage;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Properties;
 
 public class TestBase {
     public static final String MEMDB = "test-emf-mem";
@@ -22,7 +23,9 @@ public class TestBase {
     }
 
     public static MemDBServer getDatabase() throws Exception {
-        return new MemDBServer(getDatabaseFile().getAbsolutePath(), MEMDB, new ArrayList<EPackage>(){{add(TestPackage.eINSTANCE);}});
+        Properties config = new Properties();
+        config.put(MemDBServer.CONFIG_PREVALENCE_BASE, getDatabaseFile().getAbsolutePath());
+        return new MemDBServer(MEMDB, config, new ArrayList<EPackage>(){{add(TestPackage.eINSTANCE);}});
     }
 
     public static File getDatabaseFile() {

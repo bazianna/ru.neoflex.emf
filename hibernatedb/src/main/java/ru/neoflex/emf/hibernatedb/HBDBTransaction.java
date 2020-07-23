@@ -77,7 +77,9 @@ public class HBDBTransaction extends DBTransaction {
     }
 
     public void begin() {
-        tx = session.beginTransaction();
+        if (!isReadOnly()) {
+            tx = session.beginTransaction();
+        }
     }
 
     public void commit() {
@@ -92,5 +94,9 @@ public class HBDBTransaction extends DBTransaction {
             tx.rollback();
             tx = null;
         }
+    }
+
+    public Session getSession() {
+        return session;
     }
 }

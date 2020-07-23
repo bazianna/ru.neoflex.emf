@@ -6,6 +6,7 @@ import ru.neoflex.emf.hibernatedb.test.TestPackage;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Properties;
 
 public class TestBase {
     public static final String HBDB = "hbtest";
@@ -22,8 +23,7 @@ public class TestBase {
     }
 
     public static HBDBServer getDatabase() throws Exception {
-        HBDBServer server = new HBDBServer(new ArrayList<EPackage>(){{add(TestPackage.eINSTANCE);}}, HBDB);
-        server.setTenantId("public");
+        HBDBServer server = new HBDBServer(HBDB, new Properties(), new ArrayList<EPackage>(){{add(TestPackage.eINSTANCE);}});
         return server;
     }
 
