@@ -1,7 +1,5 @@
 package ru.neoflex.emf.memdb;
 
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.prevayler.Transaction;
 import ru.neoflex.emf.base.DBResource;
 import ru.neoflex.emf.base.DBServer;
@@ -12,6 +10,7 @@ import java.util.stream.Stream;
 
 public class MemDBTransaction extends DBTransaction implements Transaction<MemDBModel> {
     private transient MemDBModel memDBModel;
+    private String tenantId;
     private Map<String, DBResource> inserted = new HashMap<>();
     private Map<String, DBResource> updated = new HashMap<>();
     private Set<String> deleted = new HashSet<>();
@@ -19,8 +18,8 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     public MemDBTransaction() {
     }
 
-    public MemDBTransaction(boolean readOnly, DBServer dbServer, String tenantId) {
-        super(readOnly, dbServer, tenantId);
+    public MemDBTransaction(boolean readOnly, DBServer dbServer) {
+        super(readOnly, dbServer);
     }
 
     @Override
@@ -33,14 +32,14 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
             dbObject = inserted.get(id);
         }
         if (dbObject == null) {
-            dbObject = memDBModel.get(getTenantId(), id);
+            dbObject = memDBModel.get(tenantId, id);
         }
         return dbObject.clone();
     }
 
     @Override
     public Stream<DBResource> findAll() {
-        Stream<DBResource> baseStream = memDBModel.findAll(getTenantId())
+        Stream<DBResource> baseStream = memDBModel.findAll(tenantId)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
         Stream<DBResource> insertedStream = inserted.values().stream();
         Stream<DBResource> updatedStream = updated.values().stream();
@@ -53,7 +52,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     @Override
     public Stream<DBResource> findByClass(String classUri) {
         String attributeValue = classUri + ":";
-        Stream<DBResource> baseStream = memDBModel.findByClass(getTenantId(), classUri)
+        Stream<DBResource> baseStream = memDBModel.findByClass(tenantId, classUri)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
         Stream<DBResource> insertedStream = inserted.values().stream()
                 .filter(dbResource -> dbResource.getNames().stream().anyMatch(s -> s.startsWith(attributeValue)));
@@ -68,7 +67,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     @Override
     public Stream<DBResource> findByClassAndQName(String classUri, String qName) {
         String attributeValue = classUri + ":" + qName;
-        Stream<DBResource> baseStream = memDBModel.findByClassAndQName(getTenantId(), classUri, qName)
+        Stream<DBResource> baseStream = memDBModel.findByClassAndQName(tenantId, classUri, qName)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
         Stream<DBResource> insertedStream = inserted.values().stream()
                 .filter(dbResource -> dbResource.getNames().contains(attributeValue));
@@ -82,7 +81,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
 
     @Override
     public Stream<DBResource> findReferencedTo(String id) {
-        Stream<DBResource> baseStream = memDBModel.findReferencedTo(getTenantId(), id)
+        Stream<DBResource> baseStream = memDBModel.findReferencedTo(tenantId, id)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
         Stream<DBResource> insertedStream = inserted.values().stream()
                 .filter(dbResource -> dbResource.getReferences().contains(id));
@@ -97,13 +96,13 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     @Override
     public void executeOn(MemDBModel prevalentSystem, Date executionTime) {
         deleted.stream().forEach(id -> {
-            prevalentSystem.delete(getTenantId(), id);
+            prevalentSystem.delete(tenantId, id);
         });
         updated.values().forEach(dbResource->{
-            prevalentSystem.update(getTenantId(), dbResource);
+            prevalentSystem.update(tenantId, dbResource);
         });
         inserted.values().forEach(dbResource->{
-            prevalentSystem.insert(getTenantId(), dbResource);
+            prevalentSystem.insert(tenantId, dbResource);
         });
         reset();
     }

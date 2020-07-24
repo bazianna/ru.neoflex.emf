@@ -40,7 +40,7 @@ public class MemDBServer extends DBServer {
 
     @Override
     protected DBTransaction createDBTransaction(boolean readOnly, DBServer dbServer, String tenantId) {
-        DBTransaction tx = new MemDBTransaction(readOnly, dbServer, tenantId);
+        DBTransaction tx = new MemDBTransaction(readOnly, dbServer);
         return tx;
     }
 

@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 public abstract class DBTransaction implements AutoCloseable, Serializable {
     private transient boolean readOnly;
     private transient DBServer dbServer;
-    private String tenantId;
 
     protected abstract DBResource get(String id);
     protected abstract Stream<DBResource> findAll();
@@ -87,10 +86,9 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     public DBTransaction() {
     }
 
-    public DBTransaction(boolean readOnly, DBServer dbServer, String tenantId) {
+    public DBTransaction(boolean readOnly, DBServer dbServer) {
         this.readOnly = readOnly;
         this.dbServer = dbServer;
-        this.tenantId = tenantId;
     }
 
     public Stream<Resource> findAll(ResourceSet rs) {
@@ -225,10 +223,6 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     }
 
     public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
+        return getDbServer().getTenantId();
     }
 }

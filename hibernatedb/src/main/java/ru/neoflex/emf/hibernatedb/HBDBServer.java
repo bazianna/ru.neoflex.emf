@@ -149,7 +149,7 @@ public class HBDBServer extends DBServer {
 
     @Override
     protected DBTransaction createDBTransaction(boolean readOnly, DBServer dbServer, String tenantId) {
-        return new HBDBTransaction(readOnly, dbServer, tenantId);
+        return new HBDBTransaction(readOnly, dbServer);
     }
 
     @Override

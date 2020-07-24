@@ -12,8 +12,8 @@ public class HBDBTransaction extends DBTransaction {
     private final Session session;
     private Transaction tx;
 
-    public HBDBTransaction(boolean readOnly, DBServer dbServer, String tenantId) {
-        super(readOnly, dbServer, tenantId);
+    public HBDBTransaction(boolean readOnly, DBServer dbServer) {
+        super(readOnly, dbServer);
         session = getHbDbServer().getSessionFactory().openSession();
     }
 
