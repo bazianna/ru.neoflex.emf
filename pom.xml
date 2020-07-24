@@ -76,6 +76,7 @@
         <module>parallelgit</module>
         <module>memdb</module>
         <module>hibernatedb</module>
+        <module>gitdb</module>
     </modules>
 
 </project>
