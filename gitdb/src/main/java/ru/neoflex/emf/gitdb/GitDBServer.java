@@ -1,7 +1,5 @@
 package ru.neoflex.emf.gitdb;
 
-import com.beijunyi.parallelgit.filesystem.Gfs;
-import com.beijunyi.parallelgit.filesystem.GitFileSystem;
 import com.beijunyi.parallelgit.utils.RepositoryUtils;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.jgit.lib.Repository;
@@ -16,18 +14,17 @@ import java.util.Properties;
 import static org.eclipse.jgit.lib.Constants.DOT_GIT;
 
 public class GitDBServer extends DBServer {
-    private final GitFileSystem gfs;
+    private Repository repository;
 
     public GitDBServer(String dbName, Properties config, List<EPackage> packages) {
         super(dbName, config, packages);
         try {
-            String repoPath = config.getProperty("emfdb.git.repo", System.getProperty("user.home") + "/.gitdb/" + this.dbName);
+            String repoPath = config.getProperty("emfdb.git.repo", System.getProperty("user.home") + "/.gitdb/" + this.getDbName());
             File repoFile = new File(repoPath);
             repoFile.mkdir();
-            Repository repository = new File(repoFile, DOT_GIT).exists() ?
+            repository = new File(repoFile, DOT_GIT).exists() ?
                     RepositoryUtils.openRepository(repoFile, false) :
                     RepositoryUtils.createRepository(repoFile, false);
-            gfs = Gfs.newFileSystem(repository);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -35,11 +32,7 @@ public class GitDBServer extends DBServer {
 
     public GitDBServer(String dbName, Repository repository, List<EPackage> packages) {
         super(dbName, null, packages);
-        try {
-            gfs = Gfs.newFileSystem(repository);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.repository = repository;
     }
 
     @Override
@@ -50,5 +43,13 @@ public class GitDBServer extends DBServer {
     @Override
     public String getScheme() {
         return "gitdb";
+    }
+
+    public Repository getRepository() {
+        return repository;
+    }
+
+    public void setRepository(Repository repository) {
+        this.repository = repository;
     }
 }

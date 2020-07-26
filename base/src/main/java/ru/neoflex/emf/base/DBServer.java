@@ -25,7 +25,7 @@ public abstract class DBServer implements AutoCloseable {
     public static final String CONFIG_DBTYPE = "emfdb.dbtype";
     protected static final ThreadLocal<String> tenantId = new InheritableThreadLocal<>();
     protected final List<EPackage> packages;
-    protected final String dbName;
+    private final String dbName;
     private final Events events = new Events();
     private Function<EClass, EStructuralFeature> qualifiedNameDelegate = eClass -> eClass.getEStructuralFeature("name");
     private final Properties config;
@@ -110,6 +110,10 @@ public abstract class DBServer implements AutoCloseable {
 
     public Properties getConfig() {
         return config;
+    }
+
+    public String getDbName() {
+        return dbName;
     }
 
     public interface TxFunction<R> extends Serializable {
