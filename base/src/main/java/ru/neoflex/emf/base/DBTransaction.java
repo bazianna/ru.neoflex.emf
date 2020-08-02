@@ -12,10 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,17 +20,38 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     private transient boolean readOnly;
     private transient DBServer dbServer;
 
+    public DBTransaction() {
+    }
+
+    public DBTransaction(boolean readOnly, DBServer dbServer) {
+        this.readOnly = readOnly;
+        this.dbServer = dbServer;
+    }
+
     protected abstract DBResource get(String id);
+
     protected abstract Stream<DBResource> findAll();
+
     protected abstract Stream<DBResource> findByClass(String classUri);
+
     protected abstract Stream<DBResource> findByClassAndQName(String classUri, String qName);
+
     protected abstract Stream<DBResource> findReferencedTo(String id);
+
     protected abstract void insert(DBResource dbResource);
+
     protected abstract void update(String id, DBResource dbResource);
+
     protected abstract void delete(String id);
-    public void begin() {}
-    public void commit() {}
-    public void rollback() {}
+
+    public void begin() {
+    }
+
+    public void commit() {
+    }
+
+    public void rollback() {
+    }
 
     protected void loadImage(DBResource dbResource, Resource resource) {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(dbResource.getImage());
@@ -72,23 +90,19 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
             throw new RuntimeException(e);
         }
         dbResource.setImage(outputStream.toByteArray());
-        Set<String> names = resource.getContents().stream().map(eObject ->
-            EcoreUtil.getURI(eObject.eClass()).toString() + ":" + getDbServer().getQName(eObject)
-        ).collect(Collectors.toSet());
-        dbResource.setNames(names);
+        List<DBObject> dbObjects = resource.getContents().stream().map(eObject -> {
+                    DBObject dbObject = new DBObject();
+                    dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
+                    dbObject.setQName(getDbServer().getQName(eObject));
+                    return dbObject;
+                }
+        ).collect(Collectors.toList());
+        dbResource.setDbObjects(dbObjects);
         Map<EObject, Collection<EStructuralFeature.Setting>> xrs = EcoreUtil.ExternalCrossReferencer.find(resource);
         Set<String> references = xrs.keySet().stream()
                 .map(eObject -> getDbServer().getId(EcoreUtil.getURI(eObject))).collect(Collectors.toSet());
         dbResource.setReferences(references);
         return dbResource;
-    }
-
-    public DBTransaction() {
-    }
-
-    public DBTransaction(boolean readOnly, DBServer dbServer) {
-        this.readOnly = readOnly;
-        this.dbServer = dbServer;
     }
 
     public Stream<Resource> findAll(ResourceSet rs) {
@@ -135,8 +149,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         if (id == null) {
             newDbResource = createDBResource(resource, id, version);
             insert(newDbResource);
-        }
-        else {
+        } else {
             newDbResource = fillDbResource(resource, oldDbResource);
             update(id, newDbResource);
         }
@@ -206,6 +219,10 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         return dbServer;
     }
 
+    public void setDbServer(DBServer dbServer) {
+        this.dbServer = dbServer;
+    }
+
     @Override
     public void close() throws Exception {
     }
@@ -216,10 +233,6 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
 
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
-    }
-
-    public void setDbServer(DBServer dbServer) {
-        this.dbServer = dbServer;
     }
 
     public String getTenantId() {

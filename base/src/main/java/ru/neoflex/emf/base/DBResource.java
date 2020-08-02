@@ -2,7 +2,9 @@ package ru.neoflex.emf.base;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 public class DBResource implements Serializable, Cloneable {
@@ -12,15 +14,14 @@ public class DBResource implements Serializable, Cloneable {
     @Column(length = 32)
     private String version;
     @ElementCollection
-    @Column(name = "names", length = 1024)
     @CollectionTable(indexes = {
-            @Index(columnList = "names")
+            @Index(columnList = "class_uri,q_name", unique = true, name = "DBResource_DBObjects_ak")
     })
-    private Set<String> names;
+    private List<DBObject> dbObjects;
     @ElementCollection
-    @Column(name = "references", length = 1024)
+    @Column(length = 1024)
     @CollectionTable(indexes = {
-            @Index(columnList = "references")
+            @Index(columnList = "references", name = "DBResource_References_ie1")
     })
     private Set<String> references;
     @Column(length = 10485760)
@@ -61,12 +62,16 @@ public class DBResource implements Serializable, Cloneable {
         this.references = references;
     }
 
-    public Set<String> getNames() {
-        return names;
+    public List<DBObject> getDbObjects() {
+        return dbObjects;
     }
 
-    public void setNames(Set<String> names) {
-        this.names = names;
+    public Set<String> getQNames() {
+        return dbObjects.stream().map(dbObject -> dbObject.getClassUri() +":" + dbObject.getQName()).collect(Collectors.toSet());
+    }
+
+    public void setDbObjects(List<DBObject> dbObjects) {
+        this.dbObjects = dbObjects;
     }
 
     public DBResource clone() {

@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 public class MemDBModel implements Externalizable {
     private Map<String, IndexedCollection<DBResource>> indexedCollection = new HashMap<>();
     public static final Attribute<DBResource, String> ID = QueryFactory.attribute("id", DBResource::getId);
-    public static final Attribute<DBResource, String> NAMES = QueryFactory.attribute(String.class, "classUri", DBResource::getNames);
+    public static final Attribute<DBResource, String> NAMES = QueryFactory.attribute(String.class, "classUri", DBResource::getQNames);
     public static final Attribute<DBResource, String> REFERENCES = QueryFactory.attribute(String.class,"references", DBResource::getReferences);
 
     public DBResource get(String tenantId, String id) {

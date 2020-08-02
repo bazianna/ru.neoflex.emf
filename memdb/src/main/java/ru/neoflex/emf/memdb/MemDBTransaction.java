@@ -51,13 +51,12 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
 
     @Override
     public Stream<DBResource> findByClass(String classUri) {
-        String attributeValue = classUri + ":";
         Stream<DBResource> baseStream = memDBModel.findByClass(tenantId, classUri)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
         Stream<DBResource> insertedStream = inserted.values().stream()
-                .filter(dbResource -> dbResource.getNames().stream().anyMatch(s -> s.startsWith(attributeValue)));
+                .filter(dbResource -> dbResource.getDbObjects().stream().anyMatch(s -> Objects.equals(classUri, s.getClassUri())));
         Stream<DBResource> updatedStream = updated.values().stream()
-                .filter(dbResource -> dbResource.getNames().stream().anyMatch(s -> s.startsWith(attributeValue)));
+                .filter(dbResource -> dbResource.getDbObjects().stream().anyMatch(s -> Objects.equals(classUri, s.getClassUri())));
         return Stream.concat(
                 Stream.concat(insertedStream, updatedStream),
                 baseStream
@@ -66,13 +65,14 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
 
     @Override
     public Stream<DBResource> findByClassAndQName(String classUri, String qName) {
-        String attributeValue = classUri + ":" + qName;
         Stream<DBResource> baseStream = memDBModel.findByClassAndQName(tenantId, classUri, qName)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
         Stream<DBResource> insertedStream = inserted.values().stream()
-                .filter(dbResource -> dbResource.getNames().contains(attributeValue));
+                .filter(dbResource -> dbResource.getDbObjects().stream()
+                        .anyMatch(s->Objects.equals(classUri, s.getClassUri()) && Objects.equals(qName, s.getQName())));
         Stream<DBResource> updatedStream = updated.values().stream()
-                .filter(dbResource -> dbResource.getNames().contains(attributeValue));
+                .filter(dbResource -> dbResource.getDbObjects().stream()
+                        .anyMatch(s->Objects.equals(classUri, s.getClassUri()) && Objects.equals(qName, s.getQName())));
         return Stream.concat(
                 Stream.concat(insertedStream, updatedStream),
                 baseStream

@@ -17,7 +17,7 @@ public class HBDBTransaction extends DBTransaction {
         session = getHbDbServer().getSessionFactory().openSession();
     }
 
-    public void close() throws Exception {
+    public void close() {
         session.close();
     }
 
@@ -37,17 +37,16 @@ public class HBDBTransaction extends DBTransaction {
 
     @Override
     protected Stream<DBResource> findByClass(String classUri) {
-        String classLike = classUri + ":%";
-        return session.createQuery("select r from DBResource r join r.names name where name like :classLike", DBResource.class)
-                .setParameter("classLike", classLike)
+        return session.createQuery("select r from DBResource r join r.dbObjects name where name.classUri = :classUri", DBResource.class)
+                .setParameter("classUri", classUri)
                 .getResultStream();
     }
 
     @Override
     protected Stream<DBResource> findByClassAndQName(String classUri, String qName) {
-        String classQName = classUri + ":" + qName;
-        return session.createQuery("select r from DBResource r join r.names name where name = :classQName", DBResource.class)
-                .setParameter("classQName", classQName)
+        return session.createQuery("select r from DBResource r join r.dbObjects name where name.classUri = :classUri and name.qName = :qName", DBResource.class)
+                .setParameter("classUri", classUri)
+                .setParameter("qName", qName)
                 .getResultStream();
     }
 

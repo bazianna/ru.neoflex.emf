@@ -17,19 +17,16 @@ import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.hibernate.tool.schema.TargetType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.neoflex.emf.base.DBResource;
 import ru.neoflex.emf.base.DBServer;
 import ru.neoflex.emf.base.DBTransaction;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
 public class HBDBServer extends DBServer {
-    private static final Logger logger = LoggerFactory.getLogger(HBDBServer.class);
+//    private static final Logger logger = LoggerFactory.getLogger(HBDBServer.class);
     public static final String CONFIG_DEFAULT_SCHEMA = "emfdb.hb.defaultSchema";
     public static final String CONFIG_DRIVER = "emfdb.hb.driver";
     public static final String CONFIG_URL = "emfdb.hb.url";
@@ -158,7 +155,7 @@ public class HBDBServer extends DBServer {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         sessionFactory.close();
     }
 }
