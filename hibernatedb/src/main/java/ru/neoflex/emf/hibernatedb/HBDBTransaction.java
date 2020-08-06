@@ -65,7 +65,7 @@ public class HBDBTransaction extends DBTransaction {
     }
 
     @Override
-    protected void update(String id, DBResource dbResource) {
+    protected void update(DBResource dbResource) {
         dbResource.setVersion(String.valueOf(1 + Integer.parseInt(dbResource.getVersion())));
         session.update(dbResource);
     }

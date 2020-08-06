@@ -2,6 +2,8 @@ package ru.neoflex.emf.base;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,13 +19,13 @@ public class DBResource implements Serializable, Cloneable {
     @CollectionTable(indexes = {
             @Index(columnList = "class_uri,q_name", unique = true, name = "DBResource_DBObjects_ak")
     })
-    private List<DBObject> dbObjects;
+    private List<DBObject> dbObjects = new ArrayList<>();
     @ElementCollection
     @Column(length = 1024)
     @CollectionTable(indexes = {
             @Index(columnList = "references", name = "DBResource_References_ie1")
     })
-    private Set<String> references;
+    private Set<String> references = new HashSet<>();
     @Column(length = 10485760)
     private byte[] image;
 

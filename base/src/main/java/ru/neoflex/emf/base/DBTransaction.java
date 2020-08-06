@@ -40,7 +40,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
 
     protected abstract void insert(DBResource dbResource);
 
-    protected abstract void update(String id, DBResource dbResource);
+    protected abstract void update(DBResource dbResource);
 
     protected abstract void delete(String id);
 
@@ -139,19 +139,19 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
             String oldVersion = oldDbResource.getVersion();
             if (!version.equals(oldVersion)) {
                 throw new IllegalArgumentException(String.format(
-                        "Version (%d) for updated resource %s is not equals to the version in the DB (%d)",
+                        "Version (%s) for updated resource %s is not equals to the version in the DB (%s)",
                         version, id, oldVersion));
             }
             load(oldDbResource, oldResource);
         }
         dbServer.getEvents().fireBeforeSave(oldResource, resource);
-        DBResource newDbResource = null;
+        DBResource newDbResource;
         if (id == null) {
             newDbResource = createDBResource(resource, id, version);
             insert(newDbResource);
         } else {
             newDbResource = fillDbResource(resource, oldDbResource);
-            update(id, newDbResource);
+            update(newDbResource);
         }
         dbServer.getEvents().fireAfterSave(oldResource, resource);
         resource.setURI(getDbServer().createURI(newDbResource.getId(), newDbResource.getVersion()));
@@ -182,7 +182,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         String oldVersion = dbResource.getVersion();
         if (!version.equals(oldVersion)) {
             throw new IllegalArgumentException(String.format(
-                    "Version (%d) for deleted object %s is not equals to the version in the DB (%d)",
+                    "Version (%s) for deleted object %s is not equals to the version in the DB (%s)",
                     version, id, oldVersion));
         }
         ResourceSet rs = createResourceSet();

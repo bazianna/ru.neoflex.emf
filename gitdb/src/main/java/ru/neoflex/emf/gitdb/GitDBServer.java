@@ -1,7 +1,10 @@
 package ru.neoflex.emf.gitdb;
 
 import com.beijunyi.parallelgit.utils.RepositoryUtils;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.jgit.lib.Repository;
 import ru.neoflex.emf.base.DBServer;
 import ru.neoflex.emf.base.DBTransaction;
@@ -52,4 +55,9 @@ public class GitDBServer extends DBServer {
     public void setRepository(Repository repository) {
         this.repository = repository;
     }
+
+    public Resource createResource(URI uri) {
+        return new XMIResourceImpl(uri);
+    }
+
 }

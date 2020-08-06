@@ -41,14 +41,11 @@ public abstract class DBServer implements AutoCloseable {
     }
 
     public void setTenantId(String tenantId) {
-        this.tenantId.set(tenantId);
+        DBServer.tenantId.set(tenantId);
     }
 
     public String getId(URI uri) {
-        if (uri.segmentCount() >= 1) {
-            return uri.segment(0);
-        }
-        return null;
+        return uri.segmentCount() >= 1 ? uri.segment(0) : null;
     }
 
     public String getVersion(URI uri) {
@@ -80,7 +77,7 @@ public abstract class DBServer implements AutoCloseable {
         return events;
     }
 
-    public Resource createResource(URI uri) {
+    protected Resource createResource(URI uri) {
         return new BinaryResourceImpl(uri);
     }
 
@@ -174,7 +171,6 @@ public abstract class DBServer implements AutoCloseable {
                 if (delay < retryStrategy.maxDelay) {
                     delay *= 2;
                 }
-                continue;
             }
         }
     }
