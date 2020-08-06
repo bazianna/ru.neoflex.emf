@@ -164,7 +164,7 @@ public class GitDBTransaction extends DBTransaction {
         return gfs.getPath("/", getGitDBServer().getDbName(), "resources", id1, id2, "image.xmi");
     }
 
-    private byte[] writeIndexesContent(DBResource dbResource) {
+    private static byte[] writeIndexesContent(DBResource dbResource) {
         try {
             DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
@@ -194,7 +194,7 @@ public class GitDBTransaction extends DBTransaction {
         }
     }
 
-    private void readIndexesContent(byte[] indexes, DBResource dbResource) {
+    private static void readIndexesContent(byte[] indexes, DBResource dbResource) {
         try {
             DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
