@@ -58,7 +58,7 @@ public abstract class DBServer implements AutoCloseable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws Exception {
     }
 
     public List<EPackage> getPackages() {
@@ -141,17 +141,19 @@ public abstract class DBServer implements AutoCloseable {
         int attempt = 1;
         int delay = retryStrategy.delay;
         while (true) {
-            try (DBTransaction tx = txSupplier.get()) {
-                tx.begin();
-                try {
-                    return callWithTransaction(tx, f);
-                }
-                catch (Throwable e) {
-                    tx.rollback();
-                    throw e;
-                }
-                finally {
-                    tx.commit();
+            try {
+                try (DBTransaction tx = txSupplier.get()) {
+                    tx.begin();
+                    try {
+                        return callWithTransaction(tx, f);
+                    }
+                    catch (Throwable e) {
+                        tx.rollback();
+                        throw e;
+                    }
+                    finally {
+                        tx.commit();
+                    }
                 }
             }
             catch (Throwable e) {

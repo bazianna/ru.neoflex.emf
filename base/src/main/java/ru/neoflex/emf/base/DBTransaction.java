@@ -18,6 +18,9 @@ import java.util.stream.Stream;
 
 public abstract class DBTransaction implements AutoCloseable, Serializable {
     private transient boolean readOnly;
+    protected transient String message = "";
+    protected transient String author;
+    protected transient String email;
     private transient DBServer dbServer;
 
     public DBTransaction() {
@@ -237,5 +240,29 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
 
     public String getTenantId() {
         return getDbServer().getTenantId();
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

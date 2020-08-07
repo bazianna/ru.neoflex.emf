@@ -3,9 +3,11 @@ package ru.neoflex.emf.gitdb;
 import com.beijunyi.parallelgit.filesystem.Gfs;
 import com.beijunyi.parallelgit.filesystem.GitFileSystem;
 import com.beijunyi.parallelgit.filesystem.GitPath;
+import com.beijunyi.parallelgit.filesystem.commands.GfsCommit;
 import com.beijunyi.parallelgit.filesystem.io.DirectoryNode;
 import com.beijunyi.parallelgit.filesystem.io.Node;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -30,6 +32,11 @@ import java.util.stream.Stream;
 
 public class GitDBTransaction extends DBTransaction {
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+    public static final String IMAGE_FILE_NAME = "image.xmi";
+    public static final String INDEXES_FILE_NAME = "indexes.xml";
+    public static final String INDEXES_DIR_NAME = "indexes";
+    public static final String DB_OBJECTS_DIR_NAME = "db-objects";
+    public static final String REFERENCES_DIR_NAME = "references";
     static SecureRandom prng;
 
     static {
@@ -45,7 +52,7 @@ public class GitDBTransaction extends DBTransaction {
     public GitDBTransaction(boolean readOnly, DBServer dbServer) {
         super(readOnly, dbServer);
         try {
-            gfs = Gfs.newFileSystem(getGitDBServer().getRepository());
+            gfs = Gfs.newFileSystem(getGitDBServer().getTenantId(), getGitDBServer().getRepository());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -93,8 +100,13 @@ public class GitDBTransaction extends DBTransaction {
 
     @Override
     protected DBResource get(String id) {
+        GitPath resourcePath = getResourcePath(id);
+        return getDbResource(id, resourcePath);
+    }
+
+    private DBResource getDbResource(String id, GitPath resourcePath) {
         try {
-            GitPath imagePath = getImagePath(id);
+            GitPath imagePath = resourcePath.resolve(IMAGE_FILE_NAME);
             ObjectId objectId = getObjectId(imagePath);
             if (objectId == null) {
                 throw new IllegalArgumentException("Entity not found: " + id);
@@ -105,7 +117,7 @@ public class GitDBTransaction extends DBTransaction {
             dbResource.setId(id);
             dbResource.setVersion(rev);
             dbResource.setImage(content);
-            GitPath indexesPath = getIndexesPath(id);
+            GitPath indexesPath = resourcePath.resolve(INDEXES_FILE_NAME);
             byte[] indexes = Files.readAllBytes(indexesPath);
             readIndexesContent(indexes, dbResource);
             return dbResource;
@@ -116,32 +128,84 @@ public class GitDBTransaction extends DBTransaction {
 
     @Override
     protected Stream<DBResource> findAll() {
-        return null;
+        try {
+            GitPath resourcesPath = gfs.getPath("/", getGitDBServer().getDbName(), "resources");
+            return Files.walk(resourcesPath)
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().equals(IMAGE_FILE_NAME))
+                    .map(imagePath -> {
+                        GitPath parent = (GitPath) imagePath.getParent();
+                        String id1 = parent.getParent().getFileName().toString();
+                        String id2 = parent.getFileName().toString();
+                        return getDbResource(id1 + id2, parent);
+                    });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     protected Stream<DBResource> findByClass(String classUri) {
-        return null;
+        try {
+            GitPath indexRoot = gfs.getPath("/", getGitDBServer().getDbName(),
+                    INDEXES_DIR_NAME, DB_OBJECTS_DIR_NAME, classUri);
+            return Files.walk(indexRoot)
+                    .filter(Files::isRegularFile)
+                    .map(indexPath -> {
+                        try {
+                            String id = new String(Files.readAllBytes(indexPath));
+                            return get(id);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     protected Stream<DBResource> findByClassAndQName(String classUri, String qName) {
-        return null;
+        try {
+            GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(),
+                    INDEXES_DIR_NAME, DB_OBJECTS_DIR_NAME, classUri, qName);
+            if (Files.isRegularFile(indexPath)) {
+                String id = new String(Files.readAllBytes(indexPath));
+                return Stream.of(get(id));
+            }
+            else {
+                return Stream.empty();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     protected Stream<DBResource> findReferencedTo(String id) {
-        return null;
+        try {
+            GitPath indexRoot = gfs.getPath("/", getGitDBServer().getDbName(),
+                    INDEXES_DIR_NAME, REFERENCES_DIR_NAME, id.substring(0, 2), id.substring(2));
+            return Files.walk(indexRoot)
+                    .filter(Files::isRegularFile)
+                    .map(indexPath -> {
+                        String refId = indexPath.getFileName().toString();
+                        return get(refId);
+                    });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     protected void insert(DBResource dbResource) {
         try {
             dbResource.setId(getNextId());
-            GitPath imagePath = getImagePath(dbResource.getId());
+            GitPath resourcePath = getResourcePath(dbResource.getId());
+            GitPath imagePath = resourcePath.resolve(IMAGE_FILE_NAME);
             Files.createDirectories(imagePath.getParent());
             Files.write(imagePath, dbResource.getImage());
-            GitPath indexesPath = getIndexesPath(dbResource.getId());
+            GitPath indexesPath = resourcePath.resolve(INDEXES_FILE_NAME);
             byte[] indexes = writeIndexesContent(dbResource);
             Files.write(indexesPath, indexes);
             createNewIndexes(dbResource);
@@ -152,16 +216,10 @@ public class GitDBTransaction extends DBTransaction {
         }
     }
 
-    private GitPath getIndexesPath(String id) {
+    private GitPath getResourcePath(String id) {
         String id1 = id.substring(0, 2);
         String id2 = id.substring(2);
-        return gfs.getPath("/", getGitDBServer().getDbName(), "resources", id1, id2, "indexes.xml");
-    }
-
-    private GitPath getImagePath(String id) {
-        String id1 = id.substring(0, 2);
-        String id2 = id.substring(2);
-        return gfs.getPath("/", getGitDBServer().getDbName(), "resources", id1, id2, "image.xmi");
+        return gfs.getPath("/", getGitDBServer().getDbName(), "resources", id1, id2);
     }
 
     private static byte[] writeIndexesContent(DBResource dbResource) {
@@ -223,8 +281,9 @@ public class GitDBTransaction extends DBTransaction {
     @Override
     protected void update(DBResource dbResource) {
          try {
-             GitPath imagePath = getImagePath(dbResource.getId());
-             GitPath indexesPath = getIndexesPath(dbResource.getId());
+             GitPath resourcePath = getResourcePath(dbResource.getId());
+             GitPath imagePath = resourcePath.resolve(IMAGE_FILE_NAME);
+             GitPath indexesPath = resourcePath.resolve(INDEXES_FILE_NAME);
              byte[] oldIndexes = Files.readAllBytes(indexesPath);
              DBResource oldDbResource = new DBResource();
              oldDbResource.setId(dbResource.getId());
@@ -243,25 +302,27 @@ public class GitDBTransaction extends DBTransaction {
 
     private void deleteOldIndexes(DBResource dbResource) throws IOException {
         for (DBObject dbObject: dbResource.getDbObjects()) {
-            GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), "indexes", dbObject.getClassUri(), dbObject.getQName());
+            GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), INDEXES_DIR_NAME,
+                    DB_OBJECTS_DIR_NAME, dbObject.getClassUri(), dbObject.getQName());
             Files.delete(indexPath);
         }
         for (String reference: dbResource.getReferences()) {
-            GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), "indexes", reference.substring(0, 2), reference.substring(2), dbResource.getId());
+            GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), INDEXES_DIR_NAME,
+                    REFERENCES_DIR_NAME, reference.substring(0, 2), reference.substring(2), dbResource.getId());
             Files.delete(indexPath);
         }
     }
 
     private void createNewIndexes(DBResource dbResource) throws IOException {
         for (DBObject dbObject: dbResource.getDbObjects()) {
-            GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), "indexes",
-                    dbObject.getClassUri(), dbObject.getQName());
+            GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), INDEXES_DIR_NAME,
+                    DB_OBJECTS_DIR_NAME, dbObject.getClassUri(), dbObject.getQName());
             Files.createDirectories(indexPath.getParent());
             Files.write(indexPath, dbResource.getId().getBytes());
         }
         for (String reference: dbResource.getReferences()) {
-            GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), "indexes",
-                    reference.substring(0, 2), reference.substring(2), dbResource.getId());
+            GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), INDEXES_DIR_NAME,
+                    REFERENCES_DIR_NAME, reference.substring(0, 2), reference.substring(2), dbResource.getId());
             Files.createDirectories(indexPath.getParent());
             Files.write(indexPath, new byte[0]);
         }
@@ -270,8 +331,9 @@ public class GitDBTransaction extends DBTransaction {
     @Override
     protected void delete(String id) {
         try {
-            GitPath imagePath = getImagePath(id);
-            GitPath indexesPath = getIndexesPath(id);
+            GitPath resourcePath = getResourcePath(id);
+            GitPath imagePath = resourcePath.resolve(IMAGE_FILE_NAME);
+            GitPath indexesPath = resourcePath.resolve(INDEXES_FILE_NAME);
             byte[] oldIndexes = Files.readAllBytes(indexesPath);
             DBResource oldDbResource = new DBResource();
             oldDbResource.setId(id);
@@ -286,5 +348,26 @@ public class GitDBTransaction extends DBTransaction {
 
     protected String getNextId() {
         return getRandomId(16);
+    }
+
+    @Override
+    public void commit() {
+        if (!isReadOnly()) {
+            try {
+                GfsCommit commit = Gfs.commit(gfs).message(message);
+                if (author != null && email != null) {
+                    PersonIdent authorId = new PersonIdent(author, email);
+                    commit.author(authorId);
+                }
+                commit.execute();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        gfs.close();
     }
 }
