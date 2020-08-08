@@ -52,7 +52,7 @@ public class GitDBServer extends DBServer {
     }
 
     @Override
-    protected DBTransaction createDBTransaction(boolean readOnly, DBServer dbServer, String tenantId) {
+    protected DBTransaction createDBTransaction(boolean readOnly, DBServer dbServer) {
         return new GitDBTransaction(readOnly, dbServer);
     }
 
