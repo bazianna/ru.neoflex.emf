@@ -5,6 +5,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.BinaryResourceImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.slf4j.Logger;
@@ -29,6 +30,18 @@ public abstract class DBServer implements AutoCloseable {
     public DBServer(String dbName, Properties config) {
         this.dbName = dbName;
         this.config = config;
+    }
+
+    public void loadDynamicPackages() throws Exception {
+        inTransaction(true, tx -> {
+            ResourceSet resourceSet = tx.createResourceSet();
+            return tx.findByClass(resourceSet, EcorePackage.Literals.EPACKAGE)
+                    .flatMap(resource -> resource.getContents().stream());
+        }).forEach(eObject -> {
+            EPackage ePackage = (EPackage) eObject;
+            registerEPackage(ePackage);
+        });
+
     }
 
     public EPackage.Registry getPackageRegistry() {

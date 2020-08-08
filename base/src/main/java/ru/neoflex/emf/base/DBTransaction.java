@@ -203,7 +203,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
 
     public ResourceSet createResourceSet() {
         ResourceSetImpl resourceSet = new ResourceSetImpl();
-        EPackage.Registry registry = getDbServer().getPackageRegistry();
+        EPackage.Registry registry = new DBPackageRegistry(getDbServer().getPackageRegistry(), this);
         resourceSet.setPackageRegistry(registry);
         resourceSet.setURIResourceMap(new HashMap<>());
         resourceSet.getResourceFactoryRegistry()
