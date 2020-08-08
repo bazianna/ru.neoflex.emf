@@ -1,8 +1,10 @@
 package emfgit;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,6 +15,7 @@ import ru.neoflex.emf.gitdb.test.TestFactory;
 import ru.neoflex.emf.gitdb.test.TestPackage;
 import ru.neoflex.emf.gitdb.test.User;
 
+import java.util.List;
 import java.util.stream.Collectors;
 //import java.io.ByteArrayOutputStream;
 //import org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup;
@@ -64,6 +67,9 @@ public class DatabaseTests extends TestBase {
         /*
          * Create attributes for BookStore class as specified in the model
          */
+        EAttribute bookStoreName = theCoreFactory.createEAttribute();
+        bookStoreName.setName("name");
+        bookStoreName.setEType(theCorePackage.getEString());
         EAttribute bookStoreOwner = theCoreFactory.createEAttribute();
         bookStoreOwner.setName("owner");
         bookStoreOwner.setEType(theCorePackage.getEString());
@@ -90,7 +96,7 @@ public class DatabaseTests extends TestBase {
          * Add owner, location and books attributes/references
          * to BookStore class
          */
-        bookStoreEClass.getEStructuralFeatures().add(bookStoreOwner);
+        bookStoreEClass.getEStructuralFeatures().add(bookStoreName);
         bookStoreEClass.getEStructuralFeatures().add(bookStoreLocation);
         bookStoreEClass.getEStructuralFeatures().add(bookStore_Books);
 
@@ -110,8 +116,7 @@ public class DatabaseTests extends TestBase {
     }
 
     @Test
-    public void createEMFObject() throws Exception {
-        Group group = TestFactory.eINSTANCE.createGroup();
+    public void testDynamic() throws Exception {
         EPackage ePackage = createDynamicPackage();
         dbServer.inTransaction(false, tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
@@ -120,12 +125,39 @@ public class DatabaseTests extends TestBase {
             resource.save(null);
             return null;
         });
-        EPackage ePackage2 = dbServer.inTransaction(false, tx -> {
+        EPackage ePackage2 = dbServer.inTransaction(true, tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
-            Resource resource = tx.findByClassAndQName(resourceSet, EcorePackage.Literals.EPACKAGE, ePackage.getNsURI()).collect(Collectors.toList()).get(0);
+            Resource resource = tx.findByClassAndQName(resourceSet, EcorePackage.Literals.EPACKAGE, ePackage.getNsURI())
+                    .collect(Collectors.toList()).get(0);
             return (EPackage) resource.getContents().get(0);
         });
+        Assert.assertEquals(ePackage.getNsPrefix(), ePackage2.getNsPrefix());
         Assert.assertEquals(2, ePackage2.getEClassifiers().size());
+        dbServer.inTransaction(false, tx -> {
+            ResourceSet resourceSet = tx.createResourceSet();
+            EClass bookStoreClass = (EClass) resourceSet.getEObject(URI.createURI("http:///com.ibm.dynamic.example.bookstore.ecore#//BookStore"), false);
+            EObject bookStore = EcoreUtil.create(bookStoreClass);
+            bookStore.eSet(bookStoreClass.getEStructuralFeature("name"), "My Book Store");
+            Resource resource = resourceSet.createResource(dbServer.createURI(""));
+            resource.getContents().add(bookStore);
+            resource.save(null);
+            return null;
+        });
+        List<EObject> bookStores = dbServer.inTransaction(true, tx -> {
+            ResourceSet resourceSet = tx.createResourceSet();
+            EClass bookStoreClass = (EClass) resourceSet.getEObject(URI.createURI("http:///com.ibm.dynamic.example.bookstore.ecore#//BookStore"), false);
+            return tx.findByClass(resourceSet, bookStoreClass)
+                    .flatMap(resource -> resource.getContents().stream())
+                    .collect(Collectors.toList());
+        });
+        Assert.assertEquals(1, bookStores.size());
+        EObject bookStore = bookStores.get(0);
+        Assert.assertEquals("My Book Store", bookStore.eGet(bookStore.eClass().getEStructuralFeature("name")));
+    }
+
+    @Test
+    public void createEMFObject() throws Exception {
+        Group group = TestFactory.eINSTANCE.createGroup();
         String[] ids = dbServer.inTransaction(false, tx -> {
             group.setName("masters");
             ResourceSet resourceSet = tx.createResourceSet();
@@ -160,7 +192,7 @@ public class DatabaseTests extends TestBase {
             Resource userResource = resourceSet.createResource(dbServer.createURI(""));
             userResource.getContents().add(user);
             userResource.save(null);
-            Assert.assertEquals(4, tx.findAll(resourceSet).count());
+            Assert.assertEquals(3, tx.findAll(resourceSet).count());
             Assert.assertEquals(2, tx.findByClass(resourceSet, TestPackage.Literals.USER).count());
             Assert.assertEquals(2, tx.findReferencedTo(group.eResource()).count());
             Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, TestPackage.Literals.USER, "Simanihin").count());
@@ -168,7 +200,7 @@ public class DatabaseTests extends TestBase {
         });
         dbServer.inTransaction(true, (DBServer.TxFunction<Void>) tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
-            Assert.assertEquals(4, tx.findAll(resourceSet).count());
+            Assert.assertEquals(3, tx.findAll(resourceSet).count());
             Assert.assertEquals(2, tx.findByClass(resourceSet, TestPackage.Literals.USER).count());
             Assert.assertEquals(2, tx.findReferencedTo(group.eResource()).count());
             Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, TestPackage.Literals.USER, "Simanihin").count());
