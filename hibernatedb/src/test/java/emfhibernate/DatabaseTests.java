@@ -6,7 +6,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.neoflex.emf.base.DBServer;
 import ru.neoflex.emf.hibernatedb.HBDBTransaction;
 import ru.neoflex.emf.hibernatedb.test.Group;
 import ru.neoflex.emf.hibernatedb.test.TestFactory;
@@ -15,6 +14,7 @@ import ru.neoflex.emf.hibernatedb.test.User;
 
 import java.io.IOException;
 import java.sql.Statement;
+import java.util.stream.Collectors;
 //import java.io.ByteArrayOutputStream;
 //import org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup;
 //import org.eclipse.xtext.resource.XtextResourceSet;
@@ -32,8 +32,14 @@ public class DatabaseTests extends TestBase {
 
     @Test
     public void createEMFObject() throws Exception {
+        hbdbServer.inTransaction(false, tx -> {
+            for (Resource resource: tx.findAll(tx.createResourceSet()).collect(Collectors.toList())) {
+                resource.delete(null);
+            }
+            return null;
+        });
         Group group = TestFactory.eINSTANCE.createGroup();
-        String[] ids = hbdbServer.inTransaction(false, (DBServer.TxFunction<String[]>) tx -> {
+        String[] ids = hbdbServer.inTransaction(false, tx -> {
             group.setName("masters");
             ResourceSet resourceSet = tx.createResourceSet();
             Resource groupResource = resourceSet.createResource(hbdbServer.createURI(""));
@@ -50,7 +56,7 @@ public class DatabaseTests extends TestBase {
             Assert.assertNotNull(userId);
             return new String[]{userId, groupId};
         });
-        hbdbServer.inTransaction(false, (DBServer.TxFunction<Void>) tx -> {
+        hbdbServer.inTransaction(false, tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
             Resource userResource = resourceSet.createResource(hbdbServer.createURI(ids[0]));
             userResource.load(null);
@@ -59,7 +65,7 @@ public class DatabaseTests extends TestBase {
             userResource.save(null);
             return null;
         });
-        hbdbServer.inTransaction(false, (DBServer.TxFunction<Void>) tx -> {
+        hbdbServer.inTransaction(false, tx -> {
             User user = TestFactory.eINSTANCE.createUser();
             user.setName("Orlov");
             user.setGroup(group);
@@ -73,7 +79,7 @@ public class DatabaseTests extends TestBase {
             Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, TestPackage.Literals.USER, "Simanihin").count());
             return null;
         });
-        hbdbServer.inTransaction(true, (DBServer.TxFunction<Void>) tx -> {
+        hbdbServer.inTransaction(true, tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
             Assert.assertEquals(3, tx.findAll(resourceSet).count());
             Assert.assertEquals(2, tx.findByClass(resourceSet, TestPackage.Literals.USER).count());
@@ -81,7 +87,7 @@ public class DatabaseTests extends TestBase {
             Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, TestPackage.Literals.USER, "Simanihin").count());
             return null;
         });
-        hbdbServer.inTransaction(true, (DBServer.TxFunction<Void>) tx -> {
+        hbdbServer.inTransaction(true, tx -> {
             ((HBDBTransaction)tx).getSession().doWork(connection -> {
                 try(Statement statement = connection.createStatement()) {
                     statement.executeUpdate("create schema TEST");

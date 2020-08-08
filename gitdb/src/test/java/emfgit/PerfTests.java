@@ -16,10 +16,10 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PerfTests extends TestBase {
-    int nGroups = 50;
-    int nUsers = 100;
-    int nThreads = 10;
-    int nUpdates = 50;
+    int nGroups = 5;
+    int nUsers = 10;
+    int nThreads = 2;
+    int nUpdates = 10;
     List<String> groupIds = new ArrayList<>();
     List<String> userIds = new ArrayList<>();
 
