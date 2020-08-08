@@ -52,8 +52,8 @@ public class GitDBServer extends DBServer {
     }
 
     @Override
-    protected DBTransaction createDBTransaction(boolean readOnly, DBServer dbServer) {
-        return new GitDBTransaction(readOnly, dbServer);
+    protected DBTransaction createDBTransaction(boolean readOnly) {
+        return new GitDBTransaction(readOnly, this);
     }
 
     @Override

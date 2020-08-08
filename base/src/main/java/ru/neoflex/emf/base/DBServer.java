@@ -113,7 +113,7 @@ public abstract class DBServer implements AutoCloseable {
         return new BinaryResourceImpl(uri);
     }
 
-    protected abstract DBTransaction createDBTransaction(boolean readOnly, DBServer dbServer);
+    protected abstract DBTransaction createDBTransaction(boolean readOnly);
 
     private String createURIString(String id) {
         return getScheme() + "://" + dbName + "/" + (id != null ? id : "");
@@ -158,7 +158,7 @@ public abstract class DBServer implements AutoCloseable {
     }
 
     public <R> R inTransaction(boolean readOnly, TxFunction<R> f) throws Exception {
-        return inTransaction(() -> createDBTransaction(readOnly, this), f);
+        return inTransaction(() -> createDBTransaction(readOnly), f);
     }
 
     public static class TxRetryStrategy {

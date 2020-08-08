@@ -33,6 +33,7 @@ public class DatabaseTests extends TestBase {
     }
 
     public EPackage createDynamicPackage() {
+        // https://www.ibm.com/developerworks/library/os-eclipse-dynamicemf/
         /*
          * Instantiate EcoreFactory
          */
@@ -175,7 +176,7 @@ public class DatabaseTests extends TestBase {
             Assert.assertNotNull(userId);
             return new String[]{userId, groupId};
         });
-        dbServer.inTransaction(false, (DBServer.TxFunction<Void>) tx -> {
+        dbServer.inTransaction(false, tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(ids[0]));
             userResource.load(null);
@@ -184,7 +185,7 @@ public class DatabaseTests extends TestBase {
             userResource.save(null);
             return null;
         });
-        dbServer.inTransaction(false, (DBServer.TxFunction<Void>) tx -> {
+        dbServer.inTransaction(false, tx -> {
             User user = TestFactory.eINSTANCE.createUser();
             user.setName("Orlov");
             user.setGroup(group);
@@ -206,21 +207,6 @@ public class DatabaseTests extends TestBase {
             Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, TestPackage.Literals.USER, "Simanihin").count());
             return null;
         });
-//        dbServer.inTransaction(true, (DBServer.TxFunction<Void>) tx -> {
-//            ((HBDBTransaction)tx).getSession().doWork(connection -> {
-//                try(Statement statement = connection.createStatement()) {
-//                    statement.executeUpdate("create schema TEST");
-//                }
-//            });
-//        return null;
-//        });
-//        dbServer.setSchema("TEST");
-//        memBDServer.inTransaction(true, (MemBDServer.TxFunction<Void>) tx -> {
-//            return null;
-//        });
-//        memBDServer.inTransaction(true, (MemBDServer.TxFunction<Void>) tx -> {
-//            return null;
-//        });
     }
 
 //    @Test
