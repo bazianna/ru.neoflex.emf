@@ -10,14 +10,13 @@ import ru.neoflex.emf.base.DBObject;
 import ru.neoflex.emf.base.DBResource;
 import ru.neoflex.emf.hibernatedb.HBDBServer;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
 public class DatabaseTest {
     @Test
     public void dbTest() {
-        try (HBDBServer server = new HBDBServer("mydb", new Properties(), new ArrayList<>())) {
+        try (HBDBServer server = new HBDBServer("mydb", new Properties())) {
             try (Session session = server.createSession()) {
                 Transaction tx = session.beginTransaction();
                 session.createQuery("select r from DBResource r", DBResource.class).getResultStream().forEach(session::delete);

@@ -1,11 +1,9 @@
 package emfmem;
 
-import org.eclipse.emf.ecore.EPackage;
 import ru.neoflex.emf.memdb.MemDBServer;
 import ru.neoflex.emf.memdb.test.TestPackage;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Properties;
 
 public class TestBase {
@@ -25,7 +23,9 @@ public class TestBase {
     public static MemDBServer getDatabase() throws Exception {
         Properties config = new Properties();
         config.put(MemDBServer.CONFIG_PREVALENCE_BASE, getDatabaseFile().getAbsolutePath());
-        return new MemDBServer(MEMDB, config, new ArrayList<EPackage>(){{add(TestPackage.eINSTANCE);}});
+        MemDBServer dbServer = new MemDBServer(MEMDB, config);
+        dbServer.registerEPackage(TestPackage.eINSTANCE);
+        return dbServer;
     }
 
     public static File getDatabaseFile() {

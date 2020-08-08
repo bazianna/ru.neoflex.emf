@@ -1,7 +1,6 @@
 package ru.neoflex.emf.hibernatedb;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.emf.ecore.EPackage;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -23,7 +22,10 @@ import ru.neoflex.emf.base.DBTransaction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 public class HBDBServer extends DBServer {
 //    private static final Logger logger = LoggerFactory.getLogger(HBDBServer.class);
@@ -90,8 +92,8 @@ public class HBDBServer extends DBServer {
         }
     }
 
-    public HBDBServer(String dbName, Properties config, List<EPackage> packages) {
-        super(dbName, config, packages);
+    public HBDBServer(String dbName, Properties config) {
+        super(dbName, config);
         Configuration configuration = getConfiguration();
         ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                 .applySettings(configuration.getProperties()).build();

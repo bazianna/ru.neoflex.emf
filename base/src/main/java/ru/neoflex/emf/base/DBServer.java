@@ -6,6 +6,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.BinaryResourceImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -23,16 +24,23 @@ public abstract class DBServer implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(DBServer.class);
     public static final String CONFIG_DBTYPE = "emfdb.dbtype";
     protected static final ThreadLocal<String> tenantId = new InheritableThreadLocal<>();
-    protected final List<EPackage> packages;
     private final String dbName;
     private final Events events = new Events();
     private Function<EClass, EStructuralFeature> qualifiedNameDelegate = eClass -> eClass.getEStructuralFeature("name");
     private final Properties config;
+    private final EPackage.Registry packageRegistry = new EPackageRegistryImpl(EPackage.Registry.INSTANCE);
 
-    public DBServer(String dbName, Properties config, List<EPackage> packages) {
-        this.packages = packages;
+    public DBServer(String dbName, Properties config) {
         this.dbName = dbName;
         this.config = config;
+    }
+
+    public EPackage.Registry getPackageRegistry() {
+        return packageRegistry;
+    }
+
+    public void registerEPackage(EPackage ePackage) {
+        getPackageRegistry().put(ePackage.getNsURI(), ePackage);
     }
 
     public String getTenantId() {
@@ -58,10 +66,6 @@ public abstract class DBServer implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-    }
-
-    public List<EPackage> getPackages() {
-        return packages;
     }
 
     public Function<EClass, EStructuralFeature> getQualifiedNameDelegate() {

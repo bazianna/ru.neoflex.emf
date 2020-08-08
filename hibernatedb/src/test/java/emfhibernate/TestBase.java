@@ -1,11 +1,9 @@
 package emfhibernate;
 
-import org.eclipse.emf.ecore.EPackage;
 import ru.neoflex.emf.hibernatedb.HBDBServer;
 import ru.neoflex.emf.hibernatedb.test.TestPackage;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Properties;
 
 public class TestBase {
@@ -23,7 +21,8 @@ public class TestBase {
     }
 
     public static HBDBServer getDatabase() throws Exception {
-        HBDBServer server = new HBDBServer(HBDB, new Properties(), new ArrayList<EPackage>(){{add(TestPackage.eINSTANCE);}});
+        HBDBServer server = new HBDBServer(HBDB, new Properties());
+        server.registerEPackage(TestPackage.eINSTANCE);
         return server;
     }
 

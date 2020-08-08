@@ -5,7 +5,6 @@ import com.beijunyi.parallelgit.utils.RepositoryUtils;
 import com.beijunyi.parallelgit.utils.exceptions.RefUpdateLockFailureException;
 import com.beijunyi.parallelgit.utils.exceptions.RefUpdateRejectedException;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xmi.XMLParserPool;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
@@ -16,7 +15,6 @@ import ru.neoflex.emf.base.DBServer;
 import ru.neoflex.emf.base.DBTransaction;
 
 import java.io.File;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -29,8 +27,8 @@ public class GitDBServer extends DBServer {
     private Lock lock = new ReentrantLock();
     private XMLParserPool xmlParserPool = new XMLParserPoolImpl();
 
-    public GitDBServer(String dbName, Properties config, List<EPackage> packages) {
-        super(dbName, config, packages);
+    public GitDBServer(String dbName, Properties config) {
+        super(dbName, config);
         try {
             String repoPath = config.getProperty("emfdb.git.repo", System.getProperty("user.home") + "/.githome/" + this.getDbName());
             File repoFile = new File(repoPath);
@@ -48,8 +46,8 @@ public class GitDBServer extends DBServer {
         }
     }
 
-    public GitDBServer(String dbName, Repository repository, List<EPackage> packages) {
-        super(dbName, new Properties(), packages);
+    public GitDBServer(String dbName, Repository repository) {
+        super(dbName, new Properties());
         this.repository = repository;
     }
 

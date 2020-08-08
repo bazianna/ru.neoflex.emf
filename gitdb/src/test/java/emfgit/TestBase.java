@@ -1,11 +1,9 @@
 package emfgit;
 
-import org.eclipse.emf.ecore.EPackage;
 import ru.neoflex.emf.gitdb.GitDBServer;
 import ru.neoflex.emf.gitdb.test.TestPackage;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Properties;
 
 public class TestBase {
@@ -23,7 +21,8 @@ public class TestBase {
     }
 
     public static GitDBServer getDatabase() throws Exception {
-        GitDBServer server = new GitDBServer(DB_NAME, new Properties(), new ArrayList<EPackage>(){{add(TestPackage.eINSTANCE);}});
+        GitDBServer server = new GitDBServer(DB_NAME, new Properties());
+        server.registerEPackage(TestPackage.eINSTANCE);
         server.setTenantId("master");
         return server;
     }

@@ -1,6 +1,5 @@
 package ru.neoflex.emf.memdb;
 
-import org.eclipse.emf.ecore.EPackage;
 import org.prevayler.Prevayler;
 import org.prevayler.PrevaylerFactory;
 import org.prevayler.Query;
@@ -8,7 +7,6 @@ import ru.neoflex.emf.base.DBServer;
 import ru.neoflex.emf.base.DBTransaction;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 
 public class MemDBServer extends DBServer {
@@ -17,8 +15,8 @@ public class MemDBServer extends DBServer {
     public static final String CONFIG_PREVALENCE_BASE = "emfdb.mem.prevalenceBase";
     protected final Prevayler<MemDBModel> prevayler;
 
-    public MemDBServer(String dbName, Properties config, List<EPackage> packages) throws Exception {
-        super(dbName, config, packages);
+    public MemDBServer(String dbName, Properties config) throws Exception {
+        super(dbName, config);
         setTenantId(getConfig().getProperty(CONFIG_DEFAULT_TENANT, "default"));
         String prevalenceBase = config.getProperty(CONFIG_PREVALENCE_BASE, System.getProperty("user.home") + "/.memdb/" + dbName);
         prevayler = PrevaylerFactory.createPrevayler(new MemDBModel(), prevalenceBase);
