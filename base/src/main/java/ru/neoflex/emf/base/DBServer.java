@@ -2,10 +2,7 @@ package ru.neoflex.emf.base;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.BinaryResourceImpl;
@@ -14,9 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -29,6 +24,7 @@ public abstract class DBServer implements AutoCloseable {
     private Function<EClass, EStructuralFeature> qualifiedNameDelegate = eClass -> eClass.getEStructuralFeature("name");
     private final Properties config;
     private final EPackage.Registry packageRegistry = new EPackageRegistryImpl(EPackage.Registry.INSTANCE);
+    private Map<EClass, List<EClass>> descendants = new HashMap<>();
 
     public DBServer(String dbName, Properties config) {
         this.dbName = dbName;
@@ -41,6 +37,26 @@ public abstract class DBServer implements AutoCloseable {
 
     public void registerEPackage(EPackage ePackage) {
         getPackageRegistry().put(ePackage.getNsURI(), ePackage);
+        for (EClassifier eClassifier : ePackage.getEClassifiers()) {
+            if (eClassifier instanceof EClass) {
+                EClass eClass = (EClass) eClassifier;
+                if (!eClass.isAbstract()) {
+                    for (EClass superType : eClass.getEAllSuperTypes()) {
+                        getConcreteDescendants(superType).add(eClass);
+                    }
+                }
+            }
+        }
+    }
+
+    public List<EClass> getConcreteDescendants(EClass eClass) {
+        return descendants.computeIfAbsent(eClass, (c) -> new ArrayList<EClass>() {
+            {
+                if (!eClass.isAbstract()) {
+                    add(eClass);
+                }
+            }
+        });
     }
 
     public String getTenantId() {
@@ -99,6 +115,10 @@ public abstract class DBServer implements AutoCloseable {
     }
 
     public String getQName(EObject eObject) {
+        if (eObject instanceof EPackage) {
+            EPackage ePackage = (EPackage) eObject;
+            return ePackage.getNsURI();
+        }
         EStructuralFeature sf = getQualifiedNameDelegate().apply(eObject.eClass());
         if (sf == null || !eObject.eIsSet(sf)) {
             throw new IllegalArgumentException(String.format("Can't get qName for eObject of class %s", EcoreUtil.getURI(eObject.eClass()).toString()));

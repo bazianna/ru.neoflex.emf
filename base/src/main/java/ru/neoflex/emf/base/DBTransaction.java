@@ -1,7 +1,10 @@
 package ru.neoflex.emf.base;
 
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.*;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
@@ -17,10 +20,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class DBTransaction implements AutoCloseable, Serializable {
-    private transient boolean readOnly;
     protected transient String message = "";
     protected transient String author;
     protected transient String email;
+    private transient boolean readOnly;
     private transient DBServer dbServer;
 
     public DBTransaction() {
@@ -114,13 +117,15 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     }
 
     public Stream<Resource> findByClass(ResourceSet rs, EClass eClass) {
-        return findByClass(EcoreUtil.getURI(eClass).toString())
-                .map(dbResource -> createResource(rs, dbResource));
+        return getDbServer().getConcreteDescendants(eClass).stream()
+                .flatMap(eClassDesc -> findByClass(EcoreUtil.getURI(eClassDesc).toString())
+                        .map(dbResource -> createResource(rs, dbResource)));
     }
 
     public Stream<Resource> findByClassAndQName(ResourceSet rs, EClass eClass, String qName) {
-        return findByClassAndQName(EcoreUtil.getURI(eClass).toString(), qName)
-                .map(dbResource -> createResource(rs, dbResource));
+        return getDbServer().getConcreteDescendants(eClass).stream()
+                .flatMap(eClassDesc -> findByClassAndQName(EcoreUtil.getURI(eClass).toString(), qName)
+                        .map(dbResource -> createResource(rs, dbResource)));
     }
 
     public Stream<Resource> findReferencedTo(Resource resource) {
