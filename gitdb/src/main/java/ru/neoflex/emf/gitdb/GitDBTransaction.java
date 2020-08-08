@@ -208,11 +208,15 @@ public class GitDBTransaction extends DBTransaction {
         }
     }
 
+    public static String escape(String s) {
+        return s.replaceAll("\\W+", "_");
+    }
+
     @Override
     protected Stream<DBResource> findByClass(String classUri) {
         try {
             GitPath indexRoot = gfs.getPath("/", getGitDBServer().getDbName(),
-                    INDEXES_DIR_NAME, DB_OBJECTS_DIR_NAME, classUri);
+                    INDEXES_DIR_NAME, DB_OBJECTS_DIR_NAME, escape(classUri));
             return Files.walk(indexRoot)
                     .filter(Files::isRegularFile)
                     .map(indexPath -> {
@@ -232,7 +236,7 @@ public class GitDBTransaction extends DBTransaction {
     protected Stream<DBResource> findByClassAndQName(String classUri, String qName) {
         try {
             GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(),
-                    INDEXES_DIR_NAME, DB_OBJECTS_DIR_NAME, classUri, qName);
+                    INDEXES_DIR_NAME, DB_OBJECTS_DIR_NAME, escape(classUri), escape(qName));
             if (Files.isRegularFile(indexPath)) {
                 String id = new String(Files.readAllBytes(indexPath));
                 return Stream.of(get(id));
@@ -310,7 +314,7 @@ public class GitDBTransaction extends DBTransaction {
     private void deleteOldIndexes(DBResource dbResource) throws IOException {
         for (DBObject dbObject : dbResource.getDbObjects()) {
             GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), INDEXES_DIR_NAME,
-                    DB_OBJECTS_DIR_NAME, dbObject.getClassUri(), dbObject.getQName());
+                    DB_OBJECTS_DIR_NAME, escape(dbObject.getClassUri()), escape(dbObject.getQName()));
             Files.delete(indexPath);
         }
         for (String reference : dbResource.getReferences()) {
@@ -323,7 +327,7 @@ public class GitDBTransaction extends DBTransaction {
     private void createNewIndexes(DBResource dbResource) throws IOException {
         for (DBObject dbObject : dbResource.getDbObjects()) {
             GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), INDEXES_DIR_NAME,
-                    DB_OBJECTS_DIR_NAME, dbObject.getClassUri(), dbObject.getQName());
+                    DB_OBJECTS_DIR_NAME, escape(dbObject.getClassUri()), escape(dbObject.getQName()));
             Files.createDirectories(indexPath.getParent());
             Files.write(indexPath, dbResource.getId().getBytes());
         }

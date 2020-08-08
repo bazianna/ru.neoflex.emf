@@ -106,7 +106,8 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         dbResource.setDbObjects(dbObjects);
         Map<EObject, Collection<EStructuralFeature.Setting>> xrs = EcoreUtil.ExternalCrossReferencer.find(resource);
         Set<String> references = xrs.keySet().stream()
-                .map(eObject -> getDbServer().getId(EcoreUtil.getURI(eObject))).collect(Collectors.toSet());
+                .map(eObject -> getDbServer().getId(EcoreUtil.getURI(eObject)))
+                .filter(s -> s != null).collect(Collectors.toSet());
         dbResource.setReferences(references);
         return dbResource;
     }
