@@ -18,6 +18,7 @@ import ru.neoflex.emf.base.DBTransaction;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -31,12 +32,12 @@ import java.security.SecureRandom;
 import java.util.stream.Stream;
 
 public class GitDBTransaction extends DBTransaction {
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
     public static final String IMAGE_FILE_NAME = "image.xmi";
     public static final String INDEXES_FILE_NAME = "indexes.xml";
     public static final String INDEXES_DIR_NAME = "indexes";
     public static final String DB_OBJECTS_DIR_NAME = "db-objects";
     public static final String REFERENCES_DIR_NAME = "references";
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
     static SecureRandom prng;
 
     static {
@@ -51,9 +52,15 @@ public class GitDBTransaction extends DBTransaction {
 
     public GitDBTransaction(boolean readOnly, DBServer dbServer) {
         super(readOnly, dbServer);
+        if (!isReadOnly() && getGitDBServer().getLock() != null) {
+            getGitDBServer().getLock().lock();
+        }
         try {
             gfs = Gfs.newFileSystem(getGitDBServer().getTenantId(), getGitDBServer().getRepository());
         } catch (IOException e) {
+            if (!isReadOnly() && getGitDBServer().getLock() != null) {
+                getGitDBServer().getLock().unlock();
+            }
             throw new RuntimeException(e);
         }
     }
@@ -92,6 +99,63 @@ public class GitDBTransaction extends DBTransaction {
             hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    private static byte[] writeIndexesContent(DBResource dbResource) {
+        try {
+            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
+            Document document = documentBuilder.newDocument();
+            Element rootElement = document.createElement("indexes");
+            document.appendChild(rootElement);
+            for (DBObject dbObject : dbResource.getDbObjects()) {
+                Element element = document.createElement("db-object");
+                element.setAttribute("class-uri", dbObject.getClassUri());
+                element.setAttribute("q-name", dbObject.getQName());
+                rootElement.appendChild(element);
+            }
+            for (String reference : dbResource.getReferences()) {
+                Element element = document.createElement("reference");
+                element.setAttribute("id", reference);
+                rootElement.appendChild(element);
+            }
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            DOMSource source = new DOMSource(document);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            StreamResult result = new StreamResult(stream);
+            transformer.transform(source, result);
+            return stream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void readIndexesContent(byte[] indexes, DBResource dbResource) {
+        try {
+            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
+            ByteArrayInputStream stream = new ByteArrayInputStream(indexes);
+            Document document = documentBuilder.parse(stream);
+            dbResource.getDbObjects().clear();
+            NodeList dbObjectNodes = document.getElementsByTagName("db-object");
+            for (int i = 0; i < dbObjectNodes.getLength(); ++i) {
+                Element node = (Element) dbObjectNodes.item(i);
+                DBObject dbObject = new DBObject();
+                dbObject.setClassUri(node.getAttribute("class-uri"));
+                dbObject.setQName(node.getAttribute("q-name"));
+                dbResource.getDbObjects().add(dbObject);
+            }
+            dbResource.getReferences().clear();
+            NodeList referenceNodes = document.getElementsByTagName("reference");
+            for (int i = 0; i < referenceNodes.getLength(); ++i) {
+                Element node = (Element) referenceNodes.item(i);
+                dbResource.getReferences().add(node.getAttribute("id"));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public GitDBServer getGitDBServer() {
@@ -172,8 +236,7 @@ public class GitDBTransaction extends DBTransaction {
             if (Files.isRegularFile(indexPath)) {
                 String id = new String(Files.readAllBytes(indexPath));
                 return Stream.of(get(id));
-            }
-            else {
+            } else {
                 return Stream.empty();
             }
         } catch (IOException e) {
@@ -222,91 +285,35 @@ public class GitDBTransaction extends DBTransaction {
         return gfs.getPath("/", getGitDBServer().getDbName(), "resources", id1, id2);
     }
 
-    private static byte[] writeIndexesContent(DBResource dbResource) {
-        try {
-            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
-            Document document = documentBuilder.newDocument();
-            Element rootElement = document.createElement("indexes");
-            document.appendChild(rootElement);
-            for (DBObject dbObject: dbResource.getDbObjects()) {
-                Element element = document.createElement("db-object");
-                element.setAttribute("class-uri", dbObject.getClassUri());
-                element.setAttribute("q-name", dbObject.getQName());
-                rootElement.appendChild(element);
-            }
-            for (String reference: dbResource.getReferences()) {
-                Element element = document.createElement("reference");
-                element.setAttribute("id", reference);
-                rootElement.appendChild(element);
-            }
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(document);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            StreamResult result = new StreamResult(stream);
-            transformer.transform(source, result);
-            return stream.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void readIndexesContent(byte[] indexes, DBResource dbResource) {
-        try {
-            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
-            ByteArrayInputStream stream = new ByteArrayInputStream(indexes);
-            Document document = documentBuilder.parse(stream);
-            dbResource.getDbObjects().clear();
-            NodeList dbObjectNodes = document.getElementsByTagName("db-object");
-            for (int i = 0; i < dbObjectNodes.getLength(); ++i) {
-                Element node = (Element) dbObjectNodes.item(i);
-                DBObject dbObject = new DBObject();
-                dbObject.setClassUri(node.getAttribute("class-uri"));
-                dbObject.setQName(node.getAttribute("q-name"));
-                dbResource.getDbObjects().add(dbObject);
-            }
-            dbResource.getReferences().clear();
-            NodeList referenceNodes = document.getElementsByTagName("reference");
-            for (int i = 0; i < referenceNodes.getLength(); ++i) {
-                Element node = (Element) referenceNodes.item(i);
-                dbResource.getReferences().add(node.getAttribute("id"));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     protected void update(DBResource dbResource) {
-         try {
-             GitPath resourcePath = getResourcePath(dbResource.getId());
-             GitPath imagePath = resourcePath.resolve(IMAGE_FILE_NAME);
-             GitPath indexesPath = resourcePath.resolve(INDEXES_FILE_NAME);
-             byte[] oldIndexes = Files.readAllBytes(indexesPath);
-             DBResource oldDbResource = new DBResource();
-             oldDbResource.setId(dbResource.getId());
-             readIndexesContent(oldIndexes, oldDbResource);
-             Files.write(imagePath, dbResource.getImage());
-             byte[] indexes = writeIndexesContent(dbResource);
-             Files.write(indexesPath, indexes);
-             deleteOldIndexes(oldDbResource);
-             createNewIndexes(dbResource);
-             ObjectId objectId = getObjectId(imagePath);
-             dbResource.setVersion(objectId.getName());
+        try {
+            GitPath resourcePath = getResourcePath(dbResource.getId());
+            GitPath imagePath = resourcePath.resolve(IMAGE_FILE_NAME);
+            GitPath indexesPath = resourcePath.resolve(INDEXES_FILE_NAME);
+            byte[] oldIndexes = Files.readAllBytes(indexesPath);
+            DBResource oldDbResource = new DBResource();
+            oldDbResource.setId(dbResource.getId());
+            readIndexesContent(oldIndexes, oldDbResource);
+            Files.write(imagePath, dbResource.getImage());
+            byte[] indexes = writeIndexesContent(dbResource);
+            Files.write(indexesPath, indexes);
+            deleteOldIndexes(oldDbResource);
+            createNewIndexes(dbResource);
+            ObjectId objectId = getObjectId(imagePath);
+            dbResource.setVersion(objectId.getName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     private void deleteOldIndexes(DBResource dbResource) throws IOException {
-        for (DBObject dbObject: dbResource.getDbObjects()) {
+        for (DBObject dbObject : dbResource.getDbObjects()) {
             GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), INDEXES_DIR_NAME,
                     DB_OBJECTS_DIR_NAME, dbObject.getClassUri(), dbObject.getQName());
             Files.delete(indexPath);
         }
-        for (String reference: dbResource.getReferences()) {
+        for (String reference : dbResource.getReferences()) {
             GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), INDEXES_DIR_NAME,
                     REFERENCES_DIR_NAME, reference.substring(0, 2), reference.substring(2), dbResource.getId());
             Files.delete(indexPath);
@@ -314,13 +321,13 @@ public class GitDBTransaction extends DBTransaction {
     }
 
     private void createNewIndexes(DBResource dbResource) throws IOException {
-        for (DBObject dbObject: dbResource.getDbObjects()) {
+        for (DBObject dbObject : dbResource.getDbObjects()) {
             GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), INDEXES_DIR_NAME,
                     DB_OBJECTS_DIR_NAME, dbObject.getClassUri(), dbObject.getQName());
             Files.createDirectories(indexPath.getParent());
             Files.write(indexPath, dbResource.getId().getBytes());
         }
-        for (String reference: dbResource.getReferences()) {
+        for (String reference : dbResource.getReferences()) {
             GitPath indexPath = gfs.getPath("/", getGitDBServer().getDbName(), INDEXES_DIR_NAME,
                     REFERENCES_DIR_NAME, reference.substring(0, 2), reference.substring(2), dbResource.getId());
             Files.createDirectories(indexPath.getParent());
@@ -369,5 +376,8 @@ public class GitDBTransaction extends DBTransaction {
     @Override
     public void close() throws Exception {
         gfs.close();
+        if (!isReadOnly() && getGitDBServer().getLock() != null) {
+            getGitDBServer().getLock().unlock();
+        }
     }
 }

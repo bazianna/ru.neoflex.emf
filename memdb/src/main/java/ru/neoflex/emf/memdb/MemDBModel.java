@@ -63,7 +63,7 @@ public class MemDBModel implements Externalizable {
 
     public IndexedCollection<DBResource> getIndexedCollection(String tenantId) {
         return indexedCollection.computeIfAbsent(tenantId, newTenantId -> {
-            IndexedCollection newCollection = new ConcurrentIndexedCollection<>();
+            IndexedCollection<DBResource> newCollection = new ConcurrentIndexedCollection<>();
             newCollection.addIndex(UniqueIndex.onAttribute(ID));
             newCollection.addIndex(RadixTreeIndex.onAttribute(NAMES));
             newCollection.addIndex(HashIndex.onAttribute(REFERENCES));

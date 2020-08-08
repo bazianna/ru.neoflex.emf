@@ -10,7 +10,6 @@ import ru.neoflex.emf.gitdb.test.Group;
 import ru.neoflex.emf.gitdb.test.TestFactory;
 import ru.neoflex.emf.gitdb.test.User;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PerfTests extends TestBase {
     int nGroups = 50;
     int nUsers = 100;
-    int nThreads = 3;
+    int nThreads = 10;
     int nUpdates = 50;
     List<String> groupIds = new ArrayList<>();
     List<String> userIds = new ArrayList<>();
@@ -117,7 +116,7 @@ public class PerfTests extends TestBase {
         long finish = System.currentTimeMillis();
         System.out.println("Created " + nGroups + " groups in " + (created1 - start)/1000 + " sec");
         System.out.println("Created " + nUsers + " users  in " + (created2 - created1)/1000 + " sec");
-        System.out.println("Updated " + (nUpdates*nThreads) + " users in " + nThreads + " threads in " + (finish - created2)/1000 + " sec");
+        System.out.println("Updated " + (nUpdates*nThreads) + " users in " + nThreads + " threads in " + (finish - created2)/1000 + " sec (" +(nUpdates*nThreads*1000)/(finish - created2)+ "/sec)");
         System.out.println("Errors found: " + eCount.get());
         Assert.assertEquals(0, eCount.get());
     }

@@ -12,7 +12,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -145,14 +144,13 @@ public abstract class DBServer implements AutoCloseable {
                 try (DBTransaction tx = txSupplier.get()) {
                     tx.begin();
                     try {
-                        return callWithTransaction(tx, f);
+                        R result =  callWithTransaction(tx, f);
+                        tx.commit();
+                        return result;
                     }
                     catch (Throwable e) {
                         tx.rollback();
                         throw e;
-                    }
-                    finally {
-                        tx.commit();
                     }
                 }
             }
@@ -165,7 +163,7 @@ public abstract class DBServer implements AutoCloseable {
                     throw e;
                 }
                 String message = e.getClass().getSimpleName() + ": " + e.getMessage() + " attempt no " + attempt + " after " + delay + "ms";
-                logger.info(message);
+                logger.warn(message);
                 try {
                     Thread.sleep(delay);
                 } catch (InterruptedException ex) {

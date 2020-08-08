@@ -7,21 +7,27 @@ import com.beijunyi.parallelgit.utils.exceptions.RefUpdateRejectedException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.xmi.XMLParserPool;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMLParserPoolImpl;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import ru.neoflex.emf.base.DBServer;
 import ru.neoflex.emf.base.DBTransaction;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import static org.eclipse.emf.ecore.xmi.XMLResource.*;
 import static org.eclipse.jgit.lib.Constants.DOT_GIT;
 
 public class GitDBServer extends DBServer {
     private Repository repository;
+    private Lock lock = new ReentrantLock();
+    private XMLParserPool xmlParserPool = new XMLParserPoolImpl();
 
     public GitDBServer(String dbName, Properties config, List<EPackage> packages) {
         super(dbName, config, packages);
@@ -43,7 +49,7 @@ public class GitDBServer extends DBServer {
     }
 
     public GitDBServer(String dbName, Repository repository, List<EPackage> packages) {
-        super(dbName, null, packages);
+        super(dbName, new Properties(), packages);
         this.repository = repository;
     }
 
@@ -66,7 +72,14 @@ public class GitDBServer extends DBServer {
     }
 
     public Resource createResource(URI uri) {
-        return new XMIResourceImpl(uri);
+        XMIResourceImpl resource = new XMIResourceImpl(uri);
+        resource.getDefaultSaveOptions().put(OPTION_ENCODING, "UTF-8");
+        resource.getDefaultSaveOptions().put(OPTION_CONFIGURATION_CACHE, true);
+        resource.getDefaultLoadOptions().put(OPTION_USE_PARSER_POOL, xmlParserPool);
+        resource.getDefaultLoadOptions().put(OPTION_USE_DEPRECATED_METHODS, false);
+        resource.getDefaultLoadOptions().put(OPTION_DEFER_ATTACHMENT, true);
+        resource.getDefaultLoadOptions().put(OPTION_DEFER_IDREF_RESOLUTION, true);
+        return resource;
     }
 
 
@@ -75,5 +88,9 @@ public class GitDBServer extends DBServer {
         retryStrategy.retryClasses.add(RefUpdateLockFailureException.class);
         retryStrategy.retryClasses.add(RefUpdateRejectedException.class);
         return retryStrategy;
+    }
+
+    public Lock getLock() {
+        return lock;
     }
 }
