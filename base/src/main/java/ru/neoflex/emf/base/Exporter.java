@@ -342,19 +342,18 @@ public class Exporter {
             ZipEntry zipEntry = zipInputStream.getNextEntry();
             while (zipEntry != null) {
                 if (!zipEntry.isDirectory()) {
-                    String entryName = zipEntry.getName();
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     byte[] buffer = new byte[4096];
                     int length;
                     while ((length = zipInputStream.read(buffer)) > 0) {
                         outputStream.write(buffer, 0, length);
                     }
-                    String name = zipEntry.getName();
-                    if (name.toLowerCase().endsWith(".xmi")) {
-                        dbServer.inTransaction(false, tx -> importResource(name, outputStream.toByteArray(), tx));
+                    String entryName = zipEntry.getName();
+                    if (entryName.toLowerCase().endsWith(".xmi")) {
+                        dbServer.inTransaction(false, tx -> importResource(entryName, outputStream.toByteArray(), tx));
                         ++entityCount;
                     }
-                    else if (name.toLowerCase().endsWith(".refs.xml")) {
+                    else if (entryName.toLowerCase().endsWith(".refs.xml")) {
                         dbServer.inTransaction(false, tx -> importExternalReferences(outputStream.toByteArray(), tx));
                     }
                 }
