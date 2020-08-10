@@ -27,8 +27,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -36,6 +34,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class Exporter {
+    public static final String XMI = ".xmi";
+    public static final String REFS_XML = ".refs.xml";
     DBServer dbServer;
 
     public Exporter(DBServer dbServer) {
@@ -157,12 +157,12 @@ public class Exporter {
         try {
             String fileName = getFileName(eObject);
             byte[] bytes = exportEObjectWithoutExternalRefs(eObject);
-            Path filePath = path.resolve(fileName + ".xmi");
+            Path filePath = path.resolve(fileName + XMI);
             Files.createDirectories(filePath.getParent());
             Files.write(filePath, bytes);
             byte[] refsBytes = exportExternalRefs(eObject);
             if (refsBytes != null) {
-                Path refsPath = path.resolve(fileName + ".refs.xml");
+                Path refsPath = path.resolve(fileName + REFS_XML);
                 Files.createDirectories(refsPath.getParent());
                 Files.write(refsPath, refsBytes);
             }
@@ -175,7 +175,7 @@ public class Exporter {
         try {
             String fileName = getFileName(eObject);
             byte[] bytes = exportEObjectWithoutExternalRefs(eObject);
-            ZipEntry zipEntry = new ZipEntry(fileName + ".xmi");
+            ZipEntry zipEntry = new ZipEntry(fileName + XMI);
             zipOutputStream.putNextEntry(zipEntry);
             zipOutputStream.write(bytes);
             zipOutputStream.closeEntry();
@@ -189,7 +189,7 @@ public class Exporter {
             String fileName = getFileName(eObject);
             byte[] bytes = exportExternalRefs(eObject);
             if (bytes != null) {
-                ZipEntry zipEntry = new ZipEntry(fileName + ".refs.xml");
+                ZipEntry zipEntry = new ZipEntry(fileName + REFS_XML);
                 zipOutputStream.putNextEntry(zipEntry);
                 zipOutputStream.write(bytes);
                 zipOutputStream.closeEntry();
@@ -302,7 +302,7 @@ public class Exporter {
 
     public void importDir(Path root) throws IOException {
         Files.walk(root).filter(Files::isRegularFile)
-                .filter(file -> file.getFileName().toString().toLowerCase().endsWith(".xmi"))
+                .filter(file -> file.getFileName().toString().toLowerCase().endsWith(XMI))
                 .forEach(path -> {
                     try {
                         byte[] bytes = Files.readAllBytes(path);
@@ -312,7 +312,7 @@ public class Exporter {
                     }
                 });
         Files.walk(root).filter(Files::isRegularFile)
-                .filter(file -> file.getFileName().toString().toLowerCase().endsWith(".refs.xml"))
+                .filter(file -> file.getFileName().toString().toLowerCase().endsWith(REFS_XML))
                 .forEach(path -> {
                     try {
                         byte[] bytes = Files.readAllBytes(path);
@@ -323,7 +323,7 @@ public class Exporter {
                 });
     }
 
-    public void importZipFile(Path zipFile, Function<Path, Boolean> predicate, BiFunction<Path, byte[], Void> processor) {
+    public void importZipFile(Path zipFile) {
         Map<String, Object> env = new HashMap<>();
         env.put("useTempFile", Boolean.TRUE);
         java.net.URI uri = java.net.URI.create("jar:" + zipFile.toUri());
@@ -349,11 +349,11 @@ public class Exporter {
                         outputStream.write(buffer, 0, length);
                     }
                     String entryName = zipEntry.getName();
-                    if (entryName.toLowerCase().endsWith(".xmi")) {
+                    if (entryName.toLowerCase().endsWith(XMI)) {
                         dbServer.inTransaction(false, tx -> importResource(entryName, outputStream.toByteArray(), tx));
                         ++entityCount;
                     }
-                    else if (entryName.toLowerCase().endsWith(".refs.xml")) {
+                    else if (entryName.toLowerCase().endsWith(REFS_XML)) {
                         dbServer.inTransaction(false, tx -> importExternalReferences(outputStream.toByteArray(), tx));
                     }
                 }

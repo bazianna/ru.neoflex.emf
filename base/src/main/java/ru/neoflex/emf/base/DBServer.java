@@ -81,7 +81,11 @@ public abstract class DBServer implements AutoCloseable {
     }
 
     public String getId(URI uri) {
-        return uri.segmentCount() >= 1 ? uri.segment(0) : null;
+        if (uri.segmentCount() >= 1) {
+            String id = String.join("/", uri.segments());
+            return id.length() > 0 ? id : null;
+        }
+        return null;
     }
 
     public String getVersion(URI uri) {
