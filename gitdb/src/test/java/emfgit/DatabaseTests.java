@@ -209,6 +209,37 @@ public class DatabaseTests extends TestBase {
         });
     }
 
+    @Test
+    public void predefinedIDTest() throws Exception {
+        Group group = TestFactory.eINSTANCE.createGroup();
+        String[] ids = dbServer.inTransaction(false, tx -> {
+            group.setName("masters");
+            ResourceSet resourceSet = tx.createResourceSet();
+            Resource groupResource = resourceSet.createResource(dbServer.createURI("myproject/groups/masters"));
+            groupResource.getContents().add(group);
+            groupResource.save(null);
+            String groupId = dbServer.getId(groupResource.getURI());
+            User user = TestFactory.eINSTANCE.createUser();
+            user.setName("Orlov");
+            user.setGroup(group);
+            Resource userResource = resourceSet.createResource(dbServer.createURI("myproject/users/Orlov"));
+            userResource.getContents().add(user);
+            userResource.save(null);
+            String userId = dbServer.getId(userResource.getURI());
+            Assert.assertNotNull(userId);
+            return new String[]{userId, groupId};
+        });
+        dbServer.inTransaction(false, tx -> {
+            ResourceSet resourceSet = tx.createResourceSet();
+            Resource userResource = resourceSet.createResource(dbServer.createURI(ids[0]));
+            userResource.load(null);
+            User user = (User) userResource.getContents().get(0);
+            Assert.assertEquals("Orlov", user.getName());
+            Assert.assertEquals("masters", user.getGroup().getName());
+            return null;
+        });
+    }
+
 //    @Test
 //    public void loadXcore() throws IOException {
 //        XcoreStandaloneSetup.doSetup();

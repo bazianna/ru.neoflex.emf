@@ -8,7 +8,7 @@ import java.util.Properties;
 
 public class TestBase {
     public static final String HBDB = "hbtest";
-    HBDBServer hbdbServer;
+    HBDBServer dbServer;
 
     public static boolean deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();

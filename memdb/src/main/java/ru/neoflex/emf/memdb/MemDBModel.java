@@ -7,6 +7,7 @@ import com.googlecode.cqengine.index.hash.HashIndex;
 import com.googlecode.cqengine.index.radix.RadixTreeIndex;
 import com.googlecode.cqengine.index.unique.UniqueIndex;
 import com.googlecode.cqengine.query.QueryFactory;
+import com.googlecode.cqengine.resultset.common.NoSuchObjectException;
 import ru.neoflex.emf.base.DBResource;
 
 import java.io.Externalizable;
@@ -26,7 +27,12 @@ public class MemDBModel implements Externalizable {
     public static final Attribute<DBResource, String> REFERENCES = QueryFactory.attribute(String.class,"references", DBResource::getReferences);
 
     public DBResource get(String tenantId, String id) {
-        return getIndexedCollection(tenantId).retrieve(QueryFactory.equal(ID, id)).uniqueResult();
+        try {
+            return getIndexedCollection(tenantId).retrieve(QueryFactory.equal(ID, id)).uniqueResult();
+        }
+        catch (NoSuchObjectException e) {
+            return null;
+        }
     }
 
     public Stream<DBResource> findAll(String tenantId) {
@@ -58,7 +64,9 @@ public class MemDBModel implements Externalizable {
 
     public void delete(String tenantId, String id) {
         DBResource dbResource = get(tenantId, id);
-        getIndexedCollection(tenantId).remove(dbResource);
+        if (dbResource != null) {
+            getIndexedCollection(tenantId).remove(dbResource);
+        }
     }
 
     public IndexedCollection<DBResource> getIndexedCollection(String tenantId) {

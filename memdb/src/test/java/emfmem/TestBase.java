@@ -8,7 +8,7 @@ import java.util.Properties;
 
 public class TestBase {
     public static final String MEMDB = "test-emf-mem";
-    MemDBServer memDBServer;
+    MemDBServer dbServer;
 
     public static boolean deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();

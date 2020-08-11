@@ -25,7 +25,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     @Override
     protected DBResource get(String id) {
         if (deleted.contains(id)) {
-            throw new IllegalArgumentException(String.format("Can't find object %s", id));
+            return null;
         }
         DBResource dbObject = updated.get(id);
         if (dbObject == null) {
@@ -33,6 +33,9 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
         }
         if (dbObject == null) {
             dbObject = memDBModel.get(tenantId, id);
+        }
+        if (dbObject == null) {
+            return null;
         }
         return dbObject.clone();
     }
@@ -113,7 +116,6 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
 
     @Override
     protected void insert(DBResource dbResource) {
-        dbResource.setId(getNextId());
         dbResource.setVersion("0");
         inserted.put(dbResource.getId(), dbResource);
     }

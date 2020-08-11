@@ -27,7 +27,7 @@ public class HBDBTransaction extends DBTransaction {
 
     @Override
     protected DBResource get(String id) {
-        return session.load(DBResource.class, id);
+        return session.get(DBResource.class, id);
     }
 
     @Override
@@ -59,7 +59,6 @@ public class HBDBTransaction extends DBTransaction {
 
     @Override
     protected void insert(DBResource dbResource) {
-        dbResource.setId(getNextId());
         dbResource.setVersion("0");
         session.persist(dbResource);
     }
@@ -72,7 +71,7 @@ public class HBDBTransaction extends DBTransaction {
 
     @Override
     protected void delete(String id) {
-        session.delete(get(id));
+        session.delete(getOrThrow(id));
     }
 
     public void begin() {

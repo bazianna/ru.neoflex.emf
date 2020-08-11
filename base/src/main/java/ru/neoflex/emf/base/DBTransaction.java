@@ -59,6 +59,14 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     public void rollback() {
     }
 
+    protected DBResource getOrThrow(String id) {
+        DBResource dbResource = get(id);
+        if (dbResource == null) {
+            throw new IllegalArgumentException("Object not found: " + id);
+        }
+        return dbResource;
+    }
+
     protected void loadImage(DBResource dbResource, Resource resource) {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(dbResource.getImage());
         try {
@@ -141,21 +149,27 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         Resource oldResource = rs.createResource(resource.getURI());
         DBResource oldDbResource = null;
         if (id != null) {
-            if (version == null) {
-                throw new IllegalArgumentException(String.format("Version for updated resource %s not defined", id));
-            }
             oldDbResource = get(id);
-            String oldVersion = oldDbResource.getVersion();
-            if (!version.equals(oldVersion)) {
-                throw new IllegalArgumentException(String.format(
-                        "Version (%s) for updated resource %s is not equals to the version in the DB (%s)",
-                        version, id, oldVersion));
+            if (oldDbResource != null) {
+                if (version == null) {
+                    throw new IllegalArgumentException(String.format("Version for updated resource %s not defined", id));
+                }
+                String oldVersion = oldDbResource.getVersion();
+                if (!version.equals(oldVersion)) {
+                    throw new IllegalArgumentException(String.format(
+                            "Version (%s) for updated resource %s is not equals to the version in the DB (%s)",
+                            version, id, oldVersion));
+                }
+                load(oldDbResource, oldResource);
             }
-            load(oldDbResource, oldResource);
         }
         dbServer.getEvents().fireBeforeSave(oldResource, resource);
         DBResource newDbResource;
-        if (id == null) {
+        if (oldDbResource == null) {
+            if (id == null) {
+                id = getNextId();
+            }
+            resource.setURI(getDbServer().createURI(id));
             newDbResource = createDBResource(resource, id, version);
             insert(newDbResource);
         } else {
@@ -173,7 +187,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     public void load(Resource resource) {
         resource.unload();
         String id = dbServer.getId(resource.getURI());
-        DBResource dbResource = get(id);
+        DBResource dbResource = getOrThrow(id);
         load(dbResource, resource);
         dbServer.getEvents().fireAfterLoad(resource);
     }
