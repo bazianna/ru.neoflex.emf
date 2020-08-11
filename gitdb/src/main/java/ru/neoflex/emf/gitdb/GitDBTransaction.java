@@ -75,7 +75,7 @@ public class GitDBTransaction extends DBTransaction {
 
     static String getVersion(GitPath path) {
         ObjectId objectId = getObjectId(path);
-        return objectId == null ? null : objectId.getName().substring(0, 24);
+        return objectId == null ? null : objectId.getName().substring(0, 16);
     }
 
     public static String getRandomId(int length) {
@@ -119,10 +119,10 @@ public class GitDBTransaction extends DBTransaction {
     }
 
     @Override
-    protected Stream<DBResource> findById(String id) {
+    protected Stream<DBResource> findByPath(String path) {
         try {
             GitPath resourcesPath = gfs.getPath("/db/resources");
-            GitPath searchPath = resourcesPath.resolve(id);
+            GitPath searchPath = resourcesPath.resolve(path);
             return Files.walk(searchPath)
                     .filter(Files::isRegularFile)
                     .map(imagePath -> {
@@ -286,8 +286,14 @@ public class GitDBTransaction extends DBTransaction {
     }
 
     protected String getNextId() {
-        String id = getRandomId(12);
-        return id.substring(0, 2) + "/" + id.substring(2) + ".xmi";
+        while (true) {
+            String next = getRandomId(8);
+            String id = next.substring(0, 2) + "/" + next.substring(2) + ".xmi";
+            GitPath imagePath = getResourcePath(id);
+            if (!Files.exists(imagePath)) {
+                return id;
+            }
+        }
     }
 
     @Override

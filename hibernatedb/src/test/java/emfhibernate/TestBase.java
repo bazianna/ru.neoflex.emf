@@ -21,7 +21,9 @@ public class TestBase {
     }
 
     public static HBDBServer getDatabase() throws Exception {
-        HBDBServer server = new HBDBServer(HBDB, new Properties());
+        Properties properties = new Properties();
+        //properties.setProperty("emfdb.hb.show_sql", "true");
+        HBDBServer server = new HBDBServer(HBDB, properties);
         server.registerEPackage(TestPackage.eINSTANCE);
         return server;
     }

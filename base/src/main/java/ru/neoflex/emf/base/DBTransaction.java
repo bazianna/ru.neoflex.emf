@@ -36,7 +36,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
 
     protected abstract DBResource get(String id);
 
-    protected abstract Stream<DBResource> findById(String id);
+    protected abstract Stream<DBResource> findByPath(String path);
 
     protected abstract Stream<DBResource> findAll();
 
@@ -131,8 +131,11 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
                 .map(dbResource -> createResource(rs, dbResource));
     }
 
-    public Stream<Resource> findById(ResourceSet rs, String id) {
-        return findById(id)
+    public Stream<Resource> findByPath(ResourceSet rs, String path) {
+        if (!path.endsWith("/")) {
+            path = path + "/";
+        }
+        return findByPath(path)
                 .map(dbResource -> createResource(rs, dbResource));
     }
 

@@ -236,7 +236,7 @@ public class DatabaseTests extends TestBase {
             User user = (User) userResource.getContents().get(0);
             Assert.assertEquals("Orlov", user.getName());
             Assert.assertEquals("masters", user.getGroup().getName());
-            Assert.assertEquals(1, tx.findById(resourceSet, "myproject/groups").count());
+            Assert.assertEquals(1, tx.findByPath(resourceSet, "myproject/groups").count());
             return null;
         });
     }

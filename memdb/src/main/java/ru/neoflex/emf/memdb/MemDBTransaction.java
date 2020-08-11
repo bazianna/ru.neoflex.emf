@@ -41,7 +41,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     }
 
     @Override
-    protected Stream<DBResource> findById(String id) {
+    protected Stream<DBResource> findByPath(String path) {
         return null;
     }
 
