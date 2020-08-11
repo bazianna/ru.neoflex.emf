@@ -121,14 +121,14 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     }
 
     @Override
-    protected void update(DBResource dbResource) {
-        dbResource.setVersion(String.valueOf(1 + Integer.parseInt(dbResource.getVersion())));
+    protected void update(DBResource oldDbResource, DBResource dbResource) {
+        dbResource.setVersion(String.valueOf(1 + Integer.parseInt(oldDbResource.getVersion())));
         updated.put(dbResource.getId(), dbResource);
     }
 
     @Override
-    protected void delete(String id) {
-        deleted.add(id);
+    protected void delete(DBResource dbResource) {
+        deleted.add(dbResource.getId());
     }
 
     @Override

@@ -64,14 +64,17 @@ public class HBDBTransaction extends DBTransaction {
     }
 
     @Override
-    protected void update(DBResource dbResource) {
-        dbResource.setVersion(String.valueOf(1 + Integer.parseInt(dbResource.getVersion())));
-        session.update(dbResource);
+    protected void update(DBResource oldDbResource, DBResource dbResource) {
+        oldDbResource.setVersion(String.valueOf(1 + Integer.parseInt(oldDbResource.getVersion())));
+        oldDbResource.setImage(dbResource.getImage());
+        oldDbResource.setDbObjects(dbResource.getDbObjects());
+        oldDbResource.setReferences(dbResource.getReferences());
+        session.update(oldDbResource);
     }
 
     @Override
-    protected void delete(String id) {
-        session.delete(getOrThrow(id));
+    protected void delete(DBResource dbResource) {
+        session.delete(dbResource);
     }
 
     public void begin() {

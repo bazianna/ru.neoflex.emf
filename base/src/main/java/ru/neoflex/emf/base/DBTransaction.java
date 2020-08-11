@@ -46,9 +46,9 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
 
     protected abstract void insert(DBResource dbResource);
 
-    protected abstract void update(DBResource dbResource);
+    protected abstract void update(DBResource oldDbResource, DBResource dbResource);
 
-    protected abstract void delete(String id);
+    protected abstract void delete(DBResource dbResource);
 
     public void begin() {
     }
@@ -96,7 +96,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         return fillDbResource(resource, dbResource);
     }
 
-    private DBResource fillDbResource(Resource resource, DBResource dbResource) {
+    protected DBResource fillDbResource(Resource resource, DBResource dbResource) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             resource.save(outputStream, null);
@@ -104,6 +104,11 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
             throw new RuntimeException(e);
         }
         dbResource.setImage(outputStream.toByteArray());
+        fillIndexes(resource, dbResource);
+        return dbResource;
+    }
+
+    protected void fillIndexes(Resource resource, DBResource dbResource) {
         List<DBObject> dbObjects = resource.getContents().stream().map(eObject -> {
                     DBObject dbObject = new DBObject();
                     dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
@@ -114,10 +119,9 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         dbResource.setDbObjects(dbObjects);
         Map<EObject, Collection<EStructuralFeature.Setting>> xrs = EcoreUtil.ExternalCrossReferencer.find(resource);
         Set<String> references = xrs.keySet().stream()
-                .map(eObject -> getDbServer().getId(EcoreUtil.getURI(eObject)))
+                .map(eObject -> getDbServer().getId(EcoreUtil.getURI(eObject).resolve(resource.getURI())))
                 .filter(s -> s != null).collect(Collectors.toSet());
         dbResource.setReferences(references);
-        return dbResource;
     }
 
     public Stream<Resource> findAll(ResourceSet rs) {
@@ -173,8 +177,8 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
             newDbResource = createDBResource(resource, id, version);
             insert(newDbResource);
         } else {
-            newDbResource = fillDbResource(resource, oldDbResource);
-            update(newDbResource);
+            newDbResource = createDBResource(resource, oldDbResource.getId(), oldDbResource.getVersion());
+            update(oldDbResource, newDbResource);
         }
         dbServer.getEvents().fireAfterSave(oldResource, resource);
         resource.setURI(getDbServer().createURI(newDbResource.getId(), newDbResource.getVersion()));
@@ -201,7 +205,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         if (version == null) {
             throw new IllegalArgumentException(String.format("Version for deleted object %s not defined", id));
         }
-        DBResource dbResource = get(id);
+        DBResource dbResource = getOrThrow(id);
         String oldVersion = dbResource.getVersion();
         if (!version.equals(oldVersion)) {
             throw new IllegalArgumentException(String.format(
@@ -212,7 +216,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         Resource oldResource = rs.createResource(uri);
         load(dbResource, oldResource);
         dbServer.getEvents().fireBeforeDelete(oldResource);
-        delete(id);
+        delete(dbResource);
     }
 
     public ResourceSet createResourceSet() {

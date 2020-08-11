@@ -215,14 +215,14 @@ public class DatabaseTests extends TestBase {
         String[] ids = dbServer.inTransaction(false, tx -> {
             group.setName("masters");
             ResourceSet resourceSet = tx.createResourceSet();
-            Resource groupResource = resourceSet.createResource(dbServer.createURI("myproject/groups/masters"));
+            Resource groupResource = resourceSet.createResource(dbServer.createURI("myproject/groups/masters.xmi"));
             groupResource.getContents().add(group);
             groupResource.save(null);
             String groupId = dbServer.getId(groupResource.getURI());
             User user = TestFactory.eINSTANCE.createUser();
             user.setName("Orlov");
             user.setGroup(group);
-            Resource userResource = resourceSet.createResource(dbServer.createURI("myproject/users/Orlov"));
+            Resource userResource = resourceSet.createResource(dbServer.createURI("myproject/users/Orlov.xmi"));
             userResource.getContents().add(user);
             userResource.save(null);
             String userId = dbServer.getId(userResource.getURI());
