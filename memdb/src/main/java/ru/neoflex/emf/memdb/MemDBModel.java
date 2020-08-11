@@ -39,6 +39,10 @@ public class MemDBModel implements Externalizable {
         return getIndexedCollection(tenantId).retrieve(QueryFactory.all(DBResource.class)).stream();
     }
 
+    public Stream<DBResource> findById(String tenantId, String id) {
+        return getIndexedCollection(tenantId).retrieve(QueryFactory.startsWith(ID, id)).stream();
+    }
+
     public Stream<DBResource> findByClass(String tenantId, String classUri) {
         String attributeValue = classUri + ":";
         return getIndexedCollection(tenantId).retrieve(QueryFactory.startsWith(NAMES, attributeValue)).stream();
@@ -73,6 +77,7 @@ public class MemDBModel implements Externalizable {
         return indexedCollection.computeIfAbsent(tenantId, newTenantId -> {
             IndexedCollection<DBResource> newCollection = new ConcurrentIndexedCollection<>();
             newCollection.addIndex(UniqueIndex.onAttribute(ID));
+            newCollection.addIndex(RadixTreeIndex.onAttribute(ID));
             newCollection.addIndex(RadixTreeIndex.onAttribute(NAMES));
             newCollection.addIndex(HashIndex.onAttribute(REFERENCES));
             return newCollection;

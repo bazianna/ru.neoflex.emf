@@ -124,13 +124,14 @@ public class DatabaseTests extends TestBase {
             Assert.assertNotNull(userId);
             return new String[]{userId, groupId};
         });
-        dbServer.inTransaction(false, tx -> {
+        dbServer.inTransaction(true, tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(ids[0]));
             userResource.load(null);
             User user = (User) userResource.getContents().get(0);
             Assert.assertEquals("Orlov", user.getName());
             Assert.assertEquals("masters", user.getGroup().getName());
+            Assert.assertEquals(1, tx.findById(resourceSet, "myproject/groups").count());
             return null;
         });
     }

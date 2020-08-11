@@ -41,6 +41,11 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     }
 
     @Override
+    protected Stream<DBResource> findById(String id) {
+        return null;
+    }
+
+    @Override
     public Stream<DBResource> findAll() {
         Stream<DBResource> baseStream = memDBModel.findAll(tenantId)
                 .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));

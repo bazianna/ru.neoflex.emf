@@ -118,6 +118,22 @@ public class GitDBTransaction extends DBTransaction {
         }
     }
 
+    @Override
+    protected Stream<DBResource> findById(String id) {
+        try {
+            GitPath resourcesPath = gfs.getPath("/db/resources");
+            GitPath searchPath = resourcesPath.resolve(id);
+            return Files.walk(searchPath)
+                    .filter(Files::isRegularFile)
+                    .map(imagePath -> {
+                        String resid = resourcesPath.relativize(imagePath).toString();
+                        return getOrThrow(resid);
+                    });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void fillIndexes(DBResource dbResource) {
         ResourceSet rs = createResourceSet();
         Resource resource = rs.createResource(getDbServer().createURI(dbResource.getId()));

@@ -31,6 +31,13 @@ public class HBDBTransaction extends DBTransaction {
     }
 
     @Override
+    protected Stream<DBResource> findById(String id) {
+        return session.createQuery("select r from DBResource r where r.id like concat(:id, '%')", DBResource.class)
+                .setParameter("id", id)
+                .getResultStream();
+    }
+
+    @Override
     protected Stream<DBResource> findAll() {
         return session.createQuery("select r from DBResource r", DBResource.class).getResultStream();
     }
