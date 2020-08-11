@@ -42,7 +42,16 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
 
     @Override
     protected Stream<DBResource> findByPath(String path) {
-        return null;
+        Stream<DBResource> baseStream = memDBModel.findByPath(tenantId, path)
+                .filter(dbResource -> !deleted.contains(dbResource.getId()) && !updated.containsKey(dbResource.getId()));
+        Stream<DBResource> insertedStream = inserted.values().stream()
+                .filter(dbResource -> dbResource.getId().startsWith(path));
+        Stream<DBResource> updatedStream = updated.values().stream()
+                .filter(dbResource -> dbResource.getId().startsWith(path));
+        return Stream.concat(
+                Stream.concat(insertedStream, updatedStream),
+                baseStream
+        );
     }
 
     @Override

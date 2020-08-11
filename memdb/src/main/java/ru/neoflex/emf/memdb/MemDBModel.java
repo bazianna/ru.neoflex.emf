@@ -39,8 +39,8 @@ public class MemDBModel implements Externalizable {
         return getIndexedCollection(tenantId).retrieve(QueryFactory.all(DBResource.class)).stream();
     }
 
-    public Stream<DBResource> findById(String tenantId, String id) {
-        return getIndexedCollection(tenantId).retrieve(QueryFactory.startsWith(ID, id)).stream();
+    public Stream<DBResource> findByPath(String tenantId, String path) {
+        return getIndexedCollection(tenantId).retrieve(QueryFactory.startsWith(ID, path)).stream();
     }
 
     public Stream<DBResource> findByClass(String tenantId, String classUri) {
