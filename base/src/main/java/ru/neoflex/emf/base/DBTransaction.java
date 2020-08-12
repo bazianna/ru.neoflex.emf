@@ -113,7 +113,8 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     protected void fillIndexes(Resource resource, DBResource dbResource) {
         List<DBObject> dbObjects = resource.getContents().stream().map(eObject -> {
                     DBObject dbObject = new DBObject();
-                    dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
+                    URI classUri = EcoreUtil.getURI(eObject.eClass()).trimQuery();
+                    dbObject.setClassUri(classUri.toString());
                     dbObject.setQName(getDbServer().getQName(eObject));
                     return dbObject;
                 }
@@ -121,8 +122,15 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         dbResource.setDbObjects(dbObjects);
         Map<EObject, Collection<EStructuralFeature.Setting>> xrs = EcoreUtil.ExternalCrossReferencer.find(resource);
         Set<String> references = xrs.keySet().stream()
-                .map(eObject -> getDbServer().getId(EcoreUtil.getURI(eObject).resolve(resource.getURI())))
-                .filter(s -> s != null).collect(Collectors.toSet());
+                .map(eObject -> {
+                    URI uri = EcoreUtil.getURI(eObject);
+                    if (!uri.isRelative()) {
+                        return null;
+                    }
+                    return getDbServer().getId(uri.resolve(resource.getURI()));
+                })
+                .filter(s -> s != null && !s.equals(dbResource.getId()))
+                .collect(Collectors.toSet());
         dbResource.setReferences(references);
     }
 
@@ -141,13 +149,13 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
 
     public Stream<Resource> findByClass(ResourceSet rs, EClass eClass) {
         return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClass(EcoreUtil.getURI(eClassDesc).toString())
+                .flatMap(eClassDesc -> findByClass(EcoreUtil.getURI(eClassDesc).trimQuery().toString())
                         .map(dbResource -> createResource(rs, dbResource)));
     }
 
     public Stream<Resource> findByClassAndQName(ResourceSet rs, EClass eClass, String qName) {
         return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClassAndQName(EcoreUtil.getURI(eClass).toString(), qName)
+                .flatMap(eClassDesc -> findByClassAndQName(EcoreUtil.getURI(eClass).trimQuery().toString(), qName)
                         .map(dbResource -> createResource(rs, dbResource)));
     }
 

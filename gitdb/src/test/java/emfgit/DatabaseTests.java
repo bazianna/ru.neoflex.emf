@@ -1,5 +1,6 @@
 package emfgit;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -128,7 +129,7 @@ public class DatabaseTests extends TestBase {
         });
         EPackage ePackage2 = dbServer.inTransaction(true, tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
-            Resource resource = tx.findByClassAndQName(resourceSet, EcorePackage.Literals.EPACKAGE, ePackage.getNsURI())
+            Resource resource = tx.findByClassAndQName(resourceSet, EcorePackage.Literals.EPACKAGE, dbServer.getQName(ePackage))
                     .collect(Collectors.toList()).get(0);
             return (EPackage) resource.getContents().get(0);
         });
@@ -139,6 +140,11 @@ public class DatabaseTests extends TestBase {
             EClass bookStoreClass = (EClass) resourceSet.getEObject(URI.createURI("http:///com.ibm.dynamic.example.bookstore.ecore#//BookStore"), false);
             EObject bookStore = EcoreUtil.create(bookStoreClass);
             bookStore.eSet(bookStoreClass.getEStructuralFeature("name"), "My Book Store");
+            EClass bookClass = (EClass) resourceSet.getEObject(URI.createURI("http:///com.ibm.dynamic.example.bookstore.ecore#//Book"), false);
+            EObject book = EcoreUtil.create(bookClass);
+            book.eSet(bookClass.getEStructuralFeature("name"), "My Super Book");
+            EList<EObject> books = (EList<EObject>) bookStore.eGet(bookStoreClass.getEStructuralFeature("books"));
+            books.add(book);
             Resource resource = resourceSet.createResource(dbServer.createURI(""));
             resource.getContents().add(bookStore);
             resource.save(null);

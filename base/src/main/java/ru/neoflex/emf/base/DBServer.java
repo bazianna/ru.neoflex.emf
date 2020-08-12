@@ -137,7 +137,7 @@ public abstract class DBServer implements AutoCloseable {
             return ePackage.getNsURI();
         }
         EStructuralFeature sf = getQualifiedNameDelegate().apply(eObject.eClass());
-        if (sf == null || !eObject.eIsSet(sf)) {
+        if (sf == null) {
             throw new IllegalArgumentException(String.format("Can't get qName for eObject of class %s", EcoreUtil.getURI(eObject.eClass()).toString()));
         }
         return eObject.eGet(sf).toString();
