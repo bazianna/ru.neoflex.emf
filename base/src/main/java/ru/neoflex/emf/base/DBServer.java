@@ -88,6 +88,11 @@ public abstract class DBServer implements AutoCloseable {
         return null;
     }
 
+    public boolean canHandle(URI uri) {
+        return getScheme().equals(uri.scheme()) && Objects.equals(uri.authority(), getDbName());
+    }
+
+
     public String getVersion(URI uri) {
         String query = uri.query();
         if (query == null || !query.contains("rev=")) {

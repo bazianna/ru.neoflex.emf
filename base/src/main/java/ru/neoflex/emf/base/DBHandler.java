@@ -17,7 +17,7 @@ public class DBHandler extends URIHandlerImpl {
 
     @Override
     public boolean canHandle(URI uri) {
-        return tx.getDbServer().getScheme().equals(uri.scheme());
+        return tx.getDbServer().canHandle(uri);
     }
 
     @Override
