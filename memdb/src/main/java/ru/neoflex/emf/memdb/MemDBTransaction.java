@@ -20,6 +20,7 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
 
     public MemDBTransaction(boolean readOnly, DBServer dbServer) {
         super(readOnly, dbServer);
+        tenantId = dbServer.getTenantId();
     }
 
     @Override
