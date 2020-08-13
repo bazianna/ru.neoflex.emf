@@ -124,10 +124,13 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         Set<String> references = xrs.keySet().stream()
                 .map(eObject -> {
                     URI uri = EcoreUtil.getURI(eObject);
-                    if (!uri.isRelative() && !getDbServer().canHandle(uri)) {
+                    if (uri.isRelative()) {
+                        uri = uri.resolve(resource.getURI());
+                    }
+                    else if (!getDbServer().canHandle(uri)) {
                         return null;
                     }
-                    return getDbServer().getId(uri.resolve(resource.getURI()));
+                    return getDbServer().getId(uri);
                 })
                 .filter(s -> s != null && !s.equals(dbResource.getId()))
                 .collect(Collectors.toSet());
