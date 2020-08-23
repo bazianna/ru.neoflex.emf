@@ -2,7 +2,12 @@ package ru.neoflex.emf.restserver;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController()
 @RequestMapping("/emf")
@@ -61,11 +67,41 @@ public class EMFController {
         });
     }
 
-    @GetMapping("/findall")
-    JsonNode getAll() throws Exception {
+    @GetMapping("/find")
+    JsonNode find(
+            @RequestParam(required = false) String path,
+            @RequestParam(required = false) String classUri,
+            @RequestParam(required = false) String qName,
+            @RequestParam(required = false) String filter) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
             ResourceSet rs = tx.createResourceSet();
-            List<Resource> resources = tx.findAll(rs).collect(Collectors.toList());
+            Stream<Resource> stream;
+            if (!StringUtils.isEmpty(path)) {
+                stream = tx.findByPath(rs, path);
+            }
+            else if (StringUtils.isEmpty(classUri)) {
+                stream = tx.findAll(rs);
+            }
+            else {
+                EClass eClass = (EClass) rs.getEObject(URI.createURI(classUri), false);
+                if (StringUtils.isEmpty(qName)) {
+                    stream = tx.findByClass(rs, eClass);
+                }
+                else {
+                    stream = tx.findByClassAndQName(rs, eClass, qName);
+                }
+            }
+            if (StringUtils.isNoneEmpty(filter)) {
+                GroovyShell shell = new GroovyShell();
+                Script script = shell.parse(filter);
+                stream = stream.filter(resource -> {
+                    Binding binding = new Binding();
+                    binding.setProperty("resource", resource);
+                    script.setBinding(binding);
+                    return Boolean.TRUE.equals(script.run());
+                });
+            }
+            List<Resource> resources = stream.collect(Collectors.toList());
             return new JsonHelper().toJson(resources);
         });
     }
