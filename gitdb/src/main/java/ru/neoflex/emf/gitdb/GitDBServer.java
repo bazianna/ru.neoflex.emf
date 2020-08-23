@@ -41,6 +41,8 @@ public class GitDBServer extends DBServer {
                     git.commit().setMessage("Initial commit").setAllowEmpty(true).call();
                 }
             }
+            String branch = config.getProperty("emfdb.git.defaultBranch", "master");
+            setTenantId(branch);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

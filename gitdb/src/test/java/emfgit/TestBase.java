@@ -1,18 +1,16 @@
 package emfgit;
 
 import ru.neoflex.emf.base.DBFactory;
-import ru.neoflex.emf.gitdb.GitDBFactory;
 import ru.neoflex.emf.gitdb.GitDBServer;
 import ru.neoflex.emf.gitdb.test.TestPackage;
 
 import java.io.File;
 import java.util.Properties;
 import java.util.ServiceLoader;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class TestBase {
-    public static final String DB_NAME = "dbtest";
+    public static final String DB_NAME = "emfdb";
     GitDBServer dbServer;
 
     public static boolean deleteDirectory(File directoryToBeDeleted) {

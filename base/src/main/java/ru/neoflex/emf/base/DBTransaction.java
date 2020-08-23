@@ -74,7 +74,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         try {
             resource.load(inputStream, null);
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Can't load %s", dbResource.getId()));
+            throw new IllegalArgumentException(e);
         }
     }
 
