@@ -1,5 +1,6 @@
 package ru.neoflex.emf.restserver;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -11,6 +12,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import java.io.IOException;
 import java.util.List;
 
 public class JsonHelper {
@@ -114,6 +116,16 @@ public class JsonHelper {
         return result;
     }
 
+    public byte[] toBytes(Resource resource) throws JsonProcessingException {
+        ObjectNode result = toJson(resource);
+        return mapper.writer().writeValueAsBytes(result);
+    }
+
+    public String toString(Resource resource) throws JsonProcessingException {
+        ObjectNode result = toJson(resource);
+        return mapper.writer().writeValueAsString(result);
+    }
+
     public ArrayNode toJson(List<Resource> resources) {
         ArrayNode nodes = mapper.createArrayNode();
         for (Resource resource: resources) {
@@ -123,11 +135,24 @@ public class JsonHelper {
     }
 
     public void fromJson(Resource resource, ObjectNode body) {
+        fromJson(resource, body, null);
+    }
+    public void fromJson(Resource resource, ObjectNode body, URI defaultUri) {
+        JsonNode uriNode = body.get("uri");
+        URI uri = uriNode == null || uriNode.asText().length() == 0 ? defaultUri : URI.createURI(uriNode.asText());
+        if (uri != null) {
+            resource.setURI(uri);
+        }
         ArrayNode contents = body.withArray("contents");
         for (JsonNode eObjectNode: contents) {
             EObject eObject = eObjectFromJson(resource.getResourceSet(), (ObjectNode)eObjectNode, null);
             resource.getContents().add(eObject);
         }
+    }
+
+    public void fromJson(Resource resource, byte[] body) throws IOException {
+        ObjectNode node = mapper.reader().createParser(body).readValueAsTree();
+        fromJson(resource, node);
     }
 
     private EObject eObjectFromJson(ResourceSet rs, ObjectNode eObjectNode, EClass eClass) {

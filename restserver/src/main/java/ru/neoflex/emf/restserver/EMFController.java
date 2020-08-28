@@ -39,7 +39,7 @@ public class EMFController {
             ResourceSet rs = tx.createResourceSet();
             URI uri = tx.getDbServer().createURI(id);
             Resource resource = rs.createResource(uri);
-            new JsonHelper().fromJson(resource, body);
+            new JsonHelper().fromJson(resource, body, uri);
             resource.save(null);
             return new JsonHelper().toJson(resource);
         });
@@ -49,8 +49,7 @@ public class EMFController {
     JsonNode postResource(@RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.createResourceSet();
-            JsonNode uriNode = body.get("uri");
-            URI uri = uriNode == null ? tx.getDbServer().createURI("") : URI.createURI(uriNode.asText());
+            URI uri = tx.getDbServer().createURI("");
             Resource resource = rs.createResource(uri);
             new JsonHelper().fromJson(resource, body);
             resource.save(null);

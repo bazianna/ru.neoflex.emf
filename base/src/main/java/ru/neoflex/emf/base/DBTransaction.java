@@ -197,26 +197,39 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
                             version, id, oldVersion));
                 }
                 load(oldDbResource, oldResource);
+                List<String> brokenRefs = findReferencedTo(oldResource).flatMap(referenced -> {
+                    Map<EObject, Collection<EStructuralFeature.Setting>> xrs = EcoreUtil.ExternalCrossReferencer.find(referenced);
+                    return xrs.entrySet().stream().filter(entry -> entry.getKey().eResource().getURI().equals(oldResource.getURI()))
+                            .flatMap(entry -> entry.getValue().stream().map(setting -> {
+                                EObject refObject = setting.getEObject();
+                                EClass refClass = refObject.eClass();
+                                String fragment = refObject.eResource().getURIFragment(refObject);
+                                EObject newRefObject = resource.getEObject(fragment);
+                                if (newRefObject == null || !newRefObject.eClass().equals(refClass)) {
+                                    return entry.getKey().eResource().getURI().appendFragment(fragment);
+                                }
+                                return null;
+                            }).filter(uri -> uri != null).map(uri->uri.toString()));
+                }).collect(Collectors.toList());
+                if (brokenRefs.size() > 0) {
+                    throw new IllegalArgumentException(String.format(
+                            "Broken references (%s)",
+                            String.join(", ", brokenRefs)));
+                }
             }
         }
-        List<String> brokenRefs = findReferencedTo(oldResource).flatMap(referenced -> {
-            Map<EObject, Collection<EStructuralFeature.Setting>> xrs = EcoreUtil.ExternalCrossReferencer.find(referenced);
-            return xrs.entrySet().stream().filter(entry -> entry.getKey().eResource().getURI().equals(oldResource.getURI()))
-                    .flatMap(entry -> entry.getValue().stream().map(setting -> {
-                        EObject refObject = setting.getEObject();
-                        EClass refClass = refObject.eClass();
-                        String fragment = refObject.eResource().getURIFragment(refObject);
-                        EObject newRefObject = resource.getEObject(fragment);
-                        if (newRefObject == null || !newRefObject.eClass().equals(refClass)) {
-                            return entry.getKey().eResource().getURI().appendFragment(fragment);
-                        }
-                        return null;
-                    }).filter(uri -> uri != null).map(uri->uri.toString()));
-        }).collect(Collectors.toList());
-        if (brokenRefs.size() > 0) {
+        List<String> sameResources = resource.getContents().stream()
+                .flatMap(eObject -> {
+                    String qName = getDbServer().getQName(eObject);
+                    return qName != null ? findByClassAndQName(rs, eObject.eClass(), qName) : Stream.empty();
+                })
+                .filter(sameName -> !getDbServer().getId(sameName.getURI()).equals(getDbServer().getId(resource.getURI())))
+                .map(sameName -> getDbServer().getId(sameName.getURI()))
+                .collect(Collectors.toList());
+        if (sameResources.size() > 0) {
             throw new IllegalArgumentException(String.format(
-                    "Broken references (%s)",
-                    String.join(", ", brokenRefs)));
+                    "Duplicate object names in resources (%s)",
+                    String.join(", ", sameResources)));
         }
         dbServer.getEvents().fireBeforeSave(oldResource, resource);
         DBResource newDbResource;
