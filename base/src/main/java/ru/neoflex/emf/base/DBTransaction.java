@@ -1,5 +1,6 @@
 package ru.neoflex.emf.base;
 
+import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -9,6 +10,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import java.io.ByteArrayInputStream;
@@ -168,6 +170,15 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     }
 
     public void save(Resource resource) {
+        EcoreUtil.resolveAll(resource);
+        for (EObject eObject: resource.getContents()) {
+            Diagnostic diagnostic = Diagnostician.INSTANCE.validate(eObject);
+            if (diagnostic.getSeverity() == Diagnostic.ERROR ||
+                    diagnostic.getSeverity() == Diagnostic.WARNING) {
+                String message = getDiagnosticMessage(diagnostic);
+                throw new RuntimeException(message);
+            }
+        }
         String id = dbServer.getId(resource.getURI());
         String version = dbServer.getVersion(resource.getURI());
         ResourceSet rs = createResourceSet();
@@ -188,6 +199,25 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
                 load(oldDbResource, oldResource);
             }
         }
+        List<String> brokenRefs = findReferencedTo(oldResource).flatMap(referenced -> {
+            Map<EObject, Collection<EStructuralFeature.Setting>> xrs = EcoreUtil.ExternalCrossReferencer.find(referenced);
+            return xrs.entrySet().stream().filter(entry -> entry.getKey().eResource().getURI().equals(oldResource.getURI()))
+                    .flatMap(entry -> entry.getValue().stream().map(setting -> {
+                        EObject refObject = setting.getEObject();
+                        EClass refClass = refObject.eClass();
+                        String fragment = refObject.eResource().getURIFragment(refObject);
+                        EObject newRefObject = resource.getEObject(fragment);
+                        if (newRefObject == null || !newRefObject.eClass().equals(refClass)) {
+                            return entry.getKey().eResource().getURI().appendFragment(fragment);
+                        }
+                        return null;
+                    }).filter(uri -> uri != null).map(uri->uri.toString()));
+        }).collect(Collectors.toList());
+        if (brokenRefs.size() > 0) {
+            throw new IllegalArgumentException(String.format(
+                    "Broken references (%s)",
+                    String.join(", ", brokenRefs)));
+        }
         dbServer.getEvents().fireBeforeSave(oldResource, resource);
         DBResource newDbResource;
         if (oldDbResource == null) {
@@ -203,6 +233,15 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         }
         dbServer.getEvents().fireAfterSave(oldResource, resource);
         resource.setURI(getDbServer().createURI(newDbResource.getId(), newDbResource.getVersion()));
+    }
+
+    public static String getDiagnosticMessage(Diagnostic diagnostic) {
+        String message = diagnostic.getMessage();
+        for (Iterator i = diagnostic.getChildren().iterator(); i.hasNext();) {
+            Diagnostic childDiagnostic = (Diagnostic)i.next();
+            message += "\n" + childDiagnostic.getMessage();
+        }
+        return message;
     }
 
     protected String getNextId() {
@@ -236,6 +275,14 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         ResourceSet rs = createResourceSet();
         Resource oldResource = rs.createResource(uri);
         load(dbResource, oldResource);
+        List<String> refs = findReferencedTo(oldResource)
+                .map(resource -> getDbServer().getId(resource.getURI()))
+                .collect(Collectors.toList());
+        if (refs.size() > 0) {
+            throw new IllegalArgumentException(String.format(
+                    "Can't delete referenced resource (%s)",
+                    String.join(", ", refs)));
+        }
         dbServer.getEvents().fireBeforeDelete(oldResource);
         delete(dbResource);
     }
