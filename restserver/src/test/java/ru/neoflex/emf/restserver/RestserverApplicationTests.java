@@ -10,28 +10,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.util.Assert;
-import ru.neoflex.emf.gitdb.test.Group;
-import ru.neoflex.emf.gitdb.test.TestFactory;
-import ru.neoflex.emf.gitdb.test.TestPackage;
+import ru.neoflex.emf.test.Group;
+import ru.neoflex.emf.test.TestFactory;
+import ru.neoflex.emf.test.TestPackage;
 
 import javax.annotation.PostConstruct;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
 @AutoConfigureMockMvc
+@SpringBootTest(properties = {
+        "db-type=ru.neoflex.emf.gitdb.GitDBFactory",
+        "db-name=resttest"
+})
 class RestserverApplicationTests {
+    private static boolean initialized = false;
 
     @Autowired
     private MockMvc mockMvc;
     @Autowired
     private DBServerSvc dbServerSvc;
+
+    @BeforeTestClass
+    public void initializeDB() {
+        if (!initialized) {
+            initialized = true;
+        }
+    }
 
     @Test
     void contextLoads() {

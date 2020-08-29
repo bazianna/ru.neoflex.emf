@@ -4,7 +4,7 @@
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl",
     complianceLevel="7.0"
 )
-package ru.neoflex.emf.gitdb.test
+package ru.neoflex.emf.test
 
 class Group {
     String name
