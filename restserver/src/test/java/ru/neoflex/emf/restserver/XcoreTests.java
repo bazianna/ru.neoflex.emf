@@ -28,9 +28,6 @@ public class XcoreTests {
     private DBServerSvc dbServerSvc;
 
     {
-        org.eclipse.xtext.ecore.EcoreSupport x;
-        org.eclipse.emf.codegen.ecore.xtext.GenModelSupport y;
-        org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup z;
         XcoreStandaloneSetup.doSetup();
     }
 
@@ -68,6 +65,7 @@ public class XcoreTests {
     @Test
     public void loadXcore2() throws Exception {
         dbServerSvc.getDbServer().inTransaction(false, tx -> {
+            tx.truncate();
             XtextResourceSet xrs = new XtextResourceSet();
             xrs.getURIResourceMap().put(
                     URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore"),

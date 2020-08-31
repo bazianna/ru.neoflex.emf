@@ -20,15 +20,16 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.fork>true</maven.compiler.fork>
-        <emf-version>2.18.0</emf-version>
+        <emf-version>2.22.0</emf-version>
         <emf-xmi-version>2.16.0</emf-xmi-version>
         <emf-common-version>2.16.0</emf-common-version>
         <xtext-version>2.21.0</xtext-version>
         <ecore-xtext-version>1.4.0</ecore-xtext-version>
-        <ecore-xcore-version>1.13.0</ecore-xcore-version>
+        <ecore-xcore-version>1.14.0</ecore-xcore-version>
         <ecore-xcore-lib-version>1.4.0</ecore-xcore-lib-version>
         <emf-codegen-version>2.16.0</emf-codegen-version>
         <emf-codegen-ecore-version>2.18.0</emf-codegen-ecore-version>
+        <eclipse-xtext-version>2.22.0.M3</eclipse-xtext-version>
     </properties>
 
     <dependencies>
@@ -102,14 +103,14 @@
         <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.ecore.xcore</artifactId>
-            <version>1.11.0</version>
-            <scope>test</scope>
+            <version>${ecore-xcore-version}</version>
+            <!--            <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.eclipse.xtext</groupId>
             <artifactId>org.eclipse.xtext</artifactId>
-            <version>2.22.0.M1</version>
-            <scope>test</scope>
+            <version>${eclipse-xtext-version}</version>
+<!--            <scope>test</scope>-->
         </dependency>
     </dependencies>
 
@@ -210,7 +211,7 @@
                     <dependency>
                         <groupId>org.eclipse.emf</groupId>
                         <artifactId>org.eclipse.emf.common</artifactId>
-                        <version>${emf-version}</version>
+                        <version>${emf-common-version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.eclipse.emf</groupId>

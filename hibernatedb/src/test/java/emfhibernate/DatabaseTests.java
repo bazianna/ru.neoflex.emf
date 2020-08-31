@@ -2,10 +2,13 @@ package emfhibernate;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.hibernate.Session;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.neoflex.emf.base.DBResource;
+import ru.neoflex.emf.base.DBTransaction;
 import ru.neoflex.emf.hibernatedb.HBDBTransaction;
 import ru.neoflex.emf.hibernatedb.test.Group;
 import ru.neoflex.emf.hibernatedb.test.TestFactory;
@@ -32,12 +35,7 @@ public class DatabaseTests extends TestBase {
 
     @Test
     public void createEMFObject() throws Exception {
-        dbServer.inTransaction(false, tx -> {
-            for (Resource resource: tx.findAll(tx.createResourceSet()).collect(Collectors.toList())) {
-                resource.delete(null);
-            }
-            return null;
-        });
+        dbServer.inTransaction(false, DBTransaction::truncate);
         Group group = TestFactory.eINSTANCE.createGroup();
         String[] ids = dbServer.inTransaction(false, tx -> {
             group.setName("masters");

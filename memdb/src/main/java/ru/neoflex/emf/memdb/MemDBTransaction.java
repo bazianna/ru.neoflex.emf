@@ -147,6 +147,12 @@ public class MemDBTransaction extends DBTransaction implements Transaction<MemDB
     }
 
     @Override
+    public boolean truncate() {
+        memDBModel.findAll(tenantId).forEach(dbResource -> deleted.add(dbResource.getId()));
+        return true;
+    }
+
+    @Override
     public void commit() {
         if (!isReadOnly()) {
             getMemDbServer().getPrevayler().execute(this);

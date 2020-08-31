@@ -54,6 +54,8 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
 
     protected abstract void delete(DBResource dbResource);
 
+    public abstract boolean truncate();
+
     public void begin() {
     }
 

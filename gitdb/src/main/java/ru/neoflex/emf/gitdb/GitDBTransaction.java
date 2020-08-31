@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Comparator;
 import java.util.stream.Stream;
 
 public class GitDBTransaction extends DBTransaction {
@@ -145,6 +146,9 @@ public class GitDBTransaction extends DBTransaction {
     protected Stream<DBResource> findAll() {
         try {
             GitPath resourcesPath = gfs.getPath("/db/resources");
+            if (!Files.isDirectory(resourcesPath)) {
+                return Stream.empty();
+            }
             return Files.walk(resourcesPath)
                     .filter(Files::isRegularFile)
                     .map(imagePath -> {
@@ -165,6 +169,9 @@ public class GitDBTransaction extends DBTransaction {
         try {
             GitPath indexRoot = gfs.getPath("/db/",
                     INDEXES_DIR_NAME, DB_OBJECTS_DIR_NAME, escape(classUri));
+            if (!Files.isDirectory(indexRoot)) {
+                return Stream.empty();
+            }
             return Files.walk(indexRoot)
                     .filter(Files::isRegularFile)
                     .map(indexPath -> {
@@ -201,6 +208,9 @@ public class GitDBTransaction extends DBTransaction {
         try {
             GitPath indexRoot = gfs.getPath("/db/",
                     INDEXES_DIR_NAME, REFERENCES_DIR_NAME, id);
+            if (!Files.isDirectory(indexRoot)) {
+                return Stream.empty();
+            }
             return Files.walk(indexRoot)
                     .filter(Files::isRegularFile)
                     .map(indexPath -> {
@@ -281,6 +291,25 @@ public class GitDBTransaction extends DBTransaction {
             Files.delete(imagePath);
             deleteOldIndexes(oldDbResource);
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean truncate() {
+        GitPath dbPath = gfs.getPath("/db");
+        try {
+            Files.walk(dbPath)
+                    .sorted(Comparator.reverseOrder())
+                    .forEach(path -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+            return true;
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }

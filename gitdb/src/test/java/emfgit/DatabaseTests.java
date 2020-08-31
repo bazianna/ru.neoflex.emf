@@ -145,7 +145,7 @@ public class DatabaseTests extends TestBase {
             book.eSet(bookClass.getEStructuralFeature("name"), "My Super Book");
             EList<EObject> books = (EList<EObject>) bookStore.eGet(bookStoreClass.getEStructuralFeature("books"));
             books.add(book);
-            Resource resource = resourceSet.createResource(dbServer.createURI(""));
+            Resource resource = resourceSet.createResource(dbServer.createURI("myproject/mystore.xmi"));
             resource.getContents().add(bookStore);
             resource.save(null);
             return null;

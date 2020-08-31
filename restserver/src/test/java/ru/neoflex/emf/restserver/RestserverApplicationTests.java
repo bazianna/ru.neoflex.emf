@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.util.Assert;
+import ru.neoflex.emf.base.DBTransaction;
 import ru.neoflex.emf.test.Group;
 import ru.neoflex.emf.test.TestFactory;
 import ru.neoflex.emf.test.TestPackage;
@@ -56,6 +57,7 @@ class RestserverApplicationTests {
 
     @Test
     void createResources() throws Exception {
+        dbServerSvc.getDbServer().inTransaction(false, DBTransaction::truncate);
         Group group = TestFactory.eINSTANCE.createGroup();
         group.setName("masters");
         ResourceSet resourceSet = new ResourceSetImpl();

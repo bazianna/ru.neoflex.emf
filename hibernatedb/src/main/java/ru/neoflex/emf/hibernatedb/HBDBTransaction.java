@@ -84,6 +84,12 @@ public class HBDBTransaction extends DBTransaction {
         session.delete(dbResource);
     }
 
+    @Override
+    public boolean truncate() {
+        session.createQuery("select r from DBResource r", DBResource.class).getResultStream().forEach(session::delete);
+        return true;
+    }
+
     public void begin() {
         if (!isReadOnly()) {
             tx = session.beginTransaction();
