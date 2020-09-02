@@ -17,10 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.Assert;
+import ru.neoflex.emf.base.DBTransaction;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SpringBootTest
 public class XcoreTests {
@@ -33,61 +37,22 @@ public class XcoreTests {
 
     @Test
     public void loadXcore() throws Exception {
-        XtextResourceSet rs = new XtextResourceSet();
-        //rs.getURIConverter().getURIMap().putAll(EcorePlugin.computePlatformURIMap(true));
-        rs.getURIResourceMap().put(
-                URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore"),
-                EcorePackage.eINSTANCE.eResource()
-        );
-        String baseEcoreUrl = EcorePlugin.INSTANCE.getBaseURL().toExternalForm();
-        rs.getURIConverter().getURIMap().put(
-                URI.createURI("platform:/resource/org.eclipse.emf.ecore/"),
-                URI.createURI(baseEcoreUrl)
-        );
         ClassPathResource xresource = new ClassPathResource("metamodel/model.xcore");
-        Resource resource = rs.createResource(URI.createURI("file:///model.xcore"));
+        EPackage ePackage;
         try (InputStream is = xresource.getInputStream()) {
-            resource.load(is, null);
+            ePackage = dbServerSvc.loadXcorePackage(is, null);
         }
-        List<EObject> eObjects = resource.getContents();
-        Assert.notNull(resource);
-        ResourceSet ers = new ResourceSetImpl();
-        ers.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
-        Resource er = ers.createResource(URI.createURI("file:///model.ecore"));
-        er.getContents().add(EcoreUtil.copy(eObjects.get(2)));
-        Assert.notNull(er);
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        er.save(os, null);
-        String ecore = os.toString();
-        Assert.notNull(ecore);
+        Stream<EPackage> ePackageStream = Stream.of(ePackage);
+        byte[] ecore = DBServerSvc.ePackages2Ecore(ePackageStream);
+        Assert.isTrue(ecore.length > 0, "Ecore generated");
     }
 
     @Test
     public void loadXcore2() throws Exception {
-        dbServerSvc.getDbServer().inTransaction(false, tx -> {
-            tx.truncate();
-            XtextResourceSet xrs = new XtextResourceSet();
-            xrs.getURIResourceMap().put(
-                    URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore"),
-                    EcorePackage.eINSTANCE.eResource()
-            );
-            String baseEcoreUrl = EcorePlugin.INSTANCE.getBaseURL().toExternalForm();
-            xrs.getURIConverter().getURIMap().put(
-                    URI.createURI("platform:/resource/org.eclipse.emf.ecore/"),
-                    URI.createURI(baseEcoreUrl)
-            );
-            ClassPathResource model = new ClassPathResource("metamodel/model.xcore");
-            Resource xresource = xrs.createResource(URI.createURI("file:///model.xcore"));
-            try (InputStream is = model.getInputStream()) {
-                xresource.load(is, null);
-            }
-            List<EObject> eObjects = xresource.getContents();
-            EPackage ePackage = (EPackage) eObjects.get(2);
-            ResourceSet rs = tx.createResourceSet();
-            Resource resource = rs.createResource(tx.getDbServer().createURI(""));
-            resource.getContents().add(ePackage);
-            resource.save(null);
-            return resource;
-        });
+        dbServerSvc.getDbServer().inTransaction(false, DBTransaction::truncate);
+        ClassPathResource xresource = new ClassPathResource("metamodel/model.xcore");
+        try (InputStream is = xresource.getInputStream()) {
+            Resource resource = dbServerSvc.uploadXcore(is, null);
+        }
     }
 }

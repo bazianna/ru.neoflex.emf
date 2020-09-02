@@ -15,6 +15,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class DBServer implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(DBServer.class);
@@ -30,17 +32,21 @@ public abstract class DBServer implements AutoCloseable {
     public DBServer(String dbName, Properties config) {
         this.dbName = dbName;
         this.config = config;
+        packageRegistry.put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
     }
 
-    public void loadDynamicPackages() throws Exception {
-        inTransaction(true, tx -> {
+    public List<EPackage> loadDynamicPackages() throws Exception {
+        return inTransaction(true, tx -> {
             ResourceSet resourceSet = tx.createResourceSet();
             return tx.findByClass(resourceSet, EcorePackage.Literals.EPACKAGE)
-                    .flatMap(resource -> resource.getContents().stream());
-        }).forEach(eObject -> {
-            EPackage ePackage = (EPackage) eObject;
-            registerEPackage(ePackage);
+                    .flatMap(resource -> resource.getContents().stream())
+                    .map(eObject -> (EPackage)eObject)
+                    .collect(Collectors.toList());
         });
+    }
+
+    public void registerDynamicPackages() throws Exception {
+        loadDynamicPackages().forEach(this::registerEPackage);
 
     }
 

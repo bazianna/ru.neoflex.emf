@@ -2,6 +2,7 @@ package ru.neoflex.emf.restserver;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
@@ -11,8 +12,14 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -103,5 +110,33 @@ public class EMFController {
             List<Resource> resources = stream.collect(Collectors.toList());
             return new JsonHelper().toJson(resources);
         });
+    }
+
+    @PostMapping("/xcore")
+    public ObjectNode uploadXcore(@RequestParam("file") MultipartFile file) throws IOException {
+        Resource resource = dbServerSvc.uploadXcore(file.getInputStream(), file.getOriginalFilename());
+        return new JsonHelper().toJson(resource);
+    }
+
+    @PostMapping("/ecore")
+    public ObjectNode uploadEcore(@RequestParam("file") MultipartFile file) throws IOException {
+        Resource resource = dbServerSvc.uploadEcore(file.getInputStream(), file.getOriginalFilename());
+        return new JsonHelper().toJson(resource);
+    }
+
+    @GetMapping("/ecore")
+    public ResponseEntity<ByteArrayResource> downloadEcore(@RequestParam("nsUri") String nsUri) {
+        byte[] content = dbServerSvc.downloadEcore(nsUri);
+        ByteArrayResource resource = new ByteArrayResource(content);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nsUri.replaceAll("\\W+", "_") + ".ecore");
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+        headers.add(HttpHeaders.PRAGMA, "no-cache");
+        headers.add(HttpHeaders.EXPIRES, "0");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(content.length)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 }
