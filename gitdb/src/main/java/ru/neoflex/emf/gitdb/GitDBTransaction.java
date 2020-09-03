@@ -302,15 +302,17 @@ public class GitDBTransaction extends DBTransaction {
     public boolean truncate() {
         GitPath dbPath = gfs.getPath("/db");
         try {
-            Files.walk(dbPath)
-                    .sorted(Comparator.reverseOrder())
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+            if (Files.isDirectory(dbPath)) {
+                Files.walk(dbPath)
+                        .sorted(Comparator.reverseOrder())
+                        .forEach(path -> {
+                            try {
+                                Files.delete(path);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+            }
             return true;
         } catch (Throwable e) {
             throw new RuntimeException(e);

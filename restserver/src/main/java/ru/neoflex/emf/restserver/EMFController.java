@@ -117,6 +117,22 @@ public class EMFController {
         return new JsonHelper().toJson(resource);
     }
 
+    @GetMapping("/xcore")
+    public ResponseEntity<ByteArrayResource> downloadXcore(@RequestParam("nsUri") String nsUri) {
+        byte[] content = dbServerSvc.downloadXcore(nsUri);
+        ByteArrayResource resource = new ByteArrayResource(content);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nsUri.replaceAll("\\W+", "_") + ".ecore");
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+        headers.add(HttpHeaders.PRAGMA, "no-cache");
+        headers.add(HttpHeaders.EXPIRES, "0");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(content.length)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+
     @PostMapping("/ecore")
     public ObjectNode uploadEcore(@RequestParam("file") MultipartFile file) throws IOException {
         Resource resource = dbServerSvc.uploadEcore(file.getInputStream(), file.getOriginalFilename());

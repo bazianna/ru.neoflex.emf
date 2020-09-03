@@ -231,7 +231,7 @@ public class Exporter {
 
     private List<Resource> importResource(String fileName, byte[] bytes, DBTransaction tx) throws IOException {
         ResourceSet resourceSet = new ResourceSetImpl();
-        resourceSet.setPackageRegistry(new DBPackageRegistry(dbServer.getPackageRegistry(), tx));
+        resourceSet.setPackageRegistry(dbServer.getPackageRegistry());
         resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
                 .put(Resource.Factory.Registry.DEFAULT_EXTENSION, new XMIResourceFactoryImpl());
         Resource resourceIn = resourceSet.createResource(URI.createURI(fileName));

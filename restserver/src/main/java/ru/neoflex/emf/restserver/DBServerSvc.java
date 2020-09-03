@@ -1,5 +1,7 @@
 package ru.neoflex.emf.restserver;
 
+import org.eclipse.emf.codegen.ecore.genmodel.GenModel;
+import org.eclipse.emf.codegen.ecore.genmodel.impl.GenModelFactoryImpl;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
@@ -9,7 +11,9 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.xcore.XPackage;
 import org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup;
+import org.eclipse.emf.ecore.xcore.util.EcoreXcoreBuilder;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -113,7 +114,7 @@ public class DBServerSvc {
         return ePackage;
     }
 
-    public XtextResourceSet createXtextResourceSet() {
+    public static XtextResourceSet createXtextResourceSet() {
         XtextResourceSet rs = new XtextResourceSet();
         rs.getURIResourceMap().put(
                 URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore"),
@@ -173,6 +174,38 @@ public class DBServerSvc {
                         .collect(Collectors.toList());
             });
             return ePackages2Ecore(ePackages.stream());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static byte[] ePackages2Xcore(EPackage ePackage) throws IOException {
+        GenModel genModel = new GenModelFactoryImpl().createGenModel();
+        genModel.initialize(Collections.singletonList(ePackage));
+        EcoreXcoreBuilder ecoreXcoreBuilder = new EcoreXcoreBuilder();
+        ecoreXcoreBuilder.initialize(genModel);
+        XPackage xPackage = ecoreXcoreBuilder.getXPackage(ePackage);
+        XtextResourceSet xrs = createXtextResourceSet();
+        Resource xr = xrs.createResource(URI.createURI("file:///model.xcore"));
+        xr.getContents().add(xPackage);
+        xr.getContents().add(genModel);
+        xr.getContents().add(ePackage);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        xr.save(os, null);
+        byte[] ecore = os.toByteArray();
+        return ecore;
+    }
+
+    public byte[] downloadXcore(String nsUri) {
+        try {
+            List<EPackage> ePackages = getDbServer().inTransaction(true, tx -> {
+                ResourceSet rs = tx.getResourceSet();
+                return tx.findByClassAndQName(rs, EcorePackage.Literals.EPACKAGE, nsUri)
+                        .flatMap(resource -> resource.getContents().stream())
+                        .map(eObject -> (EPackage)eObject)
+                        .collect(Collectors.toList());
+            });
+            return ePackages2Xcore(ePackages.get(0));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
