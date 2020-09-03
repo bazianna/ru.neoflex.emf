@@ -27,6 +27,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
     protected transient String email;
     private transient boolean readOnly;
     private transient DBServer dbServer;
+    private transient ResourceSet resourceSet;
 
     public DBTransaction() {
     }
@@ -183,7 +184,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         }
         String id = dbServer.getId(resource.getURI());
         String version = dbServer.getVersion(resource.getURI());
-        ResourceSet rs = createResourceSet();
+        ResourceSet rs = getResourceSet();
         Resource oldResource = rs.createResource(resource.getURI());
         DBResource oldDbResource = null;
         if (id != null) {
@@ -248,6 +249,10 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         }
         dbServer.getEvents().fireAfterSave(oldResource, resource);
         resource.setURI(getDbServer().createURI(newDbResource.getId(), newDbResource.getVersion()));
+        resource.getContents().stream()
+                .filter(eObject -> eObject instanceof EPackage)
+                .map(eObject -> (EPackage)eObject)
+                .forEach(ePackage -> getDbServer().getPackageRegistry().put(ePackage.getNsURI(), ePackage));
     }
 
     public static String getDiagnosticMessage(Diagnostic diagnostic) {
@@ -287,7 +292,7 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
                     "Version (%s) for deleted object %s is not equals to the version in the DB (%s)",
                     version, id, oldVersion));
         }
-        ResourceSet rs = createResourceSet();
+        ResourceSet rs = getResourceSet();
         Resource oldResource = rs.createResource(uri);
         load(dbResource, oldResource);
         List<String> refs = findReferencedTo(oldResource)
@@ -302,12 +307,19 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         delete(dbResource);
     }
 
-    public ResourceSet createResourceSet() {
-        ResourceSetImpl resourceSet = new ResourceSetImpl();
+    public ResourceSet getResourceSet() {
+        if (resourceSet == null) {
+            resourceSet = createResourceSet();
+        }
+        return resourceSet;
+    }
+
+    private ResourceSet createResourceSet() {
+        ResourceSetImpl result = new ResourceSetImpl();
         EPackage.Registry registry = new DBPackageRegistry(getDbServer().getPackageRegistry(), this);
-        resourceSet.setPackageRegistry(registry);
-        resourceSet.setURIResourceMap(new HashMap<>());
-        resourceSet.getResourceFactoryRegistry()
+        result.setPackageRegistry(registry);
+        result.setURIResourceMap(new HashMap<>());
+        result.getResourceFactoryRegistry()
                 .getProtocolToFactoryMap()
                 .put(dbServer.getScheme(), new ResourceFactoryImpl() {
                     @Override
@@ -315,10 +327,10 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
                         return dbServer.createResource(uri);
                     }
                 });
-        resourceSet.getURIConverter()
+        result.getURIConverter()
                 .getURIHandlers()
                 .add(0, new DBHandler(this));
-        return resourceSet;
+        return result;
     }
 
     public DBServer getDbServer() {

@@ -18,17 +18,17 @@ public class DBPackageRegistry extends EPackageRegistryImpl {
 
     public EPackage getEPackage(String nsURI) {
         EPackage result = super.getEPackage(nsURI);
-        if (result == null) {
-            ResourceSet resourceSet = tx.createResourceSet();
-            List<EPackage> ePackages = tx.findByClassAndQName(resourceSet, EcorePackage.Literals.EPACKAGE, nsURI)
-                    .flatMap(resource -> resource.getContents().stream())
-                    .map(eObject -> (EPackage) eObject)
-                    .collect(Collectors.toList());
-            ePackages.forEach(ePackage -> tx.getDbServer().registerEPackage(ePackage));
-            if (ePackages.size() > 0) {
-                result = ePackages.get(0);
-            }
-        }
+//        if (result == null) {
+//            ResourceSet resourceSet = tx.createResourceSet();
+//            List<EPackage> ePackages = tx.findByClassAndQName(resourceSet, EcorePackage.Literals.EPACKAGE, nsURI)
+//                    .flatMap(resource -> resource.getContents().stream())
+//                    .map(eObject -> (EPackage) eObject)
+//                    .collect(Collectors.toList());
+//            ePackages.forEach(ePackage -> tx.getDbServer().registerEPackage(ePackage));
+//            if (ePackages.size() > 0) {
+//                result = ePackages.get(0);
+//            }
+//        }
         return result;
     }
 }

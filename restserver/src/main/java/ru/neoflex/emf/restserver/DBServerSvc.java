@@ -79,8 +79,8 @@ public class DBServerSvc {
     }
 
     private Resource saveEPackage(EPackage ePackage) throws Exception {
-        return getDbServer().inTransaction(false, tx -> {
-            ResourceSet rs = tx.createResourceSet();
+        Resource result = getDbServer().inTransaction(false, tx -> {
+            ResourceSet rs = tx.getResourceSet();
             List<Resource> resources = tx.findByClassAndQName(rs, EcorePackage.Literals.EPACKAGE, ePackage.getNsURI())
                     .collect(Collectors.toList());
             Resource resource;
@@ -94,6 +94,8 @@ public class DBServerSvc {
             resource.save(null);
             return resource;
         });
+        getDbServer().getPackageRegistry().put(ePackage.getNsURI(), ePackage);
+        return result;
     }
 
     public EPackage loadXcorePackage(InputStream is, String fileName) throws IOException {
@@ -164,7 +166,7 @@ public class DBServerSvc {
     public byte[] downloadEcore(String nsUri) {
         try {
             List<EPackage> ePackages = getDbServer().inTransaction(true, tx -> {
-                ResourceSet rs = tx.createResourceSet();
+                ResourceSet rs = tx.getResourceSet();
                 return tx.findByClassAndQName(rs, EcorePackage.Literals.EPACKAGE, nsUri)
                         .flatMap(resource -> resource.getContents().stream())
                         .map(eObject -> (EPackage)eObject)

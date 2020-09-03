@@ -42,7 +42,7 @@ public class PerfTests extends TestBase {
                 Group group = TestFactory.eINSTANCE.createGroup();
                 String name = "group_" + index;
                 group.setName(name);
-                ResourceSet resourceSet = tx.createResourceSet();
+                ResourceSet resourceSet = tx.getResourceSet();
                 Resource groupResource = resourceSet.createResource(dbServer.createURI(""));
                 groupResource.getContents().add(group);
                 groupResource.save(null);
@@ -57,7 +57,7 @@ public class PerfTests extends TestBase {
             dbServer.inTransaction(false, tx -> {
                 Random rand = new Random();
                 String groupId = groupIds.get(rand.nextInt(groupIds.size()));
-                ResourceSet resourceSet = tx.createResourceSet();
+                ResourceSet resourceSet = tx.getResourceSet();
                 Resource groupResource = resourceSet.createResource(dbServer.createURI(groupId));
                 groupResource.load(null);
                 Group group = (Group) groupResource.getContents().get(0);
@@ -88,7 +88,7 @@ public class PerfTests extends TestBase {
                         String userId = userIds.get(rand.nextInt(userIds.size()));
                         try {
                             dbServer.inTransaction(false, tx -> {
-                                ResourceSet resourceSet = tx.createResourceSet();
+                                ResourceSet resourceSet = tx.getResourceSet();
                                 Resource groupResource = resourceSet.createResource(dbServer.createURI(groupId));
                                 groupResource.load(null);
                                 Group group = (Group) groupResource.getContents().get(0);

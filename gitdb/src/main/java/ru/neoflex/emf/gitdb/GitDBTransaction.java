@@ -6,6 +6,7 @@ import com.beijunyi.parallelgit.filesystem.GitPath;
 import com.beijunyi.parallelgit.filesystem.commands.GfsCommit;
 import com.beijunyi.parallelgit.filesystem.io.DirectoryNode;
 import com.beijunyi.parallelgit.filesystem.io.Node;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.jgit.lib.ObjectId;
@@ -136,9 +137,11 @@ public class GitDBTransaction extends DBTransaction {
     }
 
     private void fillIndexes(DBResource dbResource) {
-        ResourceSet rs = createResourceSet();
-        Resource resource = rs.createResource(getDbServer().createURI(dbResource.getId()));
-        load(dbResource, resource);
+        ResourceSet rs = getResourceSet();
+        URI uri = getDbServer().createURI(dbResource.getId(), dbResource.getVersion());
+        Resource resource = rs.createResource(uri);
+        resource = rs.createResource(uri);
+        loadImage(dbResource, resource);
         fillIndexes(resource, dbResource);
     }
 

@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public abstract class DBServer implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(DBServer.class);
@@ -37,7 +36,7 @@ public abstract class DBServer implements AutoCloseable {
 
     public List<EPackage> loadDynamicPackages() throws Exception {
         return inTransaction(true, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             return tx.findByClass(resourceSet, EcorePackage.Literals.EPACKAGE)
                     .flatMap(resource -> resource.getContents().stream())
                     .map(eObject -> (EPackage)eObject)

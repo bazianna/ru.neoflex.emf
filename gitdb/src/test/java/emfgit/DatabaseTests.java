@@ -121,14 +121,14 @@ public class DatabaseTests extends TestBase {
     public void testDynamic() throws Exception {
         EPackage ePackage = createDynamicPackage();
         dbServer.inTransaction(false, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource resource = resourceSet.createResource(dbServer.createURI(""));
             resource.getContents().add(ePackage);
             resource.save(null);
             return null;
         });
         EPackage ePackage2 = dbServer.inTransaction(true, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource resource = tx.findByClassAndQName(resourceSet, EcorePackage.Literals.EPACKAGE, dbServer.getQName(ePackage))
                     .collect(Collectors.toList()).get(0);
             return (EPackage) resource.getContents().get(0);
@@ -136,7 +136,7 @@ public class DatabaseTests extends TestBase {
         Assert.assertEquals(ePackage.getNsPrefix(), ePackage2.getNsPrefix());
         Assert.assertEquals(2, ePackage2.getEClassifiers().size());
         dbServer.inTransaction(false, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             EClass bookStoreClass = (EClass) resourceSet.getEObject(URI.createURI("http:///com.ibm.dynamic.example.bookstore.ecore#//BookStore"), false);
             EObject bookStore = EcoreUtil.create(bookStoreClass);
             bookStore.eSet(bookStoreClass.getEStructuralFeature("name"), "My Book Store");
@@ -151,7 +151,7 @@ public class DatabaseTests extends TestBase {
             return null;
         });
         List<EObject> bookStores = dbServer.inTransaction(true, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             EClass bookStoreClass = (EClass) resourceSet.getEObject(URI.createURI("http:///com.ibm.dynamic.example.bookstore.ecore#//BookStore"), false);
             return tx.findByClass(resourceSet, bookStoreClass)
                     .flatMap(resource -> resource.getContents().stream())
@@ -167,7 +167,7 @@ public class DatabaseTests extends TestBase {
         Group group = TestFactory.eINSTANCE.createGroup();
         String[] ids = dbServer.inTransaction(false, tx -> {
             group.setName("masters");
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource groupResource = resourceSet.createResource(dbServer.createURI(""));
             groupResource.getContents().add(group);
             groupResource.save(null);
@@ -183,7 +183,7 @@ public class DatabaseTests extends TestBase {
             return new String[]{userId, groupId};
         });
         dbServer.inTransaction(false, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(ids[0]));
             userResource.load(null);
             User user = (User) userResource.getContents().get(0);
@@ -195,7 +195,7 @@ public class DatabaseTests extends TestBase {
             User user = TestFactory.eINSTANCE.createUser();
             user.setName("Orlov");
             user.setGroup(group);
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(""));
             userResource.getContents().add(user);
             userResource.save(null);
@@ -206,7 +206,7 @@ public class DatabaseTests extends TestBase {
             return null;
         });
         dbServer.inTransaction(true, (DBServer.TxFunction<Void>) tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Assert.assertEquals(3, tx.findAll(resourceSet).count());
             Assert.assertEquals(2, tx.findByClass(resourceSet, TestPackage.Literals.USER).count());
             Assert.assertEquals(2, tx.findReferencedTo(group.eResource()).count());
@@ -220,7 +220,7 @@ public class DatabaseTests extends TestBase {
         Group group = TestFactory.eINSTANCE.createGroup();
         String[] ids = dbServer.inTransaction(false, tx -> {
             group.setName("masters");
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource groupResource = resourceSet.createResource(dbServer.createURI("myproject/groups/masters.xmi"));
             groupResource.getContents().add(group);
             groupResource.save(null);
@@ -236,7 +236,7 @@ public class DatabaseTests extends TestBase {
             return new String[]{userId, groupId};
         });
         dbServer.inTransaction(true, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(ids[0]));
             userResource.load(null);
             User user = (User) userResource.getContents().get(0);

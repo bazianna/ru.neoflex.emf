@@ -86,7 +86,7 @@ public class Exporter {
     }
 
     protected EObject elementToObject(Element element, DBTransaction tx) throws Exception {
-        ResourceSet rs = tx.createResourceSet();
+        ResourceSet rs = tx.getResourceSet();
         String classUri = element.getAttribute("e-class");
         EClass eClass = (EClass) rs.getEObject(URI.createURI(classUri), false);
         String qName = element.getAttribute("q-name");
@@ -236,7 +236,7 @@ public class Exporter {
                 .put(Resource.Factory.Registry.DEFAULT_EXTENSION, new XMIResourceFactoryImpl());
         Resource resourceIn = resourceSet.createResource(URI.createURI(fileName));
         resourceIn.load(new ByteArrayInputStream(bytes), null);
-        ResourceSet rs = tx.createResourceSet();
+        ResourceSet rs = tx.getResourceSet();
         List<Resource> result = new ArrayList<>();
         for (EObject eObject : resourceIn.getContents()) {
             String qName = dbServer.getQName(eObject);

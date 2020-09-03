@@ -33,7 +33,7 @@ public class DatabaseTests extends TestBase {
         Group group = TestFactory.eINSTANCE.createGroup();
         String[] ids = dbServer.inTransaction(false, (MemDBServer.TxFunction<String[]>) tx -> {
             group.setName("masters");
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource groupResource = resourceSet.createResource(dbServer.createURI(""));
             groupResource.getContents().add(group);
             groupResource.save(null);
@@ -49,7 +49,7 @@ public class DatabaseTests extends TestBase {
             return new String[]{userId, groupId};
         });
         dbServer.inTransaction(false, (MemDBServer.TxFunction<Void>) tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(ids[0]));
             userResource.load(null);
             User user = (User) userResource.getContents().get(0);
@@ -61,7 +61,7 @@ public class DatabaseTests extends TestBase {
             User user = TestFactory.eINSTANCE.createUser();
             user.setName("Orlov");
             user.setGroup(group);
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(""));
             userResource.getContents().add(user);
             userResource.save(null);
@@ -72,7 +72,7 @@ public class DatabaseTests extends TestBase {
             return null;
         });
         dbServer.inTransaction(true, (MemDBServer.TxFunction<Void>) tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Assert.assertEquals(3, tx.findAll(resourceSet).count());
             Assert.assertEquals(2, tx.findByClass(resourceSet, TestPackage.Literals.USER).count());
             Assert.assertEquals(2, tx.findReferencedTo(group.eResource()).count());
@@ -92,7 +92,7 @@ public class DatabaseTests extends TestBase {
         Group group = TestFactory.eINSTANCE.createGroup();
         String[] ids = dbServer.inTransaction(false, tx -> {
             group.setName("masters");
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource groupResource = resourceSet.createResource(dbServer.createURI("myproject/groups/masters"));
             groupResource.getContents().add(group);
             groupResource.save(null);
@@ -108,7 +108,7 @@ public class DatabaseTests extends TestBase {
             return new String[]{userId, groupId};
         });
         dbServer.inTransaction(false, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(ids[0]));
             userResource.load(null);
             User user = (User) userResource.getContents().get(0);

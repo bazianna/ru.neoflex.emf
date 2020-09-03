@@ -2,7 +2,6 @@ package ru.neoflex.emf.restserver;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
@@ -33,7 +32,7 @@ public class EMFController {
     @GetMapping("/resource")
     JsonNode getResource(String id) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
-            ResourceSet rs = tx.createResourceSet();
+            ResourceSet rs = tx.getResourceSet();
             URI uri = tx.getDbServer().createURI(id);
             Resource resource = rs.getResource(uri, true);
             return new JsonHelper().toJson(resource);
@@ -43,7 +42,7 @@ public class EMFController {
     @PutMapping("/resource")
     JsonNode putResource(String id, @RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
-            ResourceSet rs = tx.createResourceSet();
+            ResourceSet rs = tx.getResourceSet();
             URI uri = tx.getDbServer().createURI(id);
             Resource resource = rs.createResource(uri);
             new JsonHelper().fromJson(resource, body, uri);
@@ -55,7 +54,7 @@ public class EMFController {
     @PostMapping("/resource")
     JsonNode postResource(@RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
-            ResourceSet rs = tx.createResourceSet();
+            ResourceSet rs = tx.getResourceSet();
             URI uri = tx.getDbServer().createURI("");
             Resource resource = rs.createResource(uri);
             new JsonHelper().fromJson(resource, body);
@@ -80,7 +79,7 @@ public class EMFController {
             @RequestParam(required = false) String qName,
             @RequestParam(required = false) String filter) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
-            ResourceSet rs = tx.createResourceSet();
+            ResourceSet rs = tx.getResourceSet();
             Stream<Resource> stream;
             if (!StringUtils.isEmpty(path)) {
                 stream = tx.findByPath(rs, path);

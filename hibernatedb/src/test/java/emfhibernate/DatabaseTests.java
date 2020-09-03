@@ -2,12 +2,10 @@ package emfhibernate;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.hibernate.Session;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.neoflex.emf.base.DBResource;
 import ru.neoflex.emf.base.DBTransaction;
 import ru.neoflex.emf.hibernatedb.HBDBTransaction;
 import ru.neoflex.emf.hibernatedb.test.Group;
@@ -17,7 +15,6 @@ import ru.neoflex.emf.hibernatedb.test.User;
 
 import java.io.IOException;
 import java.sql.Statement;
-import java.util.stream.Collectors;
 //import java.io.ByteArrayOutputStream;
 //import org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup;
 //import org.eclipse.xtext.resource.XtextResourceSet;
@@ -39,7 +36,7 @@ public class DatabaseTests extends TestBase {
         Group group = TestFactory.eINSTANCE.createGroup();
         String[] ids = dbServer.inTransaction(false, tx -> {
             group.setName("masters");
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource groupResource = resourceSet.createResource(dbServer.createURI(""));
             groupResource.getContents().add(group);
             groupResource.save(null);
@@ -55,7 +52,7 @@ public class DatabaseTests extends TestBase {
             return new String[]{userId, groupId};
         });
         dbServer.inTransaction(false, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(ids[0]));
             userResource.load(null);
             User user = (User) userResource.getContents().get(0);
@@ -67,7 +64,7 @@ public class DatabaseTests extends TestBase {
             User user = TestFactory.eINSTANCE.createUser();
             user.setName("Orlov");
             user.setGroup(group);
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(""));
             userResource.getContents().add(user);
             userResource.save(null);
@@ -78,7 +75,7 @@ public class DatabaseTests extends TestBase {
             return null;
         });
         dbServer.inTransaction(true, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Assert.assertEquals(3, tx.findAll(resourceSet).count());
             Assert.assertEquals(2, tx.findByClass(resourceSet, TestPackage.Literals.USER).count());
             Assert.assertEquals(2, tx.findReferencedTo(group.eResource()).count());
@@ -107,7 +104,7 @@ public class DatabaseTests extends TestBase {
         Group group = TestFactory.eINSTANCE.createGroup();
         String[] ids = dbServer.inTransaction(false, tx -> {
             group.setName("masters");
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource groupResource = resourceSet.createResource(dbServer.createURI("myproject/groups/masters"));
             groupResource.getContents().add(group);
             groupResource.save(null);
@@ -123,7 +120,7 @@ public class DatabaseTests extends TestBase {
             return new String[]{userId, groupId};
         });
         dbServer.inTransaction(true, tx -> {
-            ResourceSet resourceSet = tx.createResourceSet();
+            ResourceSet resourceSet = tx.getResourceSet();
             Resource userResource = resourceSet.createResource(dbServer.createURI(ids[0]));
             userResource.load(null);
             User user = (User) userResource.getContents().get(0);
