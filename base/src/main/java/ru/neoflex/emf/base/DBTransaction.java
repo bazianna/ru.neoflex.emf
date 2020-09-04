@@ -305,6 +305,10 @@ public abstract class DBTransaction implements AutoCloseable, Serializable {
         }
         dbServer.getEvents().fireBeforeDelete(oldResource);
         delete(dbResource);
+        oldResource.getContents().stream()
+                .filter(eObject -> eObject instanceof EPackage)
+                .map(eObject -> (EPackage)eObject)
+                .forEach(ePackage -> getDbServer().getPackageRegistry().remove(ePackage.getNsURI()));
     }
 
     public ResourceSet getResourceSet() {

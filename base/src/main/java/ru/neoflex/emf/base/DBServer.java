@@ -1,6 +1,8 @@
 package ru.neoflex.emf.base;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.emf.codegen.ecore.genmodel.GenModel;
+import org.eclipse.emf.codegen.ecore.genmodel.GenModelPackage;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
@@ -32,6 +34,7 @@ public abstract class DBServer implements AutoCloseable {
         this.dbName = dbName;
         this.config = config;
         packageRegistry.put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
+        packageRegistry.put(GenModelPackage.eNS_URI, GenModelPackage.eINSTANCE);
     }
 
     public List<EPackage> loadDynamicPackages() throws Exception {

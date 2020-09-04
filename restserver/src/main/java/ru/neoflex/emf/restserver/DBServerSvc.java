@@ -1,6 +1,7 @@
 package ru.neoflex.emf.restserver;
 
 import org.eclipse.emf.codegen.ecore.genmodel.GenModel;
+import org.eclipse.emf.codegen.ecore.genmodel.GenModelPackage;
 import org.eclipse.emf.codegen.ecore.genmodel.impl.GenModelFactoryImpl;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -109,6 +110,7 @@ public class DBServerSvc {
         XtextResourceSet xrs = createXtextResourceSet();
         Resource xresource = xrs.createResource(URI.createURI(fileName));
         xresource.load(is, null);
+//        EcoreUtil.resolveAll(xresource);
         List<EObject> eObjects = xresource.getContents();
         EPackage ePackage = (EPackage) EcoreUtil.copy(eObjects.get(2));
         return ePackage;
@@ -120,6 +122,10 @@ public class DBServerSvc {
                 URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore"),
                 EcorePackage.eINSTANCE.eResource()
         );
+//        rs.getURIResourceMap().put(
+//                URI.createURI("platform:/resource/org.eclipse.emf.ecore/model/Ecore.genmodel"),
+//                GenModelPackage.eINSTANCE.eResource()
+//        );
         String baseEcoreUrl = EcorePlugin.INSTANCE.getBaseURL().toExternalForm();
         rs.getURIConverter().getURIMap().put(
                 URI.createURI("platform:/resource/org.eclipse.emf.ecore/"),
@@ -174,38 +180,6 @@ public class DBServerSvc {
                         .collect(Collectors.toList());
             });
             return ePackages2Ecore(ePackages.stream());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static byte[] ePackages2Xcore(EPackage ePackage) throws IOException {
-        GenModel genModel = new GenModelFactoryImpl().createGenModel();
-        genModel.initialize(Collections.singletonList(ePackage));
-        EcoreXcoreBuilder ecoreXcoreBuilder = new EcoreXcoreBuilder();
-        ecoreXcoreBuilder.initialize(genModel);
-        XPackage xPackage = ecoreXcoreBuilder.getXPackage(ePackage);
-        XtextResourceSet xrs = createXtextResourceSet();
-        Resource xr = xrs.createResource(URI.createURI("file:///model.xcore"));
-        xr.getContents().add(xPackage);
-        xr.getContents().add(genModel);
-        xr.getContents().add(ePackage);
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        xr.save(os, null);
-        byte[] ecore = os.toByteArray();
-        return ecore;
-    }
-
-    public byte[] downloadXcore(String nsUri) {
-        try {
-            List<EPackage> ePackages = getDbServer().inTransaction(true, tx -> {
-                ResourceSet rs = tx.getResourceSet();
-                return tx.findByClassAndQName(rs, EcorePackage.Literals.EPACKAGE, nsUri)
-                        .flatMap(resource -> resource.getContents().stream())
-                        .map(eObject -> (EPackage)eObject)
-                        .collect(Collectors.toList());
-            });
-            return ePackages2Xcore(ePackages.get(0));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
