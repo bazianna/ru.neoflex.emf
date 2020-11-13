@@ -62,16 +62,6 @@
         </dependency>
         <dependency>
             <groupId>ru.neoflex.emf</groupId>
-            <artifactId>gitdb</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.neoflex.emf</groupId>
-            <artifactId>memdb</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.neoflex.emf</groupId>
             <artifactId>hibernatedb</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
