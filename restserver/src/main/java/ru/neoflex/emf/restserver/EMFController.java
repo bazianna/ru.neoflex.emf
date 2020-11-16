@@ -30,7 +30,7 @@ public class EMFController {
     DBServerSvc dbServerSvc;
 
     @GetMapping("/resource")
-    JsonNode getResource(String id) throws Exception {
+    JsonNode getResource(Long id) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
             ResourceSet rs = tx.getResourceSet();
             URI uri = tx.getDbServer().createURI(id);
@@ -40,7 +40,7 @@ public class EMFController {
     }
 
     @PutMapping("/resource")
-    JsonNode putResource(String id, @RequestBody ObjectNode body) throws Exception {
+    JsonNode putResource(Long id, @RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
             URI uri = tx.getDbServer().createURI(id);
@@ -55,7 +55,7 @@ public class EMFController {
     JsonNode postResource(@RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            URI uri = tx.getDbServer().createURI("");
+            URI uri = tx.getDbServer().createURI(null);
             Resource resource = rs.createResource(uri);
             new JsonHelper().fromJson(resource, body);
             resource.save(null);
@@ -64,7 +64,7 @@ public class EMFController {
     }
 
     @DeleteMapping("/resource")
-    void deleteResource(String id) throws Exception {
+    void deleteResource(Long id) throws Exception {
         dbServerSvc.getDbServer().inTransaction(false, tx -> {
             URI uri = tx.getDbServer().createURI(id);
             tx.delete(uri);
@@ -74,17 +74,13 @@ public class EMFController {
 
     @GetMapping("/find")
     JsonNode find(
-            @RequestParam(required = false) String path,
             @RequestParam(required = false) String classUri,
             @RequestParam(required = false) String qName,
             @RequestParam(required = false) String filter) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
             ResourceSet rs = tx.getResourceSet();
             Stream<Resource> stream;
-            if (!StringUtils.isEmpty(path)) {
-                stream = tx.findByPath(rs, path);
-            }
-            else if (StringUtils.isEmpty(classUri)) {
+            if (StringUtils.isEmpty(classUri)) {
                 stream = tx.findAll(rs);
             }
             else {

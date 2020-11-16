@@ -72,7 +72,7 @@ class RestserverApplicationTests {
         content = mvcResult.getResponse().getContentAsByteArray();
         resource.unload();
         new JsonHelper().fromJson(resource, content);
-        String version = dbServerSvc.getDbServer().getVersion(resource.getURI());
+        Integer version = dbServerSvc.getDbServer().getVersion(resource.getURI());
         Assert.notNull(version, "version not null");
     }
 }

@@ -62,7 +62,7 @@
         </dependency>
         <dependency>
             <groupId>ru.neoflex.emf</groupId>
-            <artifactId>hibernatedb</artifactId>
+            <artifactId>base</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>

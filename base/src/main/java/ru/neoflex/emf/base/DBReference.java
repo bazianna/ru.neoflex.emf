@@ -1,4 +1,4 @@
-package ru.neoflex.emf.hibernatedb;
+package ru.neoflex.emf.base;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -15,7 +15,7 @@ public class DBReference {
     Integer index;
     @Column
     private
-    Boolean contained;
+    Boolean containment;
     @ManyToOne()
     @JoinColumn(name = "db_object_id", nullable = false)
     private
@@ -37,12 +37,12 @@ public class DBReference {
         this.index = index;
     }
 
-    public Boolean getContained() {
-        return contained;
+    public Boolean getContainment() {
+        return containment;
     }
 
-    public void setContained(Boolean contained) {
-        this.contained = contained;
+    public void setContainment(Boolean contained) {
+        this.containment = contained;
     }
 
     public DBObject getDbObject() {

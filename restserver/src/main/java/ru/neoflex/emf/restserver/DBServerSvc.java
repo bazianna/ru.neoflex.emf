@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import ru.neoflex.emf.base.DBFactory;
 import ru.neoflex.emf.base.DBServer;
-import ru.neoflex.emf.gitdb.GitDBFactory;
 
 import javax.annotation.PostConstruct;
 import java.io.ByteArrayOutputStream;
@@ -58,12 +57,7 @@ public class DBServerSvc {
                 .flatMap(Arrays::<String>stream)
                 .forEach(propName -> props.setProperty(propName, env.getProperty(propName)));
         String dbName = props.getProperty("db-name", "emfdb");
-        String dbType = props.getProperty("db-type", GitDBFactory.class.getName());
-        ServiceLoader<DBFactory> loader = ServiceLoader.load(DBFactory.class);
-        DBFactory dbFactory = StreamSupport.stream(loader.spliterator(), false)
-                .filter(f->f.getClass().getName().equals(dbType))
-                .findFirst().get();
-        dbServer = dbFactory.create(dbName, props);
+        dbServer = new DBServer(dbName, props);
         dbServer.registerDynamicPackages();
     }
 
@@ -87,7 +81,7 @@ public class DBServerSvc {
                     .collect(Collectors.toList());
             Resource resource;
             if (resources.size() == 0) {
-                resource = rs.createResource(getDbServer().createURI(""));
+                resource = rs.createResource(getDbServer().createURI(null));
             } else {
                 resource = resources.get(0);
                 resource.unload();

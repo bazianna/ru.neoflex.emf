@@ -1,30 +1,41 @@
 package ru.neoflex.emf.base;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import java.io.Serializable;
+import javax.persistence.*;
+import java.util.List;
 
-@Embeddable
-public class DBObject implements Serializable, Cloneable {
+@Entity
+public class DBObject {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    @Column()
+    private Integer version;
     @Column(name = "class_uri", length = 512)
     private String classUri;
     @Column(name = "q_name", length = 512)
     private String qName;
+    @Column(length = 10485760)
+    private byte[] image;
+    @ElementCollection
+    @CollectionTable(indexes = {
+            @Index(columnList = "db_object_id", name = "DBObject_DBReference_ie2")
+    })
+    private List<DBReference> references;
 
-    public DBObject() {
+    public Long getId() {
+        return id;
     }
 
-    public DBObject(String classUri, String qName) {
-        this.classUri = classUri;
-        this.qName = qName;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public DBObject clone() {
-        try {
-            return (DBObject) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 
     public String getClassUri() {
@@ -35,11 +46,27 @@ public class DBObject implements Serializable, Cloneable {
         this.classUri = classUri;
     }
 
-    public String getQName() {
+    public String getqName() {
         return qName;
     }
 
-    public void setQName(String qName) {
+    public void setqName(String qName) {
         this.qName = qName;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
+
+    public void setImage(byte[] image) {
+        this.image = image;
+    }
+
+    public List<DBReference> getReferences() {
+        return references;
+    }
+
+    public void setReferences(List<DBReference> references) {
+        this.references = references;
     }
 }
