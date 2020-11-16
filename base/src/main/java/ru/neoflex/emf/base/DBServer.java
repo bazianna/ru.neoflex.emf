@@ -224,15 +224,21 @@ public class DBServer implements AutoCloseable {
         return URI.createURI(String.format("%s?rev=%d", createURIString(id), version));
     }
 
-    public String getQName(EObject eObject) {
-        if (eObject instanceof EPackage) {
-            EPackage ePackage = (EPackage) eObject;
-            return ePackage.getNsURI();
+    public EStructuralFeature getQNameSF(EClass eClass) {
+        EStructuralFeature sf;
+        if (EcorePackage.Literals.EPACKAGE == eClass) {
+            sf = EcorePackage.Literals.EPACKAGE__NS_URI;
+        } else {
+            sf = getQualifiedNameDelegate().apply(eClass);
         }
-        EStructuralFeature sf = getQualifiedNameDelegate().apply(eObject.eClass());
         if (sf == null) {
-            throw new IllegalArgumentException(String.format("Can't get qName for eObject of class %s", EcoreUtil.getURI(eObject.eClass()).toString()));
+            throw new IllegalArgumentException(String.format("Can't get qName for eObject of class %s", EcoreUtil.getURI(eClass).toString()));
         }
+        return sf;
+    }
+
+    public String getQName(EObject eObject) {
+        EStructuralFeature sf = getQNameSF(eObject.eClass());
         return eObject.eGet(sf).toString();
     }
 
