@@ -9,6 +9,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.BinaryResourceImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMLResourceImpl;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -157,7 +159,7 @@ public class DBServer implements AutoCloseable {
     }
 
     protected Resource createResource(URI uri) {
-        return new BinaryResourceImpl(uri);
+        return new DBResource(uri);
     }
 
     public SessionFactory getSessionFactory() {

@@ -11,6 +11,7 @@ import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import ru.neoflex.emf.base.DBResource;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,6 +29,13 @@ public class JsonHelper {
             result.put("eClass", getURI(eObject.eClass()).toString());
         }
         result.put("_id", eObject.eResource().getURIFragment(eObject));
+        if (eObject.eResource() instanceof DBResource) {
+            DBResource dbResource = (DBResource) eObject.eResource();
+            Integer version = dbResource.getVersion(eObject);
+            if (version != null) {
+                result.put("_rev", version.toString());
+            }
+        }
         for (EStructuralFeature sf: eObject.eClass().getEAllStructuralFeatures()) {
             if (!sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf)) {
                 JsonNode valueNode = toJson(eObject, sf);
@@ -178,11 +186,26 @@ public class JsonHelper {
         else if (sf instanceof EReference) fromJson(rs, eObject, (EReference) sf, valueNode);
     }
 
+    private void setIdVersion(EObject eObject, ObjectNode objectNode) {
+        if (eObject.eResource() instanceof DBResource) {
+            DBResource dbResource = (DBResource) eObject.eResource();
+            String id = objectNode.get("_id").asText();
+            if (id != null) {
+                dbResource.setID(eObject, Long.parseLong(id));
+            }
+            String version = objectNode.get("_rev").asText();
+            if (version != null) {
+                dbResource.setVersion(eObject, Integer.parseInt(version));
+            }
+        }
+    }
+
     private void fromJson(ResourceSet rs, EObject eObject, EReference eReference, JsonNode valueNode) {
         if (eReference.isContainer()) return;
         if (!eReference.isMany()) {
             EObject refObject = fromJson(rs, eObject, eReference, (ObjectNode)valueNode);
             eObject.eSet(eReference, refObject);
+            setIdVersion(refObject, (ObjectNode)valueNode);
         }
         else {
             List<EObject> list = (List<EObject>) eObject.eGet(eReference);
@@ -190,6 +213,7 @@ public class JsonHelper {
             for (JsonNode element: elements) {
                 EObject refObject = fromJson(rs, eObject, eReference, (ObjectNode)element);
                 list.add(refObject);
+                setIdVersion(refObject, (ObjectNode)valueNode);
             }
         }
     }
