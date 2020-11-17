@@ -12,10 +12,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -118,10 +115,94 @@ public class DBTransaction implements AutoCloseable, Serializable {
         }
     }
 
-    protected void load(DBObject dbObject, Resource resource) {
-        loadImage(dbObject, resource);
-        URI uri = getDbServer().createURI(dbObject.getId(), dbObject.getVersion());
-        resource.setURI(uri);
+    private DBObject saveEObject(DBObject dbObject, EObject eObject) {
+        if (dbObject == null) {
+            dbObject = new DBObject();
+            dbObject.setVersion(0);
+        }
+        dbObject.setVersion(dbObject.getVersion() + 1);
+        dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+            List<AbstractMap.SimpleEntry<EAttribute, List>> attrs = eObject.eClass().getEAllAttributes().stream()
+                    .filter(sf -> !sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf))
+                    .map(sf -> new AbstractMap.SimpleEntry<>(sf,
+                            sf.isMany() ? (List)eObject.eGet(sf) : Arrays.asList(eObject.eGet(sf))))
+                    .collect(Collectors.toList());
+            int count = attrs.stream().map(entry -> entry.getValue().size()).reduce(0, Integer::sum);
+            oos.writeInt(count);
+            for (AbstractMap.SimpleEntry<EAttribute, List> attr: attrs) {
+                EDataType eDataType = attr.getKey().getEAttributeType();
+                String feature = attr.getKey().getName();
+                for (Object value: attr.getValue()) {
+                    oos.writeUTF(feature);
+                    oos.writeUTF(EcoreUtil.convertToString(eDataType, value));
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        dbObject.setImage(baos.toByteArray());
+        List<AbstractMap.SimpleEntry<EReference, List<EObject>>> refs = eObject.eClass().getEAllReferences().stream()
+                .filter(sf -> !sf.isDerived() && !sf.isTransient() && !sf.isContainer() && eObject.eIsSet(sf))
+                .map(sf -> new AbstractMap.SimpleEntry<>(sf,
+                        sf.isMany() ? (List<EObject>)eObject.eGet(sf) : Arrays.asList((EObject)eObject.eGet(sf))))
+                .collect(Collectors.toList());
+        getSession().saveOrUpdate(dbObject);
+        return dbObject;
+    }
+
+
+    private EObject loadEObject(DBObject dbObject) {
+        String classUri = dbObject.getClassUri();
+        EClass eClass = (EClass) getResourceSet().getEObject(URI.createURI(classUri), false);
+        EObject eObject = EcoreUtil.create(eClass);
+        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dbObject.getImage()))) {
+            int count = ois.readInt();
+            for (int i = 0; i < count; ++i) {
+                String feature = ois.readUTF();
+                String image = ois.readUTF();
+                EStructuralFeature sf = eClass.getEStructuralFeature(feature);
+                if (sf instanceof EAttribute) {
+                    EAttribute eAttribute = (EAttribute) sf;
+                    EDataType eDataType = eAttribute.getEAttributeType();
+                    Object value = EcoreUtil.createFromString(eDataType, image);
+                    if (sf.isMany()) {
+                        ((List) eObject.eGet(sf)).add(value);
+                    }
+                    else {
+                        eObject.eSet(sf, value);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        List<DBReference> references = new ArrayList<>(dbObject.getReferences());
+        references.sort(Comparator.comparingInt(value -> value.getIndex()));
+        for (DBReference dbReference: references) {
+            EStructuralFeature sf = eClass.getEStructuralFeature(dbReference.getFeature());
+            if (sf instanceof EReference) {
+                DBObject dbRef = dbReference.getDbObject();
+                EReference eReference = (EReference) sf;
+                EObject refObject;
+                if (eReference.isContainment()) {
+                    refObject = loadEObject(dbRef);
+                }
+                else {
+                    EClass refClass = (EClass) getResourceSet().getEObject(URI.createURI(dbRef.getClassUri()), false);
+                    refObject = EcoreUtil.create(refClass);
+                    ((InternalEObject) refObject).eSetProxyURI(getDbServer().createURI(dbRef.getId()));
+                }
+                if (sf.isMany()) {
+                    ((List)eObject.eGet(sf)).add(refObject);
+                }
+                else {
+                    eObject.eSet(sf, refObject);
+                }
+            }
+        }
+        return eObject;
     }
 
     protected Resource createResource(ResourceSet rs, DBObject dbObject) {
@@ -165,8 +246,7 @@ public class DBTransaction implements AutoCloseable, Serializable {
                     URI uri = EcoreUtil.getURI(eObject);
                     if (uri.isRelative()) {
                         uri = uri.resolve(resource.getURI());
-                    }
-                    else if (!getDbServer().canHandle(uri)) {
+                    } else if (!getDbServer().canHandle(uri)) {
                         return null;
                     }
                     Long id = getDbServer().getId(uri);
@@ -175,16 +255,16 @@ public class DBTransaction implements AutoCloseable, Serializable {
                     }
                     return xrs.get(eObject).stream().map(setting -> {
                         DBReference dbReference = new DBReference();
-                        EReference eReference = (EReference)setting.getEStructuralFeature();
+                        EReference eReference = (EReference) setting.getEStructuralFeature();
                         dbReference.setContainment(eReference.isContainment());
                         dbReference.setFeature(eReference.getName());
-                        List<EObject> l = eReference.isMany() ? (List)setting.getEObject().eGet(eReference) : Collections.singletonList(eObject);
+                        List<EObject> l = eReference.isMany() ? (List) setting.getEObject().eGet(eReference) : Collections.singletonList(eObject);
                         dbReference.setIndex(l.indexOf(eObject));
                         return dbReference;
                     });
                 })
                 .filter(Objects::nonNull)
-                .flatMap(s->s)
+                .flatMap(s -> s)
                 .collect(Collectors.toList());
         dbObject.setReferences(references);
     }
@@ -206,14 +286,19 @@ public class DBTransaction implements AutoCloseable, Serializable {
                         .map(dbResource -> createResource(rs, dbResource)));
     }
 
+    public Stream<DBObject> findByClassAndQName(EClass eClass, String qName) {
+        return getDbServer().getConcreteDescendants(eClass).stream()
+                .flatMap(eClassDesc -> findByClassAndQName(EcoreUtil.getURI(eClass).trimQuery().toString(), qName));
+    }
+
     public Stream<Resource> findReferencedTo(Resource resource) {
         return findReferencedTo(getDbServer().getId(resource.getURI()))
                 .map(dbResource -> createResource(resource.getResourceSet(), dbResource));
     }
 
-    public void save(Resource resource) {
+    public void save(DBResource resource) {
         EcoreUtil.resolveAll(resource);
-        for (EObject eObject: resource.getContents()) {
+        for (EObject eObject : resource.getContents()) {
             Diagnostic diagnostic = Diagnostician.INSTANCE.validate(eObject);
             if (diagnostic.getSeverity() == Diagnostic.ERROR ||
                     diagnostic.getSeverity() == Diagnostic.WARNING) {
@@ -221,59 +306,49 @@ public class DBTransaction implements AutoCloseable, Serializable {
                 throw new RuntimeException(message);
             }
         }
-        Long id = dbServer.getId(resource.getURI());
-        Integer version = dbServer.getVersion(resource.getURI());
-        ResourceSet rs = getResourceSet();
-        Resource oldResource = rs.createResource(resource.getURI());
-        DBObject oldDbObject = null;
-        if (id != null) {
-            oldDbObject = get(id);
-            if (oldDbObject != null) {
-                if (version == null) {
-                    throw new IllegalArgumentException(String.format("Version for updated resource %s not defined", id));
-                }
-                Integer oldVersion = oldDbObject.getVersion();
-                if (!version.equals(oldVersion)) {
-                    throw new IllegalArgumentException(String.format(
-                            "Version (%s) for updated resource %s is not equals to the version in the DB (%s)",
-                            version, id, oldVersion));
-                }
-                load(oldDbObject, oldResource);
-                List<String> brokenRefs = findReferencedTo(oldResource).flatMap(referenced -> {
-                    Map<EObject, Collection<EStructuralFeature.Setting>> xrs = EcoreUtil.ExternalCrossReferencer.find(referenced);
-                    return xrs.entrySet().stream().filter(entry -> entry.getKey().eResource().getURI().equals(oldResource.getURI()))
-                            .flatMap(entry -> entry.getValue().stream().map(setting -> {
-                                EObject refObject = setting.getEObject();
-                                EClass refClass = refObject.eClass();
-                                String fragment = refObject.eResource().getURIFragment(refObject);
-                                EObject newRefObject = resource.getEObject(fragment);
-                                if (newRefObject == null || !newRefObject.eClass().equals(refClass)) {
-                                    return entry.getKey().eResource().getURI().appendFragment(fragment);
-                                }
-                                return null;
-                            }).filter(uri -> uri != null).map(uri->uri.toString()));
-                }).collect(Collectors.toList());
-                if (brokenRefs.size() > 0) {
-                    throw new IllegalArgumentException(String.format(
-                            "Broken references (%s)",
-                            String.join(", ", brokenRefs)));
-                }
-            }
-        }
         List<String> sameResources = resource.getContents().stream()
                 .flatMap(eObject -> {
                     String qName = getDbServer().getQName(eObject);
-                    return qName != null ? findByClassAndQName(rs, eObject.eClass(), qName) : Stream.empty();
+                    return qName != null ?
+                            findByClassAndQName(eObject.eClass(), qName)
+                                    .filter(dbObject -> dbObject.getId().equals(resource.getID(eObject))) :
+                            Stream.empty();
                 })
-                .filter(sameName -> !getDbServer().getId(sameName.getURI()).equals(getDbServer().getId(resource.getURI())))
-                .map(sameName -> String.valueOf(getDbServer().getId(sameName.getURI())))
+                .map(dbObject -> String.valueOf(dbObject.getId()))
                 .collect(Collectors.toList());
         if (sameResources.size() > 0) {
             throw new IllegalArgumentException(String.format(
                     "Duplicate object names in resources (%s)",
                     String.join(", ", sameResources)));
         }
-        dbServer.getEvents().fireBeforeSave(oldResource, resource);
+        ResourceSet rs = getResourceSet();
+        Map<Long, EObject> oldECache = new HashMap<>();
+        Map<Long, DBObject> oldDbCache = new HashMap<>();
+        for (EObject eObject : resource.getContents()) {
+            Long id = resource.getID(eObject);
+            EObject oldObject = null;
+            if (id != null) {
+                Integer version = resource.getVersion(eObject);
+                if (version == null) {
+                    throw new IllegalArgumentException(String.format("Version for updated resource %s not defined", id));
+                }
+                DBObject dbObject = getOrThrow(id);
+                if (!dbObject.getVersion().equals(version)) {
+                    throw new IllegalArgumentException(String.format(
+                            "Version (%d) for updated resource %d is not equals to the version in the DB (%d)",
+                            version, id, dbObject.getVersion()));
+                }
+                oldDbCache.put(id, dbObject);
+                oldObject = loadEObject(dbObject);
+                oldECache.put(id, oldObject);
+            }
+            dbServer.getEvents().fireBeforeSave(oldObject, eObject);
+        }
+        for (EObject eObject : resource.getContents()) {
+            Long id = resource.getID(eObject);
+            DBObject dbObject = saveEObject(oldDbCache.get(id), eObject);
+            dbServer.getEvents().fireAfterSave(oldECache.get(id), eObject);
+        }
         DBObject newDbObject;
         if (oldDbObject == null) {
             resource.setURI(getDbServer().createURI(id));
@@ -287,20 +362,20 @@ public class DBTransaction implements AutoCloseable, Serializable {
         resource.setURI(getDbServer().createURI(newDbObject.getId(), newDbObject.getVersion()));
         resource.getContents().stream()
                 .filter(eObject -> eObject instanceof EPackage)
-                .map(eObject -> (EPackage)eObject)
+                .map(eObject -> (EPackage) eObject)
                 .forEach(ePackage -> getDbServer().getPackageRegistry().put(ePackage.getNsURI(), ePackage));
     }
 
     public static String getDiagnosticMessage(Diagnostic diagnostic) {
         String message = diagnostic.getMessage();
-        for (Iterator i = diagnostic.getChildren().iterator(); i.hasNext();) {
-            Diagnostic childDiagnostic = (Diagnostic)i.next();
+        for (Iterator i = diagnostic.getChildren().iterator(); i.hasNext(); ) {
+            Diagnostic childDiagnostic = (Diagnostic) i.next();
             message += "\n" + childDiagnostic.getMessage();
         }
         return message;
     }
 
-    public void load(Resource resource) {
+    public void load(DBResource resource) {
         resource.unload();
         Long id = dbServer.getId(resource.getURI());
         DBObject dbObject = getOrThrow(id);
@@ -339,7 +414,7 @@ public class DBTransaction implements AutoCloseable, Serializable {
         delete(dbObject);
         oldResource.getContents().stream()
                 .filter(eObject -> eObject instanceof EPackage)
-                .map(eObject -> (EPackage)eObject)
+                .map(eObject -> (EPackage) eObject)
                 .forEach(ePackage -> getDbServer().getPackageRegistry().remove(ePackage.getNsURI()));
     }
 

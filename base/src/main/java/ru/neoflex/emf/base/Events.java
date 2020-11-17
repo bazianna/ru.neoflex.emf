@@ -1,5 +1,6 @@
 package ru.neoflex.emf.base;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import java.util.ArrayList;
@@ -8,43 +9,43 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class Events {
-    private List<Consumer<Resource>> afterLoadList = new ArrayList<>();
-    public void fireAfterLoad(Resource resource) {
-        for (Consumer<Resource> consumer: afterLoadList) {
-            consumer.accept(resource);
+    private List<Consumer<EObject>> afterLoadList = new ArrayList<>();
+    public void fireAfterLoad(EObject eObject) {
+        for (Consumer<EObject> consumer: afterLoadList) {
+            consumer.accept(eObject);
         }
     }
-    public void registerAfterLoad(Consumer<Resource> consumer) {
+    public void registerAfterLoad(Consumer<EObject> consumer) {
         afterLoadList.add(consumer);
     }
 
-    private List<BiConsumer<Resource, Resource>> beforeSaveList = new ArrayList<>();
-    public void fireBeforeSave(Resource old, Resource resource) {
-        for (BiConsumer<Resource, Resource> consumer: beforeSaveList) {
-            consumer.accept(old, resource);
+    private List<BiConsumer<EObject, EObject>> beforeSaveList = new ArrayList<>();
+    public void fireBeforeSave(EObject old, EObject eObject) {
+        for (BiConsumer<EObject, EObject> consumer: beforeSaveList) {
+            consumer.accept(old, eObject);
         }
     }
-    public void registerBeforeSave(BiConsumer<Resource, Resource> consumer) {
+    public void registerBeforeSave(BiConsumer<EObject, EObject> consumer) {
         beforeSaveList.add(consumer);
     }
 
-    private List<BiConsumer<Resource, Resource>> afterSaveList = new ArrayList<>();
-    public void fireAfterSave(Resource old, Resource resource) {
-        for (BiConsumer<Resource, Resource> handler: afterSaveList) {
-            handler.accept(old, resource);
+    private List<BiConsumer<EObject, EObject>> afterSaveList = new ArrayList<>();
+    public void fireAfterSave(EObject old, EObject eObject) {
+        for (BiConsumer<EObject, EObject> handler: afterSaveList) {
+            handler.accept(old, eObject);
         }
     }
-    public void registerAfterSave(BiConsumer<Resource, Resource> consumer) {
+    public void registerAfterSave(BiConsumer<EObject, EObject> consumer) {
         afterSaveList.add(consumer);
     }
 
-    private List<Consumer<Resource>> beforeDeleteList = new ArrayList<>();
-    public void fireBeforeDelete(Resource resource) {
-        for (Consumer<Resource> consumer: beforeDeleteList) {
-            consumer.accept(resource);
+    private List<Consumer<EObject>> beforeDeleteList = new ArrayList<>();
+    public void fireBeforeDelete(EObject eObject) {
+        for (Consumer<EObject> consumer: beforeDeleteList) {
+            consumer.accept(eObject);
         }
     }
-    public void registerBeforeDelete(Consumer<Resource> consumer) {
+    public void registerBeforeDelete(Consumer<EObject> consumer) {
         beforeDeleteList.add(consumer);
     }
 }

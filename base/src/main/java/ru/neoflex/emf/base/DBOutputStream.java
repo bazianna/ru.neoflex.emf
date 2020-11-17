@@ -21,7 +21,7 @@ public class DBOutputStream extends OutputStream implements URIConverter.Saveabl
 
     @Override
     public void saveResource(Resource resource) throws IOException {
-        tx.save(resource);
+        tx.save((DBResource) resource);
     }
 
     @Override

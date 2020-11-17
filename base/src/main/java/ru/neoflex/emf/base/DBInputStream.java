@@ -26,6 +26,6 @@ public class DBInputStream extends InputStream implements URIConverter.Loadable 
 
     @Override
     public void loadResource(Resource resource) throws IOException {
-        tx.load(resource);
+        tx.load((DBResource) resource);
     }
 }
