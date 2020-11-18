@@ -99,15 +99,6 @@ public class DBTransaction implements AutoCloseable, Serializable {
         return dbObject;
     }
 
-    protected void loadImage(DBObject dbObject, Resource resource) {
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(dbObject.getImage());
-        try {
-            resource.load(inputStream, null);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     private DBObject saveEObject(DBResource resource, DBObject dbObject, EObject eObject) {
         if (dbObject == null) {
             dbObject = new DBObject();
@@ -431,10 +422,6 @@ public class DBTransaction implements AutoCloseable, Serializable {
 
     public DBServer getDbServer() {
         return dbServer;
-    }
-
-    public void setDbServer(DBServer dbServer) {
-        this.dbServer = dbServer;
     }
 
     public boolean isReadOnly() {
