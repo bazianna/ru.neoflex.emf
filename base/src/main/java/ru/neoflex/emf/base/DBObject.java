@@ -14,6 +14,8 @@ public class DBObject {
     private String classUri;
     @Column(name = "q_name", length = 512)
     private String qName;
+    @Column(name = "proxy", length = 512)
+    private String proxy;
     @Column(length = 10485760)
     private byte[] image;
     @ElementCollection
@@ -68,5 +70,13 @@ public class DBObject {
 
     public void setReferences(List<DBReference> references) {
         this.references = references;
+    }
+
+    public String getProxy() {
+        return proxy;
+    }
+
+    public void setProxy(String proxy) {
+        this.proxy = proxy;
     }
 }
