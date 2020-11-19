@@ -153,7 +153,7 @@ public class JsonHelper {
         }
         ArrayNode contents = body.withArray("contents");
         for (JsonNode eObjectNode: contents) {
-            EObject eObject = eObjectFromJson(resource.getResourceSet(), (ObjectNode)eObjectNode, null);
+            EObject eObject = eObjectFromJson(resource, (ObjectNode)eObjectNode, null);
             resource.getContents().add(eObject);
         }
     }
@@ -163,27 +163,32 @@ public class JsonHelper {
         fromJson(resource, node);
     }
 
-    private EObject eObjectFromJson(ResourceSet rs, ObjectNode eObjectNode, EClass eClass) {
+    private EObject eObjectFromJson(Resource resource, ObjectNode eObjectNode, EClass eClass) {
         JsonNode eClassNode = eObjectNode.get("eClass");
         if (eClassNode != null) {
             URI classUri = URI.createURI(eClassNode.asText());
-            eClass = (EClass) rs.getEObject(classUri, false);
+            eClass = (EClass) resource.getResourceSet().getEObject(classUri, false);
         }
         EObject eObject = EcoreUtil.create(eClass);
         for (EStructuralFeature sf: eClass.getEAllStructuralFeatures()) {
             if (!sf.isDerived() && !sf.isTransient()) {
                 JsonNode valueNode = eObjectNode.get(sf.getName());
                 if (valueNode != null) {
-                    fromJson(rs, eObject, sf, valueNode);
+                    fromJson(resource, eObject, sf, valueNode);
                 }
             }
+        }
+        if (resource instanceof DBResource) {
+            DBResource dbResource = (DBResource) resource;
+            dbResource.setID(eObject, Long.valueOf(eObjectNode.get("_id").asText("0")));
+            dbResource.setVersion(eObject, Integer.valueOf(eObjectNode.get("_rev").asText("0")));
         }
         return eObject;
     }
 
-    private void fromJson(ResourceSet rs, EObject eObject, EStructuralFeature sf, JsonNode valueNode) {
+    private void fromJson(Resource resource, EObject eObject, EStructuralFeature sf, JsonNode valueNode) {
         if (sf instanceof EAttribute) fromJson(eObject, (EAttribute) sf, valueNode);
-        else if (sf instanceof EReference) fromJson(rs, eObject, (EReference) sf, valueNode);
+        else if (sf instanceof EReference) fromJson(resource, eObject, (EReference) sf, valueNode);
     }
 
     private void setIdVersion(EObject eObject, ObjectNode objectNode) {
@@ -200,10 +205,10 @@ public class JsonHelper {
         }
     }
 
-    private void fromJson(ResourceSet rs, EObject eObject, EReference eReference, JsonNode valueNode) {
+    private void fromJson(Resource resource, EObject eObject, EReference eReference, JsonNode valueNode) {
         if (eReference.isContainer()) return;
         if (!eReference.isMany()) {
-            EObject refObject = fromJson(rs, eObject, eReference, (ObjectNode)valueNode);
+            EObject refObject = fromJson(resource, eObject, eReference, (ObjectNode)valueNode);
             eObject.eSet(eReference, refObject);
             setIdVersion(refObject, (ObjectNode)valueNode);
         }
@@ -211,23 +216,23 @@ public class JsonHelper {
             List<EObject> list = (List<EObject>) eObject.eGet(eReference);
             ArrayNode elements = (ArrayNode) valueNode;
             for (JsonNode element: elements) {
-                EObject refObject = fromJson(rs, eObject, eReference, (ObjectNode)element);
+                EObject refObject = fromJson(resource, eObject, eReference, (ObjectNode)element);
                 list.add(refObject);
                 setIdVersion(refObject, (ObjectNode)valueNode);
             }
         }
     }
 
-    private EObject fromJson(ResourceSet rs, EObject eObject, EReference eReference, ObjectNode valueNode) {
+    private EObject fromJson(Resource resource, EObject eObject, EReference eReference, ObjectNode valueNode) {
         EClass referenceType = eReference.getEReferenceType();
         if (eReference.isContainment()) {
-            return eObjectFromJson(rs, valueNode, referenceType);
+            return eObjectFromJson(resource, valueNode, referenceType);
         }
         else {
             JsonNode eClassNode = valueNode.get("eClass");
             if (eClassNode != null) {
                 URI classUri = URI.createURI(eClassNode.asText());
-                referenceType = (EClass) rs.getEObject(classUri, false);
+                referenceType = (EClass) resource.getResourceSet().getEObject(classUri, false);
             }
             EObject refObject = EcoreUtil.create(referenceType);
             String ref = valueNode.get("$ref").asText();

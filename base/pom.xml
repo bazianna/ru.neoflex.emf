@@ -149,7 +149,7 @@
                                 </language>
                             </languages>
                             <sourceRoots>
-                                <root>${basedir}/src/test/resources/metamodel</root>
+                                <root>${basedir}/src/test/resources</root>
                             </sourceRoots>
                         </configuration>
                     </execution>

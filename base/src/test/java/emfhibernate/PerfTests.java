@@ -47,7 +47,7 @@ public class PerfTests extends TestBase {
                 Resource groupResource = resourceSet.createResource(dbServer.createURI(null));
                 groupResource.getContents().add(group);
                 groupResource.save(null);
-                Long groupId = dbServer.getId(groupResource.getURI());
+                Long groupId = dbServer.getId(group);
                 groupIds.add(groupId);
                 return null;
             });
@@ -69,7 +69,7 @@ public class PerfTests extends TestBase {
                 Resource userResource = resourceSet.createResource(dbServer.createURI(null));
                 userResource.getContents().add(user);
                 userResource.save(null);
-                Long userId = dbServer.getId(userResource.getURI());
+                Long userId = dbServer.getId(user);
                 userIds.add(userId);
                 return null;
             });

@@ -1,6 +1,7 @@
 package ru.neoflex.emf.base;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -65,6 +66,9 @@ public class DBObject {
     }
 
     public List<DBReference> getReferences() {
+        if (references == null) {
+            references = new ArrayList<>();
+        }
         return references;
     }
 
@@ -78,5 +82,9 @@ public class DBObject {
 
     public void setProxy(String proxy) {
         this.proxy = proxy;
+    }
+
+    public boolean isProxy() {
+        return this.proxy != null;
     }
 }

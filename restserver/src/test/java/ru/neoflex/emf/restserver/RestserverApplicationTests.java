@@ -70,9 +70,12 @@ class RestserverApplicationTests {
                 .content(content).contentType(MediaType.APPLICATION_JSON));
         MvcResult mvcResult = resultActions.andDo(MockMvcResultHandlers.print()).andExpect(status().isOk()).andReturn();
         content = mvcResult.getResponse().getContentAsByteArray();
-        resource.unload();
-        new JsonHelper().fromJson(resource, content);
-        Integer version = dbServerSvc.getDbServer().getVersion(resource.getURI());
-        Assert.notNull(version, "version not null");
+        dbServerSvc.getDbServer().inTransaction(false, tx -> {
+            Resource r = tx.getResourceSet().createResource(tx.getDbServer().createURI(null));
+            new JsonHelper().fromJson(resource, content);
+            Integer version = dbServerSvc.getDbServer().getVersion(resource.getContents().get(0));
+            Assert.notNull(version, "version not null");
+            return null;
+        });
     }
 }

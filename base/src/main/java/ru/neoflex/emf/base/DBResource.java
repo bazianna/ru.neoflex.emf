@@ -4,6 +4,9 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +68,7 @@ public class DBResource extends ResourceImpl {
     }
 
     public Long getID(EObject eObject) {
-        return eObjectToIDMap.get(eObject);
+        return getEObjectToIDMap().get(eObject);
     }
 
     public Integer getVersion(EObject eObject) {
@@ -90,4 +93,15 @@ public class DBResource extends ResourceImpl {
         return eObject != null ? eObject : super.getEObjectByID(id);
     }
 
+    protected void doSave(OutputStream outputStream, Map<?, ?> options) throws IOException
+    {
+        DBOutputStream dbOutputStream = (DBOutputStream) outputStream;
+        dbOutputStream.saveResource(this);
+    }
+
+    protected void doLoad(InputStream inputStream, Map<?, ?> options) throws IOException
+    {
+        DBInputStream dbInputStream = (DBInputStream) inputStream;
+        dbInputStream.loadResource(this);
+    }
 }

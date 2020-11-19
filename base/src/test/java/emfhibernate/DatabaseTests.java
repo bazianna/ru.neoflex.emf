@@ -46,7 +46,7 @@ public class DatabaseTests extends TestBase {
             Resource userResource = resourceSet.createResource(dbServer.createURI(null));
             userResource.getContents().add(user);
             userResource.save(null);
-            Long userId = dbServer.getId(userResource.getURI());
+            Long userId = dbServer.getId(user);
             Assert.assertNotNull(userId);
             return new Long[]{userId, groupId};
         });

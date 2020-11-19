@@ -132,6 +132,14 @@ public class DBServer implements AutoCloseable {
         return null;
     }
 
+    public Long getId(EObject eObject) {
+        Resource resource = eObject.eResource();
+        if (!(resource instanceof DBResource)) {
+            return null;
+        }
+        return ((DBResource) resource).getID(eObject);
+    }
+
     public boolean canHandle(URI uri) {
         return getScheme().equals(uri.scheme()) && Objects.equals(uri.authority(), getDbName());
     }
@@ -144,6 +152,14 @@ public class DBServer implements AutoCloseable {
         }
         String versionStr = query.split("rev=", -1)[1];
         return StringUtils.isEmpty(versionStr) ? null : Integer.parseInt(versionStr);
+    }
+
+    public Integer getVersion(EObject eObject) {
+        Resource resource = eObject.eResource();
+        if (!(resource instanceof DBResource)) {
+            return null;
+        }
+        return ((DBResource) resource).getVersion(eObject);
     }
 
     public Function<EClass, EStructuralFeature> getQualifiedNameDelegate() {
@@ -233,15 +249,12 @@ public class DBServer implements AutoCloseable {
         } else {
             sf = getQualifiedNameDelegate().apply(eClass);
         }
-        if (sf == null) {
-            throw new IllegalArgumentException(String.format("Can't get qName for eObject of class %s", EcoreUtil.getURI(eClass).toString()));
-        }
         return sf;
     }
 
     public String getQName(EObject eObject) {
         EStructuralFeature sf = getQNameSF(eObject.eClass());
-        return eObject.eGet(sf).toString();
+        return sf != null ? eObject.eGet(sf).toString() : null;
     }
 
     public String getScheme() {

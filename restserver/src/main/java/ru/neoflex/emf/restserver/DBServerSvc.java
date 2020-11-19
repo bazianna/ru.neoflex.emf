@@ -24,7 +24,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import ru.neoflex.emf.base.DBFactory;
 import ru.neoflex.emf.base.DBServer;
 
 import javax.annotation.PostConstruct;
