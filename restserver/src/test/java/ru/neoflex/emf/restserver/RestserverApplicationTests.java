@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.util.Assert;
+import ru.neoflex.emf.base.DBResource;
 import ru.neoflex.emf.base.DBTransaction;
 import ru.neoflex.emf.test.Group;
 import ru.neoflex.emf.test.TestFactory;
@@ -60,22 +61,19 @@ class RestserverApplicationTests {
         dbServerSvc.getDbServer().inTransaction(false, DBTransaction::truncate);
         Group group = TestFactory.eINSTANCE.createGroup();
         group.setName("masters");
-        ResourceSet resourceSet = new ResourceSetImpl();
-        resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
-                .put(Resource.Factory.Registry.DEFAULT_EXTENSION, new XMIResourceFactoryImpl());
-        Resource resource = resourceSet.createResource(URI.createURI(""));
-        resource.getContents().add(group);
-        byte[] content = new JsonHelper().toBytes(resource);
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/emf/resource")
-                .content(content).contentType(MediaType.APPLICATION_JSON));
-        MvcResult mvcResult = resultActions.andDo(MockMvcResultHandlers.print()).andExpect(status().isOk()).andReturn();
-        content = mvcResult.getResponse().getContentAsByteArray();
-        dbServerSvc.getDbServer().inTransaction(false, tx -> {
-            Resource r = tx.getResourceSet().createResource(tx.getDbServer().createURI(null));
-            new JsonHelper().fromJson(resource, content);
+        dbServerSvc.getDbServer().inTransaction(true, tx -> {
+            DBResource resource = (DBResource) tx.getResourceSet().createResource(tx.getDbServer().createURI(null));
+            resource.getContents().add(group);
+            byte[] content = new JsonHelper().toBytes(resource);
+            ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/emf/resource")
+                    .content(content).contentType(MediaType.APPLICATION_JSON));
+            MvcResult mvcResult = resultActions.andDo(MockMvcResultHandlers.print()).andExpect(status().isOk()).andReturn();
+            byte[] contentResult = mvcResult.getResponse().getContentAsByteArray();
+            resource.unload();
+            new JsonHelper().fromJson(resource, contentResult);
             Integer version = dbServerSvc.getDbServer().getVersion(resource.getContents().get(0));
             Assert.notNull(version, "version not null");
-            return null;
+            return resource;
         });
     }
 }

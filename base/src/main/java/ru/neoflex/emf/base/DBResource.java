@@ -72,7 +72,7 @@ public class DBResource extends ResourceImpl {
     }
 
     public Integer getVersion(EObject eObject) {
-        return eObjectToVersionMap.get(eObject);
+        return getEObjectToVersionMap().get(eObject);
     }
 
     @Override
