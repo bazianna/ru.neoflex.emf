@@ -180,8 +180,18 @@ public class JsonHelper {
         }
         if (resource instanceof DBResource) {
             DBResource dbResource = (DBResource) resource;
-            dbResource.setID(eObject, Long.valueOf(eObjectNode.get("_id").asText("0")));
-            dbResource.setVersion(eObject, Integer.valueOf(eObjectNode.get("_rev").asText("0")));
+            try {
+                Long id = Long.valueOf(eObjectNode.get("_id").asText(""));
+                dbResource.setID(eObject, id);
+            }
+            catch (Throwable e) {
+            }
+            try {
+                Integer version = Integer.valueOf(eObjectNode.get("_rev").asText(""));
+                dbResource.setVersion(eObject, version);
+            }
+            catch (Throwable e) {
+            }
         }
         return eObject;
     }

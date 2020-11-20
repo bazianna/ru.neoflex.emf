@@ -17,9 +17,9 @@ public class DBReference {
     private
     Boolean containment;
     @ManyToOne()
-    @JoinColumn(name = "db_object_id", nullable = false)
+    @JoinColumn(name = "refobject_id", nullable = false)
     private
-    DBObject dbObject;
+    DBObject refObject;
 
     public String getFeature() {
         return feature;
@@ -45,11 +45,11 @@ public class DBReference {
         this.containment = contained;
     }
 
-    public DBObject getDbObject() {
-        return dbObject;
+    public DBObject getRefObject() {
+        return refObject;
     }
 
-    public void setDbObject(DBObject dbObject) {
-        this.dbObject = dbObject;
+    public void setRefObject(DBObject dbObject) {
+        this.refObject = dbObject;
     }
 }
