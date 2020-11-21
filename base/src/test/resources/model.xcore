@@ -61,3 +61,12 @@ class MetaView {
 	refers EObject aObject
 }
 
+class ViewElement {
+    container ViewContainer parent opposite elements
+    String elementName
+}
+
+class ViewContainer extends ViewElement {
+    contains ViewElements[] elements opposite container
+}
+

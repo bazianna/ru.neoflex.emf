@@ -31,6 +31,10 @@ public class DatabaseTests extends TestBase {
     }
 
     @Test
+    public void testDeep() throws Exception {
+    }
+
+    @Test
     public void testMetaView() throws Exception {
         DBTable aObject = hbServer.inTransaction(false, tx -> {
             ResourceSet rs = tx.createResourceSet();
@@ -72,7 +76,6 @@ public class DatabaseTests extends TestBase {
         );
         MetaView metaView2 = (MetaView) metaViewRes2.getContents().get(0);
         Assert.assertEquals(EcorePackage.eINSTANCE.getEOperation(), metaView2.getAClass());
-//        sleepForever();
     }
 
     @Test
@@ -136,12 +139,6 @@ public class DatabaseTests extends TestBase {
             return null;
         });
         hbServer.setSchema("TEST");
-//        memBDServer.inTransaction(true, (MemBDServer.TxFunction<Void>) tx -> {
-//            return null;
-//        });
-//        memBDServer.inTransaction(true, (MemBDServer.TxFunction<Void>) tx -> {
-//            return null;
-//        });
     }
 
     @Test
