@@ -16,6 +16,7 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class DBTransaction implements AutoCloseable, Serializable {
     protected final Session session;
@@ -65,6 +66,15 @@ public class DBTransaction implements AutoCloseable, Serializable {
     }
 
     protected void deleteRecursive(DBObject dbObject) {
+        Set<String> deps = session.createQuery(
+                "select o from DBObject o join o.references r " +
+                        "where r.containment = false and r.refObject.id = :refdb_id"
+                , DBObject.class).setParameter("refdb_id", dbObject.getId()).getResultStream()
+                .map(o->String.valueOf(o.getId())).collect(Collectors.toSet());
+        if (deps.size() > 0) {
+            throw new IllegalArgumentException(String.format(
+                    "Can not delete Resource, referenced by [%s]", String.join(", ", deps)));
+        }
         for (DBReference r: dbObject.getReferences()) {
             if (r.getContainment() || r.getRefObject().isProxy()) {
                 deleteRecursive(r.getRefObject());
@@ -318,9 +328,33 @@ public class DBTransaction implements AutoCloseable, Serializable {
                 .flatMap(eClassDesc -> findByClassAndQName(EcoreUtil.getURI(eClass).trimQuery().toString(), qName));
     }
 
+    private DBObject getParent(DBObject dbObject) {
+        return session.createQuery("select o from DBObject o join o.references r where r.refObject.id = :refdb_id", DBObject.class)
+                .setParameter("refdb_id", dbObject.getId())
+                .uniqueResult();
+    }
+
+    private DBObject getContainer(DBObject dbObject) {
+        while (true) {
+            DBObject parent = getParent(dbObject);
+            if (parent == null) {
+                return dbObject;
+            }
+            dbObject = parent;
+        }
+    }
+
     public Stream<Resource> findReferencedTo(Resource resource) {
-        return resource.getContents().stream().flatMap(eObject -> findReferencedTo(getDbServer().getId(eObject))
-                .map(dbResource -> createResource(resource.getResourceSet(), dbResource)));
+        Set<Long> exclude = resource.getContents().stream().map(eObject -> getDbServer().getId(eObject))
+                .filter(Objects::nonNull).collect(Collectors.toSet());
+        Iterable<EObject> iterable = resource::getAllContents;
+        Set<DBObject> topRefs = StreamSupport.stream(iterable.spliterator(), false)
+                .map(eObject -> getDbServer().getId(eObject)).filter(Objects::nonNull)
+                .flatMap(this::findReferencedTo)
+                .collect(Collectors.toList()).stream()
+                .map(this::getContainer).filter(dbObject -> !exclude.contains(dbObject.getId()))
+                .collect(Collectors.toSet());
+        return topRefs.stream().map(dbObject -> createResource(resource.getResourceSet(), dbObject));
     }
 
     public void save(DBResource resource) {
@@ -339,7 +373,7 @@ public class DBTransaction implements AutoCloseable, Serializable {
                     String qName = getDbServer().getQName(eObject);
                     return qName != null ?
                             findByClassAndQName(eObject.eClass(), qName)
-                                    .filter(dbObject -> dbObject.getId().equals(resource.getID(eObject))) :
+                                    .filter(dbObject -> !dbObject.getId().equals(resource.getID(eObject))) :
                             Stream.empty();
                 })
                 .map(dbObject -> String.valueOf(dbObject.getId()))
@@ -440,6 +474,10 @@ public class DBTransaction implements AutoCloseable, Serializable {
             resourceSet = createResourceSet();
         }
         return resourceSet;
+    }
+
+    public DBResource createResource(URI uri) {
+        return (DBResource) getResourceSet().createResource(uri);
     }
 
     private ResourceSet createResourceSet() {

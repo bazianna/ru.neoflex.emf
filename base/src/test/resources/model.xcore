@@ -5,6 +5,9 @@
     complianceLevel="7.0"
 )
 package ru.neoflex.emf.hibernatedb.test
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EPackage
+import org.eclipse.emf.ecore.EClass
 
 class Group {
     String name
@@ -14,3 +17,47 @@ class User {
     String name
     refers Group group
 }
+
+class Column {
+	String name
+	String dbType
+}
+
+abstract class DBKey {
+	String name
+	refers Column[] columns
+}
+
+class PKey extends DBKey {}
+
+class IEKey extends DBKey {
+	boolean isUnique
+}
+
+class FKey extends DBKey {
+	refers DBEntity entity
+}
+
+abstract class DBEntity {
+	String name
+	contains PKey pKey
+}
+
+class DBTable extends DBEntity {
+	contains Column[] columns
+	contains IEKey[] indexes
+	contains FKey[] fKeys
+}
+
+class DBView extends DBEntity {
+	refers Column[] columns
+	boolean isMaterialized
+}
+
+class MetaView {
+	id String qName
+	refers EPackage aPackage
+	refers EClass aClass
+	refers EObject aObject
+}
+

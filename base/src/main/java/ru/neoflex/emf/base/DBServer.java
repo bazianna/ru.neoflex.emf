@@ -234,6 +234,10 @@ public class DBServer implements AutoCloseable {
         return getScheme() + "://" + dbName + "/" + (id != null ? id : "");
     }
 
+    public URI createURI() {
+        return createURI(null);
+    }
+
     public URI createURI(Long id) {
         return URI.createURI(createURIString(id));
     }

@@ -1,9 +1,6 @@
 package ru.neoflex.emf.base;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 @Embeddable
 public class DBReference {
@@ -16,10 +13,9 @@ public class DBReference {
     @Column
     private
     Boolean containment;
-    @ManyToOne()
+    @ManyToOne(optional = false)
     @JoinColumn(name = "refobject_id", nullable = false)
-    private
-    DBObject refObject;
+    private DBObject refObject;
 
     public String getFeature() {
         return feature;
