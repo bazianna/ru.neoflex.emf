@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-public class DBInputStream extends InputStream implements URIConverter.Loadable {
-    private DBTransaction tx;
+public class HbInputStream extends InputStream implements URIConverter.Loadable {
+    private HbTransaction tx;
     private URI uri;
     private Map<?, ?> options;
 
-    public DBInputStream(DBTransaction tx, URI uri, Map<?, ?> options) {
+    public HbInputStream(HbTransaction tx, URI uri, Map<?, ?> options) {
         this.tx = tx;
         this.uri = uri;
         this.options = options;
@@ -26,6 +26,6 @@ public class DBInputStream extends InputStream implements URIConverter.Loadable 
 
     @Override
     public void loadResource(Resource resource) throws IOException {
-        tx.load((DBResource) resource);
+        tx.load((HbResource) resource);
     }
 }

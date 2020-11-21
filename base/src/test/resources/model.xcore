@@ -55,7 +55,7 @@ class DBView extends DBEntity {
 }
 
 class MetaView {
-	id String qName
+	id String name
 	refers EPackage aPackage
 	refers EClass aClass
 	refers EObject aObject

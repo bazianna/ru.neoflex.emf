@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
-public class DBOutputStream extends OutputStream implements URIConverter.Saveable {
-    private DBTransaction tx;
+public class HbOutputStream extends OutputStream implements URIConverter.Saveable {
+    private HbTransaction tx;
     private URI uri;
     private Map<?, ?> options;
 
-    public DBOutputStream(DBTransaction tx, URI uri, Map<?, ?> options) {
+    public HbOutputStream(HbTransaction tx, URI uri, Map<?, ?> options) {
         this.tx = tx;
         this.uri = uri;
         this.options = options;
@@ -21,7 +21,7 @@ public class DBOutputStream extends OutputStream implements URIConverter.Saveabl
 
     @Override
     public void saveResource(Resource resource) throws IOException {
-        tx.save((DBResource) resource);
+        tx.save((HbResource) resource);
     }
 
     @Override

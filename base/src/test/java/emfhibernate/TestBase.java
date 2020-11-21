@@ -1,6 +1,6 @@
 package emfhibernate;
 
-import ru.neoflex.emf.base.DBServer;
+import ru.neoflex.emf.base.HbServer;
 import ru.neoflex.emf.hibernatedb.test.TestPackage;
 
 import java.io.File;
@@ -8,7 +8,7 @@ import java.util.Properties;
 
 public class TestBase {
     public static final String HBDB = "hbtest";
-    DBServer dbServer;
+    HbServer hbServer;
 
     public static boolean deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();
@@ -20,10 +20,10 @@ public class TestBase {
         return directoryToBeDeleted.delete();
     }
 
-    public static DBServer getDatabase() throws Exception {
+    public static HbServer getDatabase() throws Exception {
         Properties properties = new Properties();
         //properties.setProperty("emfdb.hb.show_sql", "true");
-        DBServer server = new DBServer(HBDB, properties);
+        HbServer server = new HbServer(HBDB, properties);
         server.registerEPackage(TestPackage.eINSTANCE);
         return server;
     }
@@ -32,7 +32,7 @@ public class TestBase {
         return new File(System.getProperty("user.home") + "/.h2home");
     }
 
-    public static DBServer refreshDatabase() throws Exception {
+    public static HbServer refreshDatabase() throws Exception {
         deleteDirectory(getDatabaseFile());
         return getDatabase();
     }

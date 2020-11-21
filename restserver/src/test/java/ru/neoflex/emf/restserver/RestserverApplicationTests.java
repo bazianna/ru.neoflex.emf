@@ -1,10 +1,5 @@
 package ru.neoflex.emf.restserver;
 
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,8 +12,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.util.Assert;
-import ru.neoflex.emf.base.DBResource;
-import ru.neoflex.emf.base.DBTransaction;
+import ru.neoflex.emf.base.HbResource;
+import ru.neoflex.emf.base.HbTransaction;
 import ru.neoflex.emf.test.Group;
 import ru.neoflex.emf.test.TestFactory;
 import ru.neoflex.emf.test.TestPackage;
@@ -58,11 +53,11 @@ class RestserverApplicationTests {
 
     @Test
     void createResources() throws Exception {
-        dbServerSvc.getDbServer().inTransaction(false, DBTransaction::truncate);
+        dbServerSvc.getDbServer().inTransaction(false, HbTransaction::truncate);
         Group group = TestFactory.eINSTANCE.createGroup();
         group.setName("masters");
         dbServerSvc.getDbServer().inTransaction(true, tx -> {
-            DBResource resource = tx.createResource(tx.getDbServer().createURI(null));
+            HbResource resource = tx.createResource(tx.getDbServer().createURI(null));
             resource.getContents().add(group);
             byte[] content = new JsonHelper().toBytes(resource);
             ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/emf/resource")

@@ -7,10 +7,6 @@ import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.BinaryResourceImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMLResourceImpl;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -37,9 +33,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class DBServer implements AutoCloseable {
+public class HbServer implements AutoCloseable {
     //    private static final Logger logger = LoggerFactory.getLogger(HBDBServer.class);
-        public static final String CONFIG_DEFAULT_SCHEMA = "emfdb.hb.defaultSchema";
+    public static final String CONFIG_DEFAULT_SCHEMA = "emfdb.hb.defaultSchema";
     public static final String CONFIG_DRIVER = "emfdb.hb.driver";
     public static final String CONFIG_URL = "emfdb.hb.url";
     public static final String CONFIG_USER = "emfdb.hb.user";
@@ -48,9 +44,16 @@ public class DBServer implements AutoCloseable {
     public static final String CONFIG_SHOW_SQL = "emfdb.hb.show_sql";
     public static final String CONFIG_MIN_POOL_SIZE = "emfdb.hb.min_pool_size";
     public static final String CONFIG_MAX_POOL_SIZE = "emfdb.hb.max_pool_size";
-    private static final Logger logger = LoggerFactory.getLogger(DBServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(HbServer.class);
     public static final String CONFIG_DBTYPE = "emfdb.dbtype";
     protected static final ThreadLocal<String> tenantId = new InheritableThreadLocal<>();
+
+    public static class DBObjectHandle {
+        Long id;
+        Integer version;
+    }
+
+    private static final ThreadLocal<WeakHashMap<EObject, DBObjectHandle>> eObjectToIdMap = new InheritableThreadLocal<>();
     protected final SessionFactory sessionFactory;
     private final String dbName;
     private final Events events = new Events();
@@ -60,7 +63,7 @@ public class DBServer implements AutoCloseable {
     private final EPackage.Registry packageRegistry = new EPackageRegistryImpl(EPackage.Registry.INSTANCE);
     private Map<EClass, List<EClass>> descendants = new HashMap<>();
 
-    public DBServer(String dbName, Properties config) {
+    public HbServer(String dbName, Properties config) {
         this.dbName = dbName;
         this.config = config;
         packageRegistry.put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
@@ -73,12 +76,47 @@ public class DBServer implements AutoCloseable {
         setSchema(defaultSchema);
     }
 
+    public WeakHashMap<EObject, HbServer.DBObjectHandle> getEObjectToIdMap() {
+        if (eObjectToIdMap.get() == null) {
+            eObjectToIdMap.set(new WeakHashMap<>());
+        }
+        return eObjectToIdMap.get();
+    }
+
+    public Long getId(EObject eObject) {
+        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
+        return handle != null ? handle.id : null;
+    }
+
+    public void setId(EObject eObject, Long id) {
+        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
+        if (handle == null) {
+            handle = new HbServer.DBObjectHandle();
+            getEObjectToIdMap().put(eObject, handle);
+        }
+        handle.id = id;
+    }
+
+    public Integer getVersion(EObject eObject) {
+        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
+        return handle != null ? handle.version : null;
+    }
+
+    public void setVersion(EObject eObject, Integer version) {
+        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
+        if (handle == null) {
+            handle = new HbServer.DBObjectHandle();
+            getEObjectToIdMap().put(eObject, handle);
+        }
+        handle.version = version;
+    }
+
     public List<EPackage> loadDynamicPackages() throws Exception {
         return inTransaction(true, tx -> {
             ResourceSet resourceSet = tx.getResourceSet();
             return tx.findByClass(resourceSet, EcorePackage.Literals.EPACKAGE)
                     .flatMap(resource -> resource.getContents().stream())
-                    .map(eObject -> (EPackage)eObject)
+                    .map(eObject -> (EPackage) eObject)
                     .collect(Collectors.toList());
         });
     }
@@ -121,7 +159,7 @@ public class DBServer implements AutoCloseable {
     }
 
     public void setTenantId(String tenantId) {
-        DBServer.tenantId.set(tenantId);
+        HbServer.tenantId.set(tenantId);
     }
 
     public Long getId(URI uri) {
@@ -132,18 +170,9 @@ public class DBServer implements AutoCloseable {
         return null;
     }
 
-    public Long getId(EObject eObject) {
-        Resource resource = eObject.eResource();
-        if (!(resource instanceof DBResource)) {
-            return null;
-        }
-        return ((DBResource) resource).getID(eObject);
-    }
-
     public boolean canHandle(URI uri) {
         return getScheme().equals(uri.scheme()) && Objects.equals(uri.authority(), getDbName());
     }
-
 
     public Integer getVersion(URI uri) {
         String query = uri.query();
@@ -152,14 +181,6 @@ public class DBServer implements AutoCloseable {
         }
         String versionStr = query.split("rev=", -1)[1];
         return StringUtils.isEmpty(versionStr) ? null : Integer.parseInt(versionStr);
-    }
-
-    public Integer getVersion(EObject eObject) {
-        Resource resource = eObject.eResource();
-        if (!(resource instanceof DBResource)) {
-            return null;
-        }
-        return ((DBResource) resource).getVersion(eObject);
     }
 
     public Function<EClass, EStructuralFeature> getQualifiedNameDelegate() {
@@ -175,7 +196,7 @@ public class DBServer implements AutoCloseable {
     }
 
     protected Resource createResource(URI uri) {
-        return new DBResource(uri);
+        return new HbResource(uri);
     }
 
     public SessionFactory getSessionFactory() {
@@ -190,7 +211,7 @@ public class DBServer implements AutoCloseable {
                 configuration.getProperties().put(Environment.DEFAULT_SCHEMA, schema);
                 ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                         .applySettings(configuration.getProperties()).build();
-                MetadataSources metadataSources = new MetadataSources( serviceRegistry );
+                MetadataSources metadataSources = new MetadataSources(serviceRegistry);
                 metadataSources.addAnnotatedClass(DBObject.class);
                 MetadataBuilder metadataBuilder = metadataSources.getMetadataBuilder();
                 MetadataImplementor metadata = (MetadataImplementor) metadataBuilder.build();
@@ -226,8 +247,8 @@ public class DBServer implements AutoCloseable {
         return sessionFactory.openSession();
     }
 
-    protected DBTransaction createDBTransaction(boolean readOnly) {
-        return new DBTransaction(readOnly, this);
+    protected HbTransaction createDBTransaction(boolean readOnly) {
+        return new HbTransaction(readOnly, this);
     }
 
     private String createURIString(Long id) {
@@ -279,10 +300,10 @@ public class DBServer implements AutoCloseable {
     }
 
     public interface TxFunction<R> extends Serializable {
-        R call(DBTransaction tx) throws Exception;
+        R call(HbTransaction tx) throws Exception;
     }
 
-    protected <R> R callWithTransaction(DBTransaction tx, TxFunction<R> f) throws Exception {
+    protected <R> R callWithTransaction(HbTransaction tx, TxFunction<R> f) throws Exception {
         return f.call(tx);
     }
 
@@ -301,26 +322,24 @@ public class DBServer implements AutoCloseable {
         return new TxRetryStrategy();
     }
 
-    public <R> R inTransaction(Supplier<DBTransaction> txSupplier, TxFunction<R> f) throws Exception {
+    public <R> R inTransaction(Supplier<HbTransaction> txSupplier, TxFunction<R> f) throws Exception {
         TxRetryStrategy retryStrategy = createTxRetryStrategy();
         int attempt = 1;
         int delay = retryStrategy.delay;
         while (true) {
             try {
-                try (DBTransaction tx = txSupplier.get()) {
+                try (HbTransaction tx = txSupplier.get()) {
                     tx.begin();
                     try {
-                        R result =  callWithTransaction(tx, f);
+                        R result = callWithTransaction(tx, f);
                         tx.commit();
                         return result;
-                    }
-                    catch (Throwable e) {
+                    } catch (Throwable e) {
                         tx.rollback();
                         throw e;
                     }
                 }
-            }
-            catch (Throwable e) {
+            } catch (Throwable e) {
                 boolean retry = retryStrategy.retryClasses.stream().anyMatch(aClass -> aClass.isAssignableFrom(e.getClass()));
                 if (!retry) {
                     throw e;
@@ -344,7 +363,7 @@ public class DBServer implements AutoCloseable {
     public static class DBTenantIdentifierResolver implements CurrentTenantIdentifierResolver {
         @Override
         public String resolveCurrentTenantIdentifier() {
-            return DBServer.tenantId.get();
+            return HbServer.tenantId.get();
         }
 
         @Override
@@ -372,8 +391,7 @@ public class DBServer implements AutoCloseable {
 //                    connection.createStatement().execute( setSchemaQuery.apply(tenantIdentifier) );
                     connection.setSchema(tenantIdentifier);
                 }
-            }
-            catch ( SQLException e ) {
+            } catch (SQLException e) {
                 throw new HibernateException(
                         "Could not alter JDBC connection to specified schema [" + tenantIdentifier + "]", e);
             }

@@ -8,10 +8,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-public class DBHandler extends URIHandlerImpl {
-    private DBTransaction tx;
+public class HbHandler extends URIHandlerImpl {
+    private HbTransaction tx;
 
-    DBHandler(DBTransaction tx) {
+    HbHandler(HbTransaction tx) {
         this.tx = tx;
     }
 
@@ -22,12 +22,12 @@ public class DBHandler extends URIHandlerImpl {
 
     @Override
     public OutputStream createOutputStream(URI uri, Map<?, ?> options) throws IOException {
-        return new DBOutputStream(tx, uri, options);
+        return new HbOutputStream(tx, uri, options);
     }
 
     @Override
     public InputStream createInputStream(URI uri, Map<?, ?> options) throws IOException {
-        return new DBInputStream(tx, uri, options);
+        return new HbInputStream(tx, uri, options);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class DBHandler extends URIHandlerImpl {
         tx.delete(uri);
     }
 
-    public DBTransaction getTx() {
+    public HbTransaction getTx() {
         return tx;
     }
 }

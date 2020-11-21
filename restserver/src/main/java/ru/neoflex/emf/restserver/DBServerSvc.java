@@ -1,8 +1,5 @@
 package ru.neoflex.emf.restserver;
 
-import org.eclipse.emf.codegen.ecore.genmodel.GenModel;
-import org.eclipse.emf.codegen.ecore.genmodel.GenModelPackage;
-import org.eclipse.emf.codegen.ecore.genmodel.impl.GenModelFactoryImpl;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
@@ -12,9 +9,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xcore.XPackage;
 import org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup;
-import org.eclipse.emf.ecore.xcore.util.EcoreXcoreBuilder;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +19,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import ru.neoflex.emf.base.DBServer;
+import ru.neoflex.emf.base.HbServer;
 
 import javax.annotation.PostConstruct;
 import java.io.ByteArrayOutputStream;
@@ -40,7 +35,7 @@ import java.util.stream.StreamSupport;
 public class DBServerSvc {
     @Autowired
     Environment env;
-    private DBServer dbServer;
+    private HbServer hbServer;
 
     {
         XcoreStandaloneSetup.doSetup();
@@ -56,12 +51,12 @@ public class DBServerSvc {
                 .flatMap(Arrays::<String>stream)
                 .forEach(propName -> props.setProperty(propName, env.getProperty(propName)));
         String dbName = props.getProperty("db-name", "emfdb");
-        dbServer = new DBServer(dbName, props);
-        dbServer.registerDynamicPackages();
+        hbServer = new HbServer(dbName, props);
+        hbServer.registerDynamicPackages();
     }
 
-    public DBServer getDbServer() {
-        return dbServer;
+    public HbServer getDbServer() {
+        return hbServer;
     }
 
     public Resource uploadXcore(InputStream is, String fileName) {

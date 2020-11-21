@@ -36,10 +36,10 @@ import java.util.zip.ZipOutputStream;
 public class Exporter {
     public static final String XMI = ".xmi";
     public static final String REFS_XML = ".refs.xml";
-    DBServer dbServer;
+    HbServer hbServer;
 
-    public Exporter(DBServer dbServer) {
-        this.dbServer = dbServer;
+    public Exporter(HbServer hbServer) {
+        this.hbServer = hbServer;
     }
 
     public byte[] exportEObjectWithoutExternalRefs(EObject eObject) throws IOException {
@@ -75,7 +75,7 @@ public class Exporter {
         Element element = document.createElement("e-object");
         EObject rootContainer = EcoreUtil.getRootContainer(eObject);
         String fragment = EcoreUtil.getRelativeURIFragmentPath(rootContainer, eObject);
-        String qName = dbServer.getQName(rootContainer);
+        String qName = hbServer.getQName(rootContainer);
         if (qName == null || qName.length() == 0) {
             throw new IllegalArgumentException("No qName");
         }
@@ -85,7 +85,7 @@ public class Exporter {
         return element;
     }
 
-    protected EObject elementToObject(Element element, DBTransaction tx) throws Exception {
+    protected EObject elementToObject(Element element, HbTransaction tx) throws Exception {
         ResourceSet rs = tx.getResourceSet();
         String classUri = element.getAttribute("e-class");
         EClass eClass = (EClass) rs.getEObject(URI.createURI(classUri), false);
@@ -145,7 +145,7 @@ public class Exporter {
     public String getFileName(EObject eObject) {
         EClass eClass = eObject.eClass();
         EPackage ePackage = eClass.getEPackage();
-        String qName = dbServer.getQName(eObject);
+        String qName = hbServer.getQName(eObject);
         if (qName == null || qName.length() == 0) {
             throw new IllegalArgumentException("No qName");
         }
@@ -229,9 +229,9 @@ public class Exporter {
         });
     }
 
-    private List<Resource> importResource(String fileName, byte[] bytes, DBTransaction tx) throws IOException {
+    private List<Resource> importResource(String fileName, byte[] bytes, HbTransaction tx) throws IOException {
         ResourceSet resourceSet = new ResourceSetImpl();
-        resourceSet.setPackageRegistry(dbServer.getPackageRegistry());
+        resourceSet.setPackageRegistry(hbServer.getPackageRegistry());
         resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
                 .put(Resource.Factory.Registry.DEFAULT_EXTENSION, new XMIResourceFactoryImpl());
         Resource resourceIn = resourceSet.createResource(URI.createURI(fileName));
@@ -239,12 +239,12 @@ public class Exporter {
         ResourceSet rs = tx.getResourceSet();
         List<Resource> result = new ArrayList<>();
         for (EObject eObject : resourceIn.getContents()) {
-            String qName = dbServer.getQName(eObject);
+            String qName = hbServer.getQName(eObject);
             if (qName == null || qName.length() == 0) {
                 throw new IllegalArgumentException("No qName");
             }
             List<Resource> resources = tx.findByClassAndQName(rs, eObject.eClass(), qName).collect(Collectors.toList());
-            URI uri = resources.size() == 0 ? dbServer.createURI(null) : resources.get(0).getURI();
+            URI uri = resources.size() == 0 ? hbServer.createURI(null) : resources.get(0).getURI();
             Resource resource = rs.createResource(uri);
             resource.getContents().add(EcoreUtil.copy(eObject));
             resource.save(null);
@@ -253,7 +253,7 @@ public class Exporter {
         return result;
     }
 
-    private EObject importExternalReferences(byte[] bytes, DBTransaction tx) throws Exception {
+    private EObject importExternalReferences(byte[] bytes, HbTransaction tx) throws Exception {
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
         ByteArrayInputStream stream = new ByteArrayInputStream(bytes);
@@ -306,7 +306,7 @@ public class Exporter {
                 .forEach(path -> {
                     try {
                         byte[] bytes = Files.readAllBytes(path);
-                        dbServer.inTransaction(false, tx -> importResource(path.toString(), bytes, tx));
+                        hbServer.inTransaction(false, tx -> importResource(path.toString(), bytes, tx));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -316,7 +316,7 @@ public class Exporter {
                 .forEach(path -> {
                     try {
                         byte[] bytes = Files.readAllBytes(path);
-                        dbServer.inTransaction(false, tx -> importExternalReferences(bytes, tx));
+                        hbServer.inTransaction(false, tx -> importExternalReferences(bytes, tx));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -350,11 +350,11 @@ public class Exporter {
                     }
                     String entryName = zipEntry.getName();
                     if (entryName.toLowerCase().endsWith(XMI)) {
-                        dbServer.inTransaction(false, tx -> importResource(entryName, outputStream.toByteArray(), tx));
+                        hbServer.inTransaction(false, tx -> importResource(entryName, outputStream.toByteArray(), tx));
                         ++entityCount;
                     }
                     else if (entryName.toLowerCase().endsWith(REFS_XML)) {
-                        dbServer.inTransaction(false, tx -> importExternalReferences(outputStream.toByteArray(), tx));
+                        hbServer.inTransaction(false, tx -> importExternalReferences(outputStream.toByteArray(), tx));
                     }
                 }
                 zipEntry = zipInputStream.getNextEntry();

@@ -26,12 +26,12 @@ public class PerfTests extends TestBase {
 
     @Before
     public void startUp() throws Exception {
-        dbServer = refreshDatabase();
+        hbServer = refreshDatabase();
     }
 
     @After
     public void shutDown() throws IOException {
-        dbServer.close();
+        hbServer.close();
     }
 
     @Test
@@ -39,15 +39,15 @@ public class PerfTests extends TestBase {
         long start = System.currentTimeMillis();
         for (int i = 0; i < nGroups; ++i) {
             int index = i;
-            dbServer.inTransaction(false, tx -> {
+            hbServer.inTransaction(false, tx -> {
                 Group group = TestFactory.eINSTANCE.createGroup();
                 String name = "group_" + index;
                 group.setName(name);
                 ResourceSet resourceSet = tx.getResourceSet();
-                Resource groupResource = resourceSet.createResource(dbServer.createURI(null));
+                Resource groupResource = resourceSet.createResource(hbServer.createURI(null));
                 groupResource.getContents().add(group);
                 groupResource.save(null);
-                Long groupId = dbServer.getId(group);
+                Long groupId = hbServer.getId(group);
                 groupIds.add(groupId);
                 return null;
             });
@@ -55,21 +55,21 @@ public class PerfTests extends TestBase {
         long created1 = System.currentTimeMillis();
         for (int i = 0; i < nUsers; ++i) {
             int index = i;
-            dbServer.inTransaction(false, tx -> {
+            hbServer.inTransaction(false, tx -> {
                 Random rand = new Random();
                 Long groupId = groupIds.get(rand.nextInt(groupIds.size()));
                 ResourceSet resourceSet = tx.getResourceSet();
-                Resource groupResource = resourceSet.createResource(dbServer.createURI(groupId));
+                Resource groupResource = resourceSet.createResource(hbServer.createURI(groupId));
                 groupResource.load(null);
                 Group group = (Group) groupResource.getContents().get(0);
                 User user = TestFactory.eINSTANCE.createUser();
                 String name = "User_" + index;
                 user.setName(name);
                 user.setGroup(group);
-                Resource userResource = resourceSet.createResource(dbServer.createURI(null));
+                Resource userResource = resourceSet.createResource(hbServer.createURI(null));
                 userResource.getContents().add(user);
                 userResource.save(null);
-                Long userId = dbServer.getId(user);
+                Long userId = hbServer.getId(user);
                 userIds.add(userId);
                 return null;
             });
@@ -88,12 +88,12 @@ public class PerfTests extends TestBase {
                         Long groupId = groupIds.get(rand.nextInt(groupIds.size()));
                         Long userId = userIds.get(rand.nextInt(userIds.size()));
                         try {
-                            dbServer.inTransaction(false, tx -> {
+                            hbServer.inTransaction(false, tx -> {
                                 ResourceSet resourceSet = tx.getResourceSet();
-                                Resource groupResource = resourceSet.createResource(dbServer.createURI(groupId));
+                                Resource groupResource = resourceSet.createResource(hbServer.createURI(groupId));
                                 groupResource.load(null);
                                 Group group = (Group) groupResource.getContents().get(0);
-                                Resource userResource = resourceSet.createResource(dbServer.createURI(userId));
+                                Resource userResource = resourceSet.createResource(hbServer.createURI(userId));
                                 userResource.load(null);
                                 User user = (User) userResource.getContents().get(0);
                                 user.setName(name);

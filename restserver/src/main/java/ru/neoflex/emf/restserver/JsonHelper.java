@@ -9,9 +9,8 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import ru.neoflex.emf.base.DBResource;
+import ru.neoflex.emf.base.HbResource;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,9 +28,9 @@ public class JsonHelper {
             result.put("eClass", getURI(eObject.eClass()).toString());
         }
         result.put("_id", eObject.eResource().getURIFragment(eObject));
-        if (eObject.eResource() instanceof DBResource) {
-            DBResource dbResource = (DBResource) eObject.eResource();
-            Integer version = dbResource.getVersion(eObject);
+        if (eObject.eResource() instanceof HbResource) {
+            HbResource hbResource = (HbResource) eObject.eResource();
+            Integer version = hbResource.getTx().getDbServer().getVersion(eObject);
             if (version != null) {
                 result.put("_rev", version.toString());
             }
@@ -178,17 +177,17 @@ public class JsonHelper {
                 }
             }
         }
-        if (resource instanceof DBResource) {
-            DBResource dbResource = (DBResource) resource;
+        if (resource instanceof HbResource) {
+            HbResource hbResource = (HbResource) resource;
             try {
                 Long id = Long.valueOf(eObjectNode.get("_id").asText(""));
-                dbResource.setID(eObject, id);
+                hbResource.getTx().getDbServer().setId(eObject, id);
             }
             catch (Throwable e) {
             }
             try {
                 Integer version = Integer.valueOf(eObjectNode.get("_rev").asText(""));
-                dbResource.setVersion(eObject, version);
+                hbResource.getTx().getDbServer().setVersion(eObject, version);
             }
             catch (Throwable e) {
             }
@@ -202,15 +201,15 @@ public class JsonHelper {
     }
 
     private void setIdVersion(EObject eObject, ObjectNode objectNode) {
-        if (eObject.eResource() instanceof DBResource) {
-            DBResource dbResource = (DBResource) eObject.eResource();
+        if (eObject.eResource() instanceof HbResource) {
+            HbResource hbResource = (HbResource) eObject.eResource();
             String id = objectNode.get("_id").asText();
             if (id != null) {
-                dbResource.setID(eObject, Long.parseLong(id));
+                hbResource.getTx().getDbServer().setId(eObject, Long.parseLong(id));
             }
             String version = objectNode.get("_rev").asText();
             if (version != null) {
-                dbResource.setVersion(eObject, Integer.parseInt(version));
+                hbResource.getTx().getDbServer().setVersion(eObject, Integer.parseInt(version));
             }
         }
     }

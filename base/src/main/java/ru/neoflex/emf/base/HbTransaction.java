@@ -18,19 +18,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class DBTransaction implements AutoCloseable, Serializable {
+public class HbTransaction implements AutoCloseable, Serializable {
     protected final Session session;
     protected transient String message = "";
     protected transient String author;
     protected transient String email;
     private transient boolean readOnly;
-    private transient DBServer dbServer;
+    private transient HbServer hbServer;
     private transient ResourceSet resourceSet;
     private Transaction tx;
 
-    public DBTransaction(boolean readOnly, DBServer dbServer) {
+    public HbTransaction(boolean readOnly, HbServer hbServer) {
         this.readOnly = readOnly;
-        this.dbServer = dbServer;
+        this.hbServer = hbServer;
         session = getDbServer().getSessionFactory().openSession();
     }
 
@@ -109,7 +109,7 @@ public class DBTransaction implements AutoCloseable, Serializable {
         return dbObject;
     }
 
-    private void saveEObjectNonContainment(DBResource resource, DBObject dbObject, EObject eObject) {
+    private void saveEObjectNonContainment(HbResource resource, DBObject dbObject, EObject eObject) {
         List<AbstractMap.SimpleEntry<EReference, List<EObject>>> refsNC = eObject.eClass().getEAllReferences().stream()
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && !sf.isContainer() && !sf.isContainment() && eObject.eIsSet(sf))
                 .map(sf -> new AbstractMap.SimpleEntry<>(sf,
@@ -118,35 +118,33 @@ public class DBTransaction implements AutoCloseable, Serializable {
         Set<DBReference> toDeleteNC = dbObject.getReferences().stream().filter(r->!r.getContainment()).collect(Collectors.toSet());
         for (AbstractMap.SimpleEntry<EReference, List<EObject>> ref: refsNC) {
             String feature = ref.getKey().getName();
-            for (EObject eRefObject: ref.getValue()) {
-                int index = ref.getKey().isMany() ? ref.getValue().indexOf(eRefObject) : -1;
-                if (eRefObject.eResource() instanceof DBResource) {
-                    DBResource resource2 = (DBResource) eRefObject.eResource();
-                    Long id2 = resource2.getID(eRefObject);
-                    DBReference dbReference = dbObject.getReferences().stream()
-                            .filter(r -> r.getFeature().equals(feature) && r.getIndex() == index && r.getRefObject().getId().equals(id2))
-                            .findFirst().orElse(null);
-                    if (dbReference != null) {
-                        toDeleteNC.remove(dbReference);
+            for (int i = 0; i < ref.getValue().size(); ++i) {
+                final int index = i;
+                EObject eRefObject = ref.getValue().get(index);
+                Long id2 = hbServer.getId(eRefObject);
+                DBReference dbReference = dbObject.getReferences().stream()
+                        .filter(r -> r.getFeature().equals(feature) && r.getIndex() == index && r.getRefObject().getId().equals(id2))
+                        .findFirst().orElse(null);
+                if (dbReference != null) {
+                    toDeleteNC.remove(dbReference);
+                }
+                else {
+                    dbReference = new DBReference();
+                    dbReference.setContainment(ref.getKey().isContainment());
+                    dbObject.getReferences().add(dbReference);
+                    dbReference.setFeature(feature);
+                    dbReference.setIndex(index);
+                    DBObject refDBObject;
+                    if (id2 != null) {
+                        refDBObject = getOrThrow(id2);
                     }
                     else {
-                        dbReference = new DBReference();
-                        dbReference.setContainment(ref.getKey().isContainment());
-                        dbObject.getReferences().add(dbReference);
-                        dbReference.setFeature(feature);
-                        dbReference.setIndex(index);
-                        DBObject refDBObject;
-                        if (id2 != null) {
-                            refDBObject = getOrThrow(id2);
-                        }
-                        else {
-                            refDBObject = new DBObject();
-                            refDBObject.setClassUri(EcoreUtil.getURI(eRefObject.eClass()).toString());
-                            refDBObject.setProxy(EcoreUtil.getURI(eRefObject).toString());
-                            session.persist(refDBObject);
-                        }
-                        dbReference.setRefObject(refDBObject);
+                        refDBObject = new DBObject();
+                        refDBObject.setClassUri(EcoreUtil.getURI(eRefObject.eClass()).toString());
+                        refDBObject.setProxy(EcoreUtil.getURI(eRefObject).toString());
+                        session.persist(refDBObject);
                     }
+                    dbReference.setRefObject(refDBObject);
                 }
             }
         }
@@ -161,14 +159,14 @@ public class DBTransaction implements AutoCloseable, Serializable {
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && !sf.isContainer() && sf.isContainment() && eObject.eIsSet(sf))
                 .flatMap(sf -> (sf.isMany() ? (List<EObject>) eObject.eGet(sf) : Collections.singletonList((EObject) eObject.eGet(sf))).stream())
                 .forEach(eRefObject -> {
-                    DBResource resource2 = (DBResource) eRefObject.eResource();
-                    Long id2 = resource2.getID(eRefObject);
+                    HbResource resource2 = (HbResource) eRefObject.eResource();
+                    Long id2 = hbServer.getId(eRefObject);
                     DBObject dbObject2 = getOrThrow(id2);
                     saveEObjectNonContainment(resource, dbObject2, eRefObject);
                 });
     }
 
-    private DBObject saveEObjectContainment(DBResource resource, DBObject dbObject, EObject eObject) {
+    private DBObject saveEObjectContainment(HbResource resource, DBObject dbObject, EObject eObject) {
         if (dbObject == null) {
             dbObject = new DBObject();
             dbObject.setVersion(0);
@@ -210,10 +208,9 @@ public class DBTransaction implements AutoCloseable, Serializable {
                 if (eObject2.eIsProxy()) {
                     throw new RuntimeException("Can't resolve " + ((InternalEObject)eObject2).eProxyURI().toString());
                 }
-                DBResource resource2 = (DBResource) eObject2.eResource();
-                Long id2 = resource2.getID(eObject2);
+                Long id2 = hbServer.getId(eObject2);
                 DBObject dbObject2 = id2 != null ? getOrThrow(id2) : saveEObjectContainment(resource, null, eObject2);
-                int index = ref.getKey().isMany() ? ref.getValue().indexOf(eObject2) : -1;
+                int index = ref.getValue().indexOf(eObject2);
                 DBReference dbReference = dbObject.getReferences().stream()
                         .filter(r -> r.getFeature().equals(feature) && r.getIndex() == index && r.getRefObject().getId().equals(id2))
                         .findFirst().orElse(null);
@@ -233,13 +230,13 @@ public class DBTransaction implements AutoCloseable, Serializable {
         dbObject.getReferences().removeAll(toDeleteC);
         getSession().saveOrUpdate(dbObject);
         toDeleteC.forEach(dbReference -> deleteRecursive(dbReference.getRefObject()));
-        resource.setID(eObject, dbObject.getId());
-        resource.setVersion(eObject, dbObject.getVersion());
+        hbServer.setId(eObject, dbObject.getId());
+        hbServer.setVersion(eObject, dbObject.getVersion());
         return dbObject;
     }
 
 
-    private EObject loadEObject(DBResource resource, DBObject dbObject) {
+    private EObject loadEObject(HbResource resource, DBObject dbObject) {
         String classUri = dbObject.getClassUri();
         EClass eClass = (EClass) getResourceSet().getEObject(URI.createURI(classUri), false);
         EObject eObject = EcoreUtil.create(eClass);
@@ -293,14 +290,14 @@ public class DBTransaction implements AutoCloseable, Serializable {
                 }
             }
         }
-        resource.setID(eObject, dbObject.getId());
-        resource.setVersion(eObject, dbObject.getVersion());
+        hbServer.setId(eObject, dbObject.getId());
+        hbServer.setVersion(eObject, dbObject.getVersion());
         return eObject;
     }
 
     protected Resource createResource(ResourceSet rs, DBObject dbObject) {
         URI uri = getDbServer().createURI(dbObject.getId(), dbObject.getVersion());
-        DBResource resource = (DBResource) rs.createResource(uri);
+        HbResource resource = (HbResource) rs.createResource(uri);
         EObject eObject = loadEObject(resource, dbObject);
         resource.getContents().add(eObject);
         return resource;
@@ -357,7 +354,7 @@ public class DBTransaction implements AutoCloseable, Serializable {
         return topRefs.stream().map(dbObject -> createResource(resource.getResourceSet(), dbObject));
     }
 
-    public void save(DBResource resource) {
+    public void save(HbResource resource) {
         List<EObject> contents = new ArrayList<>(resource.getContents());
         EcoreUtil.resolveAll(resource);
         for (EObject eObject : resource.getContents()) {
@@ -373,7 +370,7 @@ public class DBTransaction implements AutoCloseable, Serializable {
                     String qName = getDbServer().getQName(eObject);
                     return qName != null ?
                             findByClassAndQName(eObject.eClass(), qName)
-                                    .filter(dbObject -> !dbObject.getId().equals(resource.getID(eObject))) :
+                                    .filter(dbObject -> !dbObject.getId().equals(hbServer.getId(eObject))) :
                             Stream.empty();
                 })
                 .map(dbObject -> String.valueOf(dbObject.getId()))
@@ -385,12 +382,12 @@ public class DBTransaction implements AutoCloseable, Serializable {
         }
         Map<Long, EObject> oldECache = new HashMap<>();
         Map<Long, DBObject> oldDbCache = new HashMap<>();
-        DBResource oldResource = (DBResource) getResourceSet().createResource(resource.getURI());
+        HbResource oldResource = (HbResource) getResourceSet().createResource(resource.getURI());
         for (EObject eObject : contents) {
-            Long id = resource.getID(eObject);
+            Long id = hbServer.getId(eObject);
             EObject oldObject = null;
             if (id != null) {
-                Integer version = resource.getVersion(eObject);
+                Integer version = hbServer.getVersion(eObject);
                 if (version == null) {
                     throw new IllegalArgumentException(String.format("Version for updated resource %s not defined", id));
                 }
@@ -405,17 +402,17 @@ public class DBTransaction implements AutoCloseable, Serializable {
                 oldResource.getContents().add(oldObject);
                 oldECache.put(id, oldObject);
             }
-            dbServer.getEvents().fireBeforeSave(oldObject, eObject);
+            hbServer.getEvents().fireBeforeSave(oldObject, eObject);
         }
         for (EObject eObject : contents) {
-            Long id = resource.getID(eObject);
+            Long id = hbServer.getId(eObject);
             DBObject dbObject = saveEObjectContainment(resource, oldDbCache.get(id), eObject);
             oldDbCache.put(dbObject.getId(), dbObject);
         }
         for (EObject eObject : contents) {
-            Long id = resource.getID(eObject);
+            Long id = hbServer.getId(eObject);
             saveEObjectNonContainment(resource, oldDbCache.get(id), eObject);
-            dbServer.getEvents().fireAfterSave(oldECache.get(id), eObject);
+            hbServer.getEvents().fireAfterSave(oldECache.get(id), eObject);
         }
         contents.stream()
                 .filter(eObject -> eObject instanceof EPackage)
@@ -432,21 +429,21 @@ public class DBTransaction implements AutoCloseable, Serializable {
         return message;
     }
 
-    public void load(DBResource resource) {
+    public void load(HbResource resource) {
         resource.unload();
-        Long id = dbServer.getId(resource.getURI());
+        Long id = hbServer.getId(resource.getURI());
         DBObject dbObject = getOrThrow(id);
         EObject eObject = loadEObject(resource, dbObject);
         resource.getContents().add(eObject);
-        dbServer.getEvents().fireAfterLoad(eObject);
+        hbServer.getEvents().fireAfterLoad(eObject);
     }
 
     public void delete(URI uri) {
-        Long id = dbServer.getId(uri);
+        Long id = hbServer.getId(uri);
         if (id == null) {
             throw new IllegalArgumentException("Id for deleted object not defined");
         }
-        Integer version = dbServer.getVersion(uri);
+        Integer version = hbServer.getVersion(uri);
         if (version == null) {
             throw new IllegalArgumentException(String.format("Version for deleted object %s not defined", id));
         }
@@ -458,10 +455,10 @@ public class DBTransaction implements AutoCloseable, Serializable {
                     version, id, oldVersion));
         }
         ResourceSet rs = getResourceSet();
-        DBResource oldResource = (DBResource) rs.createResource(uri);
+        HbResource oldResource = (HbResource) rs.createResource(uri);
         EObject eObject = loadEObject(oldResource, dbObject);
         oldResource.getContents().add(eObject);
-        dbServer.getEvents().fireBeforeDelete(eObject);
+        hbServer.getEvents().fireBeforeDelete(eObject);
         deleteRecursive(dbObject);
         oldResource.getContents().stream()
                 .filter(o -> o instanceof EPackage)
@@ -476,30 +473,30 @@ public class DBTransaction implements AutoCloseable, Serializable {
         return resourceSet;
     }
 
-    public DBResource createResource(URI uri) {
-        return (DBResource) getResourceSet().createResource(uri);
+    public HbResource createResource(URI uri) {
+        return (HbResource) getResourceSet().createResource(uri);
     }
 
-    private ResourceSet createResourceSet() {
+    public ResourceSet createResourceSet() {
         ResourceSetImpl result = new ResourceSetImpl();
         result.setPackageRegistry(getDbServer().getPackageRegistry());
         result.setURIResourceMap(new HashMap<>());
         result.getResourceFactoryRegistry()
                 .getProtocolToFactoryMap()
-                .put(dbServer.getScheme(), new ResourceFactoryImpl() {
+                .put(hbServer.getScheme(), new ResourceFactoryImpl() {
                     @Override
                     public Resource createResource(URI uri) {
-                        return dbServer.createResource(uri);
+                        return hbServer.createResource(uri);
                     }
                 });
         result.getURIConverter()
                 .getURIHandlers()
-                .add(0, new DBHandler(this));
+                .add(0, new HbHandler(this));
         return result;
     }
 
-    public DBServer getDbServer() {
-        return dbServer;
+    public HbServer getDbServer() {
+        return hbServer;
     }
 
     public boolean isReadOnly() {
