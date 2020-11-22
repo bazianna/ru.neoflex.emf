@@ -26,6 +26,12 @@ public class DBObject {
             @Index(columnList = "refobject_id")
     })
     private List<DBReference> references;
+    @ElementCollection
+    @CollectionTable(indexes = {
+            @Index(columnList = "feature,value")
+    })
+    private List<DBAttribute> attributes;
+
 
     public Long getId() {
         return id;
@@ -80,5 +86,16 @@ public class DBObject {
 
     public boolean isProxy() {
         return this.proxy != null;
+    }
+
+    public List<DBAttribute> getAttributes() {
+        if (attributes == null) {
+            attributes = new ArrayList<>();
+        }
+        return attributes;
+    }
+
+    public void setAttributes(List<DBAttribute> attributes) {
+        this.attributes = attributes;
     }
 }
