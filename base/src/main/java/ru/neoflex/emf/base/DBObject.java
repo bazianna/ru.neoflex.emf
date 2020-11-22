@@ -17,8 +17,6 @@ public class DBObject {
     private Integer version;
     @Column(name = "class_uri", length = 512)
     private String classUri;
-    @Column(name = "q_name", length = 512)
-    private String qName;
     @Column(name = "proxy", length = 512)
     private String proxy;
     @Column(length = 10485760)
@@ -51,14 +49,6 @@ public class DBObject {
 
     public void setClassUri(String classUri) {
         this.classUri = classUri;
-    }
-
-    public String getqName() {
-        return qName;
-    }
-
-    public void setqName(String qName) {
-        this.qName = qName;
     }
 
     public byte[] getImage() {
