@@ -27,7 +27,7 @@ public class HbResource extends ResourceImpl {
     protected EObject getEObjectByID(String id) {
         try {
             return getTx().getDbServer().getEObjectToIdMap().entrySet().stream()
-                    .filter(entry -> entry.getValue().id.equals(Long.parseLong(id))).map(entry -> entry.getKey())
+                    .filter(entry -> entry.getValue().id.equals(Long.parseLong(id))).map(Map.Entry::getKey)
                     .findFirst().orElse(null);
         } catch (NumberFormatException e) {
             return super.getEObjectByID(id);

@@ -45,7 +45,6 @@ public class HbServer implements AutoCloseable {
     public static final String CONFIG_MIN_POOL_SIZE = "emfdb.hb.min_pool_size";
     public static final String CONFIG_MAX_POOL_SIZE = "emfdb.hb.max_pool_size";
     private static final Logger logger = LoggerFactory.getLogger(HbServer.class);
-    public static final String CONFIG_DBTYPE = "emfdb.dbtype";
     protected static final ThreadLocal<String> tenantId = new InheritableThreadLocal<>();
 
     public static class DBObjectHandle {
@@ -53,7 +52,7 @@ public class HbServer implements AutoCloseable {
         Integer version;
     }
 
-    private static final ThreadLocal<WeakHashMap<EObject, DBObjectHandle>> eObjectToIdMap = new InheritableThreadLocal<>();
+    private static final ThreadLocal<Map<EObject, DBObjectHandle>> eObjectToIdMap = new ThreadLocal<>();
     protected final SessionFactory sessionFactory;
     private final String dbName;
     private final Events events = new Events();
@@ -76,7 +75,7 @@ public class HbServer implements AutoCloseable {
         setSchema(defaultSchema);
     }
 
-    public WeakHashMap<EObject, HbServer.DBObjectHandle> getEObjectToIdMap() {
+    public Map<EObject, HbServer.DBObjectHandle> getEObjectToIdMap() {
         if (eObjectToIdMap.get() == null) {
             eObjectToIdMap.set(new WeakHashMap<>());
         }

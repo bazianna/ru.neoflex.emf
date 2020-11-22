@@ -67,6 +67,6 @@ class ViewElement {
 }
 
 class ViewContainer extends ViewElement {
-    contains ViewElements[] elements opposite container
+    contains ViewElement[] elements opposite parent
 }
 
