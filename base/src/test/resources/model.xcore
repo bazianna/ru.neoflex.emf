@@ -8,6 +8,8 @@ package ru.neoflex.emf.hibernatedb.test
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.EClass
+import java.util.Date
+import java.math.BigDecimal
 
 class Group {
     String name
@@ -61,12 +63,18 @@ class MetaView {
 	refers EObject aObject
 }
 
-class ViewElement {
+abstract class ViewBase {
     container ViewContainer parent opposite elements
     String elementName
+    Date created
+    refers ViewBase firstSibling
 }
 
-class ViewContainer extends ViewElement {
-    contains ViewElement[] elements opposite parent
+class ViewElement extends ViewBase {
+    BigDecimal[] weights
+}
+
+class ViewContainer extends ViewBase {
+    contains ViewBase[] elements opposite parent
 }
 

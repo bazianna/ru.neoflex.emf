@@ -12,7 +12,9 @@ import ru.neoflex.emf.base.HbTransaction;
 import ru.neoflex.emf.hibernatedb.test.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Statement;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 //import java.io.ByteArrayOutputStream;
@@ -30,8 +32,56 @@ public class DatabaseTests extends TestBase {
         hbServer.close();
     }
 
+    ViewBase createView(String prefix, int deep, int wide) {
+        if (deep > 1) {
+            ViewContainer viewContainer = TestFactory.eINSTANCE.createViewContainer();
+            viewContainer.setElementName(prefix);
+            for (int w = 0; w < wide; ++w) {
+                ViewBase child = createView(prefix + "_" + w, deep - 1, wide);
+                viewContainer.getElements().add(child);
+                child.setFirstSibling(child.getParent().getElements().get(0));
+            }
+            return viewContainer;
+        }
+        else {
+            ViewElement viewElement = TestFactory.eINSTANCE.createViewElement();
+            viewElement.setElementName(prefix);
+            viewElement.setCreated(new Date());
+            for (int w = 0; w < wide; ++w) {
+                viewElement.getWeights().add(new BigDecimal(w));
+            }
+            return viewElement;
+        }
+    }
+
     @Test
     public void testDeep() throws Exception {
+        long count0 = hbServer.getEObjectToIdMap().size();
+        long start = System.currentTimeMillis();
+        ViewBase view1 = hbServer.inTransaction(false, tx -> {
+            ResourceSet rs = tx.getResourceSet();
+            Resource resource = rs.createResource(tx.getDbServer().createURI());
+            ViewBase viewBase = createView("", 3, 100);
+            resource.getContents().add(viewBase);
+            resource.save(null);
+            return viewBase;
+        });
+        Long id = hbServer.getId(view1);
+        Assert.assertNotNull(id);
+        long afterInsert = System.currentTimeMillis();
+        long count = hbServer.getEObjectToIdMap().size() - count0;
+        ViewBase view2 = hbServer.inTransaction(true, tx -> {
+            ResourceSet rs = tx.getResourceSet();
+            Resource resource = rs.createResource(tx.getDbServer().createURI(id));
+            resource.load(null);
+            Assert.assertEquals(1, resource.getContents().size());
+            return (ViewBase) resource.getContents().get(0);
+        });
+        Assert.assertEquals("", view2.getElementName());
+        long afterLoad = System.currentTimeMillis();
+        System.out.println("Created " + count + " objects");
+        System.out.println("Inserted in " + (afterInsert-start)/1000 + "s. " + (afterInsert-start)*1000/count + " ms/1000*object.");
+        System.out.println("Loaded in " + (afterLoad-afterInsert)/1000 + "s. " + (afterLoad-afterInsert)*1000/count + " ms/1000*object.");
     }
 
     @Test
