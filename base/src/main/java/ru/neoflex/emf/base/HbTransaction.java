@@ -173,14 +173,40 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         dbObject.setVersion(dbObject.getVersion() + 1);
         dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
-        dbObject.setqName(getDbServer().getQName(eObject));
+
+        List<AbstractMap.SimpleEntry<EAttribute, List>> attrs = eObject.eClass().getEAllAttributes().stream()
+                .filter(sf -> !sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf))
+                .map(sf -> new AbstractMap.SimpleEntry<>(sf,
+                        sf.isMany() ? (List) eObject.eGet(sf) : Arrays.asList(eObject.eGet(sf))))
+                .collect(Collectors.toList());
+
+        Set<DBAttribute> toDeleteA = dbObject.getAttributes().stream().collect(Collectors.toSet());
+        for (AbstractMap.SimpleEntry<EAttribute, List> attr: attrs) {
+            EDataType eDataType = attr.getKey().getEAttributeType();
+            String feature = attr.getKey().getName();
+            for (int index = 0; index < attr.getValue().size(); ++index) {
+                Object valueObject = attr.getValue().get(index);
+                String value = EcoreUtil.convertToString(eDataType, valueObject);
+                int finalIndex = index;
+                DBAttribute dbAttribute = dbObject.getAttributes().stream()
+                        .filter(a -> a.getFeature().equals(feature) && a.getIndex() == finalIndex && Objects.equals(a.getValue(), value))
+                        .findFirst().orElse(null);
+                if (dbAttribute != null) {
+                    toDeleteA.remove(dbAttribute);
+                }
+                else {
+                    dbAttribute = new DBAttribute();
+                    dbObject.getAttributes().add(dbAttribute);
+                    dbAttribute.setFeature(feature);
+                    dbAttribute.setIndex(index);
+                    dbAttribute.setValue(value);
+                }
+            }
+        }
+        dbObject.getAttributes().removeAll(toDeleteA);
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-            List<AbstractMap.SimpleEntry<EAttribute, List>> attrs = eObject.eClass().getEAllAttributes().stream()
-                    .filter(sf -> !sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf))
-                    .map(sf -> new AbstractMap.SimpleEntry<>(sf,
-                            sf.isMany() ? (List) eObject.eGet(sf) : Arrays.asList(eObject.eGet(sf))))
-                    .collect(Collectors.toList());
             int count = attrs.stream().map(entry -> entry.getValue().size()).reduce(0, Integer::sum);
             oos.writeInt(count);
             for (AbstractMap.SimpleEntry<EAttribute, List> attr: attrs) {
