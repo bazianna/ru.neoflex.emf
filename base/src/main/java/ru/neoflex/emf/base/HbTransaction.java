@@ -182,7 +182,11 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .collect(Collectors.toList());
 
         Set<DBAttribute> toDeleteA = dbObject.getAttributes().stream().collect(Collectors.toSet());
+        EStructuralFeature qNameSF = getDbServer().getQualifiedNameDelegate().apply(eObject.eClass());
         for (AbstractMap.SimpleEntry<EAttribute, List> attr: attrs) {
+            if (attr.getKey() != qNameSF && !getDbServer().getIndexedAttributeDelegate().apply(attr.getKey())) {
+                continue;
+            }
             EDataType eDataType = attr.getKey().getEAttributeType();
             String feature = attr.getKey().getName();
             for (int index = 0; index < attr.getValue().size(); ++index) {
@@ -393,9 +397,10 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         List<String> sameResources = contents.stream()
                 .flatMap(eObject -> {
-                    String qName = getDbServer().getQName(eObject);
-                    return qName != null ?
-                            findByClassAndQName(eObject.eClass(), qName)
+                    EStructuralFeature sf = getDbServer().getQNameSF(eObject.eClass());
+                    String classUri = EcoreUtil.getURI(eObject.eClass()).trimQuery().toString();
+                    return sf != null ?
+                            findByClassAndFeature(classUri, sf.getName(), eObject.eGet(sf).toString())
                                     .filter(dbObject -> !dbObject.getId().equals(hbServer.getId(eObject))) :
                             Stream.empty();
                 })

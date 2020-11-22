@@ -47,6 +47,14 @@ public class HbServer implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(HbServer.class);
     protected static final ThreadLocal<String> tenantId = new InheritableThreadLocal<>();
 
+    public Function<EAttribute, Boolean> getIndexedAttributeDelegate() {
+        return indexedAttributeDelegate;
+    }
+
+    public void setIndexedAttributeDelegate(Function<EAttribute, Boolean> indexedAttributeDelegate) {
+        this.indexedAttributeDelegate = indexedAttributeDelegate;
+    }
+
     public static class DBObjectHandle {
         Long id;
         Integer version;
@@ -58,6 +66,7 @@ public class HbServer implements AutoCloseable {
     private final Events events = new Events();
     private final Set<String> updatedSchemas = new HashSet<>();
     private Function<EClass, EStructuralFeature> qualifiedNameDelegate = eClass -> eClass.getEStructuralFeature("name");
+    private Function<EAttribute, Boolean> indexedAttributeDelegate = eAttribute -> eAttribute.getEAttributeType() == EcorePackage.eINSTANCE.getEString();
     private final Properties config;
     private final EPackage.Registry packageRegistry = new EPackageRegistryImpl(EPackage.Registry.INSTANCE);
     private Map<EClass, List<EClass>> descendants = new HashMap<>();

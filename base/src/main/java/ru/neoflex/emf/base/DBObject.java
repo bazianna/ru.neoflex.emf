@@ -6,7 +6,7 @@ import java.util.List;
 
 @Entity
 @Table(indexes = {
-        @Index(columnList = "class_uri,q_name")
+        @Index(columnList = "class_uri")
 })
 public class DBObject {
     @Id
