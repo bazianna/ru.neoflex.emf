@@ -52,10 +52,11 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .getResultStream();
     }
 
-    protected Stream<DBObject> findByClassAndQName(String classUri, String qName) {
-        return session.createQuery("select o from DBObject o where o.classUri = :classUri and o.qName = :qName", DBObject.class)
+    protected Stream<DBObject> findByClassAndFeature(String classUri, String feature, String value) {
+        return session.createQuery("select o from DBObject o join o.attributes a where o.classUri = :classUri and a.feature = :feature and a.value = :value", DBObject.class)
                 .setParameter("classUri", classUri)
-                .setParameter("qName", qName)
+                .setParameter("feature", feature)
+                .setParameter("value", value)
                 .getResultStream();
     }
 
@@ -173,28 +174,37 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         dbObject.setVersion(dbObject.getVersion() + 1);
         dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
-        dbObject.setqName(getDbServer().getQName(eObject));
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-            List<AbstractMap.SimpleEntry<EAttribute, List>> attrs = eObject.eClass().getEAllAttributes().stream()
-                    .filter(sf -> !sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf))
-                    .map(sf -> new AbstractMap.SimpleEntry<>(sf,
-                            sf.isMany() ? (List) eObject.eGet(sf) : Arrays.asList(eObject.eGet(sf))))
-                    .collect(Collectors.toList());
-            int count = attrs.stream().map(entry -> entry.getValue().size()).reduce(0, Integer::sum);
-            oos.writeInt(count);
-            for (AbstractMap.SimpleEntry<EAttribute, List> attr: attrs) {
-                EDataType eDataType = attr.getKey().getEAttributeType();
-                String feature = attr.getKey().getName();
-                for (Object value: attr.getValue()) {
-                    oos.writeUTF(feature);
-                    oos.writeUTF(EcoreUtil.convertToString(eDataType, value));
+
+        List<AbstractMap.SimpleEntry<EAttribute, List>> attrs = eObject.eClass().getEAllAttributes().stream()
+                .filter(sf -> !sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf))
+                .map(sf -> new AbstractMap.SimpleEntry<>(sf,
+                        sf.isMany() ? (List) eObject.eGet(sf) : Arrays.asList(eObject.eGet(sf))))
+                .collect(Collectors.toList());
+        Set<DBAttribute> toDeleteA = dbObject.getAttributes().stream().collect(Collectors.toSet());
+        for (AbstractMap.SimpleEntry<EAttribute, List> attr: attrs) {
+            EDataType eDataType = attr.getKey().getEAttributeType();
+            String feature = attr.getKey().getName();
+            for (int index = 0; index < attr.getValue().size(); ++index) {
+                Object valueObject = attr.getValue().get(index);
+                String value = EcoreUtil.convertToString(eDataType, valueObject);
+                int finalIndex = index;
+                DBAttribute dbAttribute = dbObject.getAttributes().stream()
+                        .filter(a -> a.getFeature().equals(feature) && a.getIndex() == finalIndex && Objects.equals(a.getValue(), value))
+                        .findFirst().orElse(null);
+                if (dbAttribute != null) {
+                    toDeleteA.remove(dbAttribute);
+                }
+                else {
+                    dbAttribute = new DBAttribute();
+                    dbObject.getAttributes().add(dbAttribute);
+                    dbAttribute.setFeature(feature);
+                    dbAttribute.setIndex(index);
+                    dbAttribute.setValue(value);
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
-        dbObject.setImage(baos.toByteArray());
+        dbObject.getAttributes().removeAll(toDeleteA);
+
         List<AbstractMap.SimpleEntry<EReference, List<EObject>>> refsC = eObject.eClass().getEAllReferences().stream()
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && !sf.isContainer() && sf.isContainment() && eObject.eIsSet(sf))
                 .map(sf -> new AbstractMap.SimpleEntry<>(sf,
@@ -228,6 +238,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
             }
         }
         dbObject.getReferences().removeAll(toDeleteC);
+
         getSession().saveOrUpdate(dbObject);
         toDeleteC.forEach(dbReference -> deleteRecursive(dbReference.getRefObject()));
         hbServer.setId(eObject, dbObject.getId());
@@ -240,27 +251,24 @@ public class HbTransaction implements AutoCloseable, Serializable {
         String classUri = dbObject.getClassUri();
         EClass eClass = (EClass) getResourceSet().getEObject(URI.createURI(classUri), false);
         EObject eObject = EcoreUtil.create(eClass);
-        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dbObject.getImage()))) {
-            int count = ois.readInt();
-            for (int i = 0; i < count; ++i) {
-                String feature = ois.readUTF();
-                String image = ois.readUTF();
-                EStructuralFeature sf = eClass.getEStructuralFeature(feature);
-                if (sf instanceof EAttribute) {
-                    EAttribute eAttribute = (EAttribute) sf;
-                    EDataType eDataType = eAttribute.getEAttributeType();
-                    Object value = EcoreUtil.createFromString(eDataType, image);
-                    if (sf.isMany()) {
-                        ((List) eObject.eGet(sf)).add(value);
-                    }
-                    else {
-                        eObject.eSet(sf, value);
-                    }
+
+        List<DBAttribute> attributes = new ArrayList<>(dbObject.getAttributes());
+        attributes.sort(Comparator.comparingInt(value -> value.getIndex()));
+        for (DBAttribute dbAttribute: attributes) {
+            EStructuralFeature sf = eClass.getEStructuralFeature(dbAttribute.getFeature());
+            if (sf instanceof EAttribute) {
+                EAttribute eAttribute = (EAttribute) sf;
+                EDataType eDataType = eAttribute.getEAttributeType();
+                Object objectValue = EcoreUtil.createFromString(eDataType, dbAttribute.getValue());
+                if (sf.isMany()) {
+                    ((List) eObject.eGet(sf)).add(objectValue);
+                }
+                else {
+                    eObject.eSet(sf, objectValue);
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
+
         List<DBReference> references = new ArrayList<>(dbObject.getReferences());
         references.sort(Comparator.comparingInt(value -> value.getIndex()));
         for (DBReference dbReference: references) {
@@ -315,14 +323,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     public Stream<Resource> findByClassAndQName(ResourceSet rs, EClass eClass, String qName) {
+        EStructuralFeature sf = getDbServer().getQNameSF(eClass);
+        if (sf == null) {
+            return Stream.empty();
+        }
         return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClassAndQName(EcoreUtil.getURI(eClass).trimQuery().toString(), qName)
+                .flatMap(eClassDesc -> findByClassAndFeature(EcoreUtil.getURI(eClass).trimQuery().toString(), sf.getName(), qName)
                         .map(dbResource -> createResource(rs, dbResource)));
-    }
-
-    public Stream<DBObject> findByClassAndQName(EClass eClass, String qName) {
-        return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClassAndQName(EcoreUtil.getURI(eClass).trimQuery().toString(), qName));
     }
 
     private DBObject getParent(DBObject dbObject) {
@@ -367,9 +374,10 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         List<String> sameResources = contents.stream()
                 .flatMap(eObject -> {
-                    String qName = getDbServer().getQName(eObject);
-                    return qName != null ?
-                            findByClassAndQName(eObject.eClass(), qName)
+                    EStructuralFeature sf = getDbServer().getQNameSF(eObject.eClass());
+                    String classUri = EcoreUtil.getURI(eObject.eClass()).trimQuery().toString();
+                    return sf != null ?
+                            findByClassAndFeature(classUri, sf.getName(), eObject.eGet(sf).toString())
                                     .filter(dbObject -> !dbObject.getId().equals(hbServer.getId(eObject))) :
                             Stream.empty();
                 })
