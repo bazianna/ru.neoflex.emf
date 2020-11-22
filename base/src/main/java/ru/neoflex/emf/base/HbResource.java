@@ -9,12 +9,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class HbResource extends ResourceImpl {
+    protected Map<Long, EObject> idToEObjectMap;
 
     public HbResource(URI uri) {
         super(uri);
+    }
+
+    protected Map<Long, EObject> getIDToEObjectMap() {
+        if (idToEObjectMap == null) {
+            idToEObjectMap = new HashMap<>();
+        }
+
+        return idToEObjectMap;
     }
 
     @Override
@@ -26,17 +34,35 @@ public class HbResource extends ResourceImpl {
     @Override
     protected EObject getEObjectByID(String id) {
         try {
-            return getTx().getDbServer().getEObjectToIdMap().entrySet().stream()
-                    .filter(entry -> entry.getValue().id.equals(Long.parseLong(id))).map(Map.Entry::getKey)
-                    .findFirst().orElse(null);
+            Long idl = Long.parseLong(id);
+            EObject eObject = getIDToEObjectMap().get(idl);
+            return eObject != null ? eObject : super.getEObjectByID(id);
         } catch (NumberFormatException e) {
             return super.getEObjectByID(id);
         }
     }
 
+    protected boolean isAttachedDetachedHelperRequired() {
+        return true;
+    }
+
     public HbTransaction getTx() {
         HbHandler hbHandler = (HbHandler) getResourceSet().getURIConverter().getURIHandlers().get(0);
         return hbHandler.getTx();
+    }
+
+    protected void attachedHelper(EObject eObject) {
+        Long id = getTx().getDbServer().getId(eObject);
+        if (id != null) {
+            getIDToEObjectMap().put(id, eObject);
+        }
+    }
+
+    protected void detachedHelper(EObject eObject) {
+        Long id = getTx().getDbServer().getId(eObject);
+        if (id != null) {
+            getIDToEObjectMap().remove(id);
+        }
     }
 
     protected void doSave(OutputStream outputStream, Map<?, ?> options) throws IOException {
