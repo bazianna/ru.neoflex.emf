@@ -52,10 +52,11 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .getResultStream();
     }
 
-    protected Stream<DBObject> findByClassAndQName(String classUri, String qName) {
-        return session.createQuery("select o from DBObject o where o.classUri = :classUri and o.qName = :qName", DBObject.class)
+    protected Stream<DBObject> findByClassAndFeature(String classUri, String feature, String value) {
+        return session.createQuery("select o from DBObject o join o.attributes a where o.classUri = :classUri and a.feature = :feature and a.value = :value", DBObject.class)
                 .setParameter("classUri", classUri)
-                .setParameter("qName", qName)
+                .setParameter("feature", feature)
+                .setParameter("value", value)
                 .getResultStream();
     }
 
