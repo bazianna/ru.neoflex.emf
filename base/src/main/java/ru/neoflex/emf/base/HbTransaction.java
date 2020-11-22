@@ -342,14 +342,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     public Stream<Resource> findByClassAndQName(ResourceSet rs, EClass eClass, String qName) {
+        EStructuralFeature sf = getDbServer().getQNameSF(eClass);
+        if (sf == null) {
+            return Stream.empty();
+        }
         return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClassAndQName(EcoreUtil.getURI(eClass).trimQuery().toString(), qName)
+                .flatMap(eClassDesc -> findByClassAndFeature(EcoreUtil.getURI(eClass).trimQuery().toString(), sf.getName(), qName)
                         .map(dbResource -> createResource(rs, dbResource)));
-    }
-
-    public Stream<DBObject> findByClassAndQName(EClass eClass, String qName) {
-        return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClassAndQName(EcoreUtil.getURI(eClass).trimQuery().toString(), qName));
     }
 
     private DBObject getParent(DBObject dbObject) {
