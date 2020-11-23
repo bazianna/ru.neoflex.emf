@@ -11,6 +11,7 @@ import org.springframework.util.Assert;
 import ru.neoflex.emf.base.HbTransaction;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.stream.Stream;
 
 @SpringBootTest
@@ -29,8 +30,7 @@ public class XcoreTests {
         try (InputStream is = xresource.getInputStream()) {
             ePackage = dbServerSvc.loadXcorePackage(is, null);
         }
-        Stream<EPackage> ePackageStream = Stream.of(ePackage);
-        byte[] ecore = DBServerSvc.ePackages2Ecore(ePackageStream);
+        byte[] ecore = DBServerSvc.ePackages2Ecore(Collections.singletonList(ePackage));
         Assert.isTrue(ecore.length > 0, "Ecore generated");
     }
 

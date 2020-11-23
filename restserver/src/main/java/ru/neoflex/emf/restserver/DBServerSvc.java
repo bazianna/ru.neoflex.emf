@@ -91,8 +91,7 @@ public class DBServerSvc {
     public EPackage loadXcorePackage(InputStream is, String fileName) throws IOException {
         if (StringUtils.isEmpty(fileName)) {
             fileName = "file:///temp.xcore";
-        }
-        else {
+        } else {
             fileName = "file:///" + Paths.get(fileName).getFileName().toString().replaceAll("\\.[^.]*$", ".xcore");
         }
         XtextResourceSet xrs = createXtextResourceSet();
@@ -134,8 +133,7 @@ public class DBServerSvc {
     public EPackage loadEcorePackage(InputStream is, String fileName) throws IOException {
         if (StringUtils.isEmpty(fileName)) {
             fileName = "file:///temp.ecore";
-        }
-        else {
+        } else {
             fileName = "file:///" + Paths.get(fileName).getFileName().toString().replaceAll("\\.[^.]*$", ".ecore");
         }
         ResourceSet ers = new ResourceSetImpl();
@@ -147,11 +145,11 @@ public class DBServerSvc {
         return ePackage;
     }
 
-    public static byte[] ePackages2Ecore(Stream<EPackage> ePackageStream) throws IOException {
+    public static byte[] ePackages2Ecore(List<EPackage> ePackages) throws IOException {
         ResourceSet ers = new ResourceSetImpl();
         ers.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
         Resource er = ers.createResource(URI.createURI("file:///model.ecore"));
-        er.getContents().addAll(ePackageStream.collect(Collectors.toList()));
+        er.getContents().addAll(EcoreUtil.copyAll(ePackages));
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         er.save(os, null);
         byte[] ecore = os.toByteArray();
@@ -160,14 +158,15 @@ public class DBServerSvc {
 
     public byte[] downloadEcore(String nsUri) {
         try {
-            List<EPackage> ePackages = getDbServer().inTransaction(true, tx -> {
+            return getDbServer().inTransaction(true, tx -> {
                 ResourceSet rs = tx.getResourceSet();
-                return tx.findByClassAndQName(rs, EcorePackage.Literals.EPACKAGE, nsUri)
+                List<EPackage> ePackages = tx.findByClassAndQName(rs, EcorePackage.Literals.EPACKAGE, nsUri)
                         .flatMap(resource -> resource.getContents().stream())
-                        .map(eObject -> (EPackage)eObject)
+                        .map(eObject -> (EPackage) eObject)
                         .collect(Collectors.toList());
+                ePackages.forEach(ePackage -> EcoreUtil.resolveAll(ePackage));
+                return ePackages2Ecore(ePackages);
             });
-            return ePackages2Ecore(ePackages.stream());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
