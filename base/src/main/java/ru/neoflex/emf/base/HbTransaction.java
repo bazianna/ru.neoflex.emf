@@ -43,7 +43,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     protected Stream<DBObject> findAll() {
-        return session.createQuery("select o from DBObject o", DBObject.class).getResultStream();
+        return session.createQuery(
+                "select o from DBObject o " +
+                        "where o.proxy is null and not exists " +
+                        "(select 1 from DBObject p join p.references r " +
+                        "where r.containment = true " +
+                        "and r.refObject.id = o.id)"
+                , DBObject.class).getResultStream();
     }
 
     protected Stream<DBObject> findByClass(String classUri) {
@@ -67,19 +73,36 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     protected void deleteRecursive(DBObject dbObject) {
+        unlinkRecursive(dbObject);
+        deleteUnlinked(dbObject);
+    }
+
+    protected void unlinkRecursive(DBObject dbObject) {
+        List<DBObject> proxies = dbObject.getReferences().stream()
+                .map(DBReference::getRefObject).filter(DBObject::isProxy).collect(Collectors.toList());
+        if (dbObject.getReferences().removeIf(dbReference -> !dbReference.getContainment())) {
+            session.save(dbObject);
+        }
+        proxies.forEach(session::delete);
+        dbObject.getReferences().forEach(r->unlinkRecursive(r.getRefObject()));
+    }
+
+    protected void deleteUnlinked(DBObject dbObject) {
+        List<DBObject> toDelete = dbObject.getReferences().stream()
+                .map(DBReference::getRefObject).collect(Collectors.toList());
+        if (dbObject.getReferences().size() > 0) {
+            dbObject.getReferences().clear();
+            session.save(dbObject);
+        }
+        toDelete.forEach(this::deleteUnlinked);
         Set<String> deps = session.createQuery(
                 "select o from DBObject o join o.references r " +
                         "where r.containment = false and r.refObject.id = :refdb_id"
                 , DBObject.class).setParameter("refdb_id", dbObject.getId()).getResultStream()
-                .map(o->String.valueOf(o.getId())).collect(Collectors.toSet());
+                .map(o -> String.valueOf(o.getId())).collect(Collectors.toSet());
         if (deps.size() > 0) {
             throw new IllegalArgumentException(String.format(
-                    "Can not delete Resource, referenced by [%s]", String.join(", ", deps)));
-        }
-        for (DBReference r: dbObject.getReferences()) {
-            if (r.getContainment() || r.getRefObject().isProxy()) {
-                deleteRecursive(r.getRefObject());
-            }
+                    "Can not delete Resource %d, referenced by [%s]", dbObject.getId(), String.join(", ", deps)));
         }
         session.delete(dbObject);
     }
@@ -116,8 +139,8 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .map(sf -> new AbstractMap.SimpleEntry<>(sf,
                         sf.isMany() ? (List<EObject>) eObject.eGet(sf) : Collections.singletonList((EObject) eObject.eGet(sf))))
                 .collect(Collectors.toList());
-        Set<DBReference> toDeleteNC = dbObject.getReferences().stream().filter(r->!r.getContainment()).collect(Collectors.toSet());
-        for (AbstractMap.SimpleEntry<EReference, List<EObject>> ref: refsNC) {
+        Set<DBReference> toDeleteNC = dbObject.getReferences().stream().filter(r -> !r.getContainment()).collect(Collectors.toSet());
+        for (AbstractMap.SimpleEntry<EReference, List<EObject>> ref : refsNC) {
             String feature = ref.getKey().getName();
             for (int i = 0; i < ref.getValue().size(); ++i) {
                 final int index = i;
@@ -128,8 +151,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                         .findFirst().orElse(null);
                 if (dbReference != null) {
                     toDeleteNC.remove(dbReference);
-                }
-                else {
+                } else {
                     dbReference = new DBReference();
                     dbReference.setContainment(ref.getKey().isContainment());
                     dbObject.getReferences().add(dbReference);
@@ -138,8 +160,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     DBObject refDBObject;
                     if (id2 != null) {
                         refDBObject = getOrThrow(id2);
-                    }
-                    else {
+                    } else {
                         refDBObject = new DBObject();
                         refDBObject.setClassUri(EcoreUtil.getURI(eRefObject.eClass()).toString());
                         refDBObject.setProxy(EcoreUtil.getURI(eRefObject).toString());
@@ -183,7 +204,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
 
         Set<DBAttribute> toDeleteA = dbObject.getAttributes().stream().collect(Collectors.toSet());
         EStructuralFeature qNameSF = getDbServer().getQualifiedNameDelegate().apply(eObject.eClass());
-        for (AbstractMap.SimpleEntry<EAttribute, List> attr: attrs) {
+        for (AbstractMap.SimpleEntry<EAttribute, List> attr : attrs) {
             if (attr.getKey() != qNameSF && !getDbServer().getIndexedAttributeDelegate().apply(attr.getKey())) {
                 continue;
             }
@@ -198,8 +219,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                         .findFirst().orElse(null);
                 if (dbAttribute != null) {
                     toDeleteA.remove(dbAttribute);
-                }
-                else {
+                } else {
                     dbAttribute = new DBAttribute();
                     dbObject.getAttributes().add(dbAttribute);
                     dbAttribute.setFeature(feature);
@@ -214,10 +234,10 @@ public class HbTransaction implements AutoCloseable, Serializable {
         try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
             int count = attrs.stream().map(entry -> entry.getValue().size()).reduce(0, Integer::sum);
             oos.writeInt(count);
-            for (AbstractMap.SimpleEntry<EAttribute, List> attr: attrs) {
+            for (AbstractMap.SimpleEntry<EAttribute, List> attr : attrs) {
                 EDataType eDataType = attr.getKey().getEAttributeType();
                 String feature = attr.getKey().getName();
-                for (Object value: attr.getValue()) {
+                for (Object value : attr.getValue()) {
                     oos.writeUTF(feature);
                     oos.writeUTF(EcoreUtil.convertToString(eDataType, value));
                 }
@@ -232,12 +252,12 @@ public class HbTransaction implements AutoCloseable, Serializable {
                         sf.isMany() ? (List<EObject>) eObject.eGet(sf) : Collections.singletonList((EObject) eObject.eGet(sf))))
                 .collect(Collectors.toList());
         Set<DBReference> toDeleteC = dbObject.getReferences().stream().filter(DBReference::getContainment).collect(Collectors.toSet());
-        for (AbstractMap.SimpleEntry<EReference, List<EObject>> ref: refsC) {
+        for (AbstractMap.SimpleEntry<EReference, List<EObject>> ref : refsC) {
             String feature = ref.getKey().getName();
-            for (EObject eObject2: ref.getValue()) {
+            for (EObject eObject2 : ref.getValue()) {
                 EcoreUtil.resolveAll(eObject2);
                 if (eObject2.eIsProxy()) {
-                    throw new RuntimeException("Can't resolve " + ((InternalEObject)eObject2).eProxyURI().toString());
+                    throw new RuntimeException("Can't resolve " + ((InternalEObject) eObject2).eProxyURI().toString());
                 }
                 Long id2 = hbServer.getId(eObject2);
                 DBObject dbObject2 = id2 != null ? getOrThrow(id2) : saveEObjectContainment(resource, null, eObject2);
@@ -247,8 +267,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                         .findFirst().orElse(null);
                 if (dbReference != null) {
                     toDeleteC.remove(dbReference);
-                }
-                else {
+                } else {
                     dbReference = new DBReference();
                     dbReference.setContainment(ref.getKey().isContainment());
                     dbObject.getReferences().add(dbReference);
@@ -271,30 +290,31 @@ public class HbTransaction implements AutoCloseable, Serializable {
         String classUri = dbObject.getClassUri();
         EClass eClass = (EClass) getResourceSet().getEObject(URI.createURI(classUri), false);
         EObject eObject = EcoreUtil.create(eClass);
-        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dbObject.getImage()))) {
-            int count = ois.readInt();
-            for (int i = 0; i < count; ++i) {
-                String feature = ois.readUTF();
-                String image = ois.readUTF();
-                EStructuralFeature sf = eClass.getEStructuralFeature(feature);
-                if (sf instanceof EAttribute) {
-                    EAttribute eAttribute = (EAttribute) sf;
-                    EDataType eDataType = eAttribute.getEAttributeType();
-                    Object value = EcoreUtil.createFromString(eDataType, image);
-                    if (sf.isMany()) {
-                        ((List) eObject.eGet(sf)).add(value);
-                    }
-                    else {
-                        eObject.eSet(sf, value);
+        if (dbObject.getImage() != null) {
+            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dbObject.getImage()))) {
+                int count = ois.readInt();
+                for (int i = 0; i < count; ++i) {
+                    String feature = ois.readUTF();
+                    String image = ois.readUTF();
+                    EStructuralFeature sf = eClass.getEStructuralFeature(feature);
+                    if (sf instanceof EAttribute) {
+                        EAttribute eAttribute = (EAttribute) sf;
+                        EDataType eDataType = eAttribute.getEAttributeType();
+                        Object value = EcoreUtil.createFromString(eDataType, image);
+                        if (sf.isMany()) {
+                            ((List) eObject.eGet(sf)).add(value);
+                        } else {
+                            eObject.eSet(sf, value);
+                        }
                     }
                 }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
         List<DBReference> references = new ArrayList<>(dbObject.getReferences());
         references.sort(Comparator.comparingInt(value -> value.getIndex()));
-        for (DBReference dbReference: references) {
+        for (DBReference dbReference : references) {
             EStructuralFeature sf = eClass.getEStructuralFeature(dbReference.getFeature());
             if (sf instanceof EReference) {
                 DBObject dbRef = dbReference.getRefObject();
@@ -302,21 +322,18 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 EObject refObject;
                 if (eReference.isContainment()) {
                     refObject = loadEObject(resource, dbRef);
-                }
-                else {
+                } else {
                     EClass refClass = (EClass) getResourceSet().getEObject(URI.createURI(dbRef.getClassUri()), false);
                     refObject = EcoreUtil.create(refClass);
                     if (dbRef.getProxy() != null) {
                         ((InternalEObject) refObject).eSetProxyURI(URI.createURI(dbRef.getProxy()));
-                    }
-                    else {
+                    } else {
                         ((InternalEObject) refObject).eSetProxyURI(getDbServer().createURI(dbRef.getId()).appendFragment(String.valueOf(dbRef.getId())));
                     }
                 }
                 if (sf.isMany()) {
-                    ((List)eObject.eGet(sf)).add(refObject);
-                }
-                else {
+                    ((List) eObject.eGet(sf)).add(refObject);
+                } else {
                     eObject.eSet(sf, refObject);
                 }
             }

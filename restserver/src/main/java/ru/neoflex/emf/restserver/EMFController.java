@@ -64,9 +64,9 @@ public class EMFController {
     }
 
     @DeleteMapping("/resource")
-    void deleteResource(Long id) throws Exception {
+    void deleteResource(Long id, Integer version) throws Exception {
         dbServerSvc.getDbServer().inTransaction(false, tx -> {
-            URI uri = tx.getDbServer().createURI(id);
+            URI uri = tx.getDbServer().createURI(id, version);
             tx.delete(uri);
             return null;
         });

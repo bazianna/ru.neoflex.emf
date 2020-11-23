@@ -15,6 +15,8 @@ import ru.neoflex.emf.base.HbResource;
 import java.io.IOException;
 import java.util.List;
 
+import static org.eclipse.emf.ecore.util.EcoreUtil.getURI;
+
 public class JsonHelper {
     JsonMapper mapper = new JsonMapper();
 
@@ -101,18 +103,6 @@ public class JsonHelper {
             refNode.put("$ref", getURI(refObject).toString());
             return refNode;
         }
-    }
-
-    public static URI getURI(EObject eObject) {
-        if (eObject instanceof EPackage) {
-            URI uri = URI.createURI(((EPackage)eObject).getNsURI());
-            return uri.appendFragment(eObject.eResource().getURIFragment(eObject));
-        }
-        if (eObject instanceof EClass) {
-            URI uri = URI.createURI(((EClass)eObject).getEPackage().getNsURI());
-            return uri.appendFragment(eObject.eResource().getURIFragment(eObject));
-        }
-        return EcoreUtil.getURI(eObject);
     }
 
     public ObjectNode toJson(Resource resource) {

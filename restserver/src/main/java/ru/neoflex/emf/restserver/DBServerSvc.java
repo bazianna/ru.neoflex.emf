@@ -50,7 +50,7 @@ public class DBServerSvc {
                 .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames())
                 .flatMap(Arrays::<String>stream)
                 .forEach(propName -> props.setProperty(propName, env.getProperty(propName)));
-        String dbName = props.getProperty("db-name", "emfdb");
+        String dbName = props.getProperty("db-name", "restserverdb");
         hbServer = new HbServer(dbName, props);
         hbServer.registerDynamicPackages();
     }
