@@ -372,20 +372,21 @@ public class HbTransaction implements AutoCloseable, Serializable {
                         .map(dbResource -> createResource(rs, dbResource)));
     }
 
-    private DBObject getParent(DBObject dbObject) {
+    private DBObject getContainer(DBObject dbObject) {
         return session.createQuery("select o from DBObject o join o.references r where r.refObject.id = :refdb_id", DBObject.class)
                 .setParameter("refdb_id", dbObject.getId())
                 .uniqueResult();
     }
 
-    private DBObject getContainer(DBObject dbObject) {
-        while (true) {
-            DBObject parent = getParent(dbObject);
+    private DBObject getRootContainer(DBObject dbObject, Set<Long> excludes) {
+        while (excludes == null || !excludes.contains(dbObject.getId())) {
+            DBObject parent = getContainer(dbObject);
             if (parent == null) {
                 return dbObject;
             }
             dbObject = parent;
         }
+        return null;
     }
 
     public Stream<Resource> findReferencedTo(Resource resource) {
@@ -396,7 +397,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .map(eObject -> getDbServer().getId(eObject)).filter(Objects::nonNull)
                 .flatMap(this::findReferencedTo)
                 .collect(Collectors.toList()).stream()
-                .map(this::getContainer).filter(dbObject -> !exclude.contains(dbObject.getId()))
+                .map(dbObject->getRootContainer(dbObject, exclude)).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         return topRefs.stream().map(dbObject -> createResource(resource.getResourceSet(), dbObject));
     }
