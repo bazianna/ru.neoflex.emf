@@ -134,4 +134,11 @@ public class EMFController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
+
+    @GetMapping("/query")
+    public List<Object> query(@RequestParam("sql") String sql) throws Exception {
+        return dbServerSvc.getDbServer().inTransaction(true, tx -> {
+            return tx.getSession().createQuery(sql).list();
+        });
+    }
 }
