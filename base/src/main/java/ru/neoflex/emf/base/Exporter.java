@@ -244,7 +244,7 @@ public class Exporter {
                 throw new IllegalArgumentException("No qName");
             }
             List<Resource> resources = tx.findByClassAndQName(rs, eObject.eClass(), qName).collect(Collectors.toList());
-            URI uri = resources.size() == 0 ? hbServer.createURI(null) : resources.get(0).getURI();
+            URI uri = resources.size() == 0 ? hbServer.createURI() : resources.get(0).getURI();
             Resource resource = rs.createResource(uri);
             resource.getContents().add(EcoreUtil.copy(eObject));
             resource.save(null);

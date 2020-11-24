@@ -75,7 +75,7 @@ public class DBServerSvc {
                     .collect(Collectors.toList());
             Resource resource;
             if (resources.size() == 0) {
-                resource = rs.createResource(getDbServer().createURI(null));
+                resource = rs.createResource(getDbServer().createURI());
             } else {
                 resource = resources.get(0);
                 resource.unload();

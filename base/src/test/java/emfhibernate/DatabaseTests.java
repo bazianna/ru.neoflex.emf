@@ -1,5 +1,6 @@
 package emfhibernate;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -135,14 +136,14 @@ public class DatabaseTests extends TestBase {
         Long[] ids = hbServer.inTransaction(false, tx -> {
             group.setName("masters");
             ResourceSet resourceSet = tx.getResourceSet();
-            Resource groupResource = resourceSet.createResource(hbServer.createURI(null));
+            Resource groupResource = resourceSet.createResource(hbServer.createURI());
             groupResource.getContents().add(group);
             groupResource.save(null);
             Long groupId = hbServer.getId(groupResource.getURI());
             User user = TestFactory.eINSTANCE.createUser();
             user.setName("Orlov");
             user.setGroup(group);
-            Resource userResource = resourceSet.createResource(hbServer.createURI(null));
+            Resource userResource = resourceSet.createResource(hbServer.createURI());
             userResource.getContents().add(user);
             userResource.save(null);
             Long userId = hbServer.getId(user);
@@ -163,7 +164,7 @@ public class DatabaseTests extends TestBase {
             user.setName("Orlov");
             user.setGroup(group);
             ResourceSet resourceSet = tx.getResourceSet();
-            Resource userResource = resourceSet.createResource(hbServer.createURI(null));
+            Resource userResource = resourceSet.createResource(hbServer.createURI());
             userResource.getContents().add(user);
             userResource.save(null);
             Assert.assertEquals(3, tx.findAll(resourceSet).count());
@@ -268,9 +269,11 @@ public class DatabaseTests extends TestBase {
             Assert.assertEquals("ID", user_group.getColumns().get(0).getName());
             Assert.assertEquals("NAME", user_group.getColumns().get(1).getName());
             Assert.assertEquals(4, user_group.getColumns().size());
-            Resource table_User = tx.findByClass(rs, TestPackage.eINSTANCE.getDBTable()).filter(r -> ((DBTable) r.getContents().get(0)).getName().equals("USER")).findFirst().get();
+            EObject table_User = tx.findByClass(rs, TestPackage.eINSTANCE.getDBTable()).map(r->r.getContents().get(0))
+                    .filter(o -> ((DBTable) o).getName().equals("USER")).findFirst().get();
             try {
-                table_User.delete(null);
+                Resource resource = tx.getResourceSet().createResource(tx.getDbServer().createURI(table_User));
+                resource.delete(null);
                 Assert.fail("Can't delete referenced Resource");
             } catch (IllegalArgumentException e) {
                 Assert.assertTrue(e.getMessage().startsWith("Can not delete"));

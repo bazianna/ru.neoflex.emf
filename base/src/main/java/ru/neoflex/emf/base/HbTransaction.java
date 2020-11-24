@@ -285,6 +285,10 @@ public class HbTransaction implements AutoCloseable, Serializable {
         return dbObject;
     }
 
+    private URI getProxyURI(DBObject dbObject) {
+        return getDbServer().createURI(getRootContainer(dbObject, null).getId())
+                .appendFragment(String.valueOf(dbObject.getId()));
+    }
 
     private EObject loadEObject(HbResource resource, DBObject dbObject) {
         String classUri = dbObject.getClassUri();
@@ -328,7 +332,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     if (dbRef.getProxy() != null) {
                         ((InternalEObject) refObject).eSetProxyURI(URI.createURI(dbRef.getProxy()));
                     } else {
-                        ((InternalEObject) refObject).eSetProxyURI(getDbServer().createURI(dbRef.getId()).appendFragment(String.valueOf(dbRef.getId())));
+                        ((InternalEObject) refObject).eSetProxyURI(getProxyURI(dbRef));
                     }
                 }
                 if (sf.isMany()) {
@@ -344,7 +348,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     protected Resource createResource(ResourceSet rs, DBObject dbObject) {
-        URI uri = getDbServer().createURI(dbObject.getId(), dbObject.getVersion());
+        URI uri = getDbServer().createURI(dbObject.getId());
         HbResource resource = (HbResource) rs.createResource(uri);
         EObject eObject = loadEObject(resource, dbObject);
         resource.getContents().add(eObject);
@@ -352,14 +356,14 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     public Stream<Resource> findAll(ResourceSet rs) {
-        return findAll()
+        return findAll().collect(Collectors.toList()).stream()
                 .map(dbResource -> createResource(rs, dbResource));
     }
 
     public Stream<Resource> findByClass(ResourceSet rs, EClass eClass) {
         return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClass(EcoreUtil.getURI(eClassDesc).trimQuery().toString())
-                        .map(dbResource -> createResource(rs, dbResource)));
+                .flatMap(eClassDesc -> findByClass(EcoreUtil.getURI(eClassDesc).trimQuery().toString()))
+                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource));
     }
 
     public Stream<Resource> findByClassAndQName(ResourceSet rs, EClass eClass, String qName) {
@@ -368,12 +372,12 @@ public class HbTransaction implements AutoCloseable, Serializable {
             return Stream.empty();
         }
         return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClassAndFeature(EcoreUtil.getURI(eClass).trimQuery().toString(), sf.getName(), qName)
-                        .map(dbResource -> createResource(rs, dbResource)));
+                .flatMap(eClassDesc -> findByClassAndFeature(EcoreUtil.getURI(eClass).trimQuery().toString(), sf.getName(), qName))
+                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource));
     }
 
     private DBObject getContainer(DBObject dbObject) {
-        return session.createQuery("select o from DBObject o join o.references r where r.refObject.id = :refdb_id", DBObject.class)
+        return session.createQuery("select o from DBObject o join o.references r where r.refObject.id = :refdb_id and r.containment = true", DBObject.class)
                 .setParameter("refdb_id", dbObject.getId())
                 .uniqueResult();
     }

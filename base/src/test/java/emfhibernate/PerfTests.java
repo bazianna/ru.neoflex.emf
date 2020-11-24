@@ -44,7 +44,7 @@ public class PerfTests extends TestBase {
                 String name = "group_" + index;
                 group.setName(name);
                 ResourceSet resourceSet = tx.getResourceSet();
-                Resource groupResource = resourceSet.createResource(hbServer.createURI(null));
+                Resource groupResource = resourceSet.createResource(hbServer.createURI());
                 groupResource.getContents().add(group);
                 groupResource.save(null);
                 Long groupId = hbServer.getId(group);
@@ -66,7 +66,7 @@ public class PerfTests extends TestBase {
                 String name = "User_" + index;
                 user.setName(name);
                 user.setGroup(group);
-                Resource userResource = resourceSet.createResource(hbServer.createURI(null));
+                Resource userResource = resourceSet.createResource(hbServer.createURI());
                 userResource.getContents().add(user);
                 userResource.save(null);
                 Long userId = hbServer.getId(user);

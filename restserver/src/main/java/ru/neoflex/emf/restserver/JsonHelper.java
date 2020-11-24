@@ -79,19 +79,19 @@ public class JsonHelper {
         if (eReference.isContainer()) return null;
         if (!eReference.isMany()) {
             EObject refObject = (EObject) eObject.eGet(eReference);
-            return toJson(eReference, refObject);
+            return toJson(eObject.eResource(), eReference, refObject);
         }
         else {
             ArrayNode result = mapper.createArrayNode();
             List<EObject> values = (List<EObject>) eObject.eGet(eReference);
             for (EObject value: values) {
-                result.add(toJson(eReference, value));
+                result.add(toJson(eObject.eResource(), eReference, value));
             }
             return result;
         }
     }
 
-    private ObjectNode toJson(EReference eReference, EObject refObject) {
+    private ObjectNode toJson(Resource base, EReference eReference, EObject refObject) {
         if (eReference.isContainment()) {
             return toJson(refObject, eReference.getEReferenceType());
         }
@@ -100,7 +100,7 @@ public class JsonHelper {
             if (!refObject.eClass().equals(eReference.getEReferenceType())) {
                 refNode.put("eClass", getURI(refObject.eClass()).toString());
             }
-            refNode.put("$ref", getURI(refObject).toString());
+            refNode.put("$ref", getURI(refObject).deresolve(base.getURI()).toString());
             return refNode;
         }
     }

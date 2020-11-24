@@ -259,20 +259,24 @@ public class HbServer implements AutoCloseable {
         return new HbTransaction(readOnly, this);
     }
 
-    private String createURIString(Long id) {
-        return getScheme() + "://" + dbName + "/" + (id != null ? id : "");
+    private String createURIString(Long id, Integer version) {
+        return getScheme() + "://" + dbName + "/" + (id != null ? id : "") + (version != null ? ("?rev=" + version) : "");
     }
 
     public URI createURI() {
-        return createURI(null);
+        return createURI((Long)null);
+    }
+
+    public URI createURI(EObject eObject) {
+        return createURI(getId(eObject), getVersion(eObject));
     }
 
     public URI createURI(Long id) {
-        return URI.createURI(createURIString(id));
+        return URI.createURI(createURIString(id, null));
     }
 
     public URI createURI(Long id, Integer version) {
-        return URI.createURI(String.format("%s?rev=%d", createURIString(id), version));
+        return URI.createURI(createURIString(id, version));
     }
 
     public EStructuralFeature getQNameSF(EClass eClass) {

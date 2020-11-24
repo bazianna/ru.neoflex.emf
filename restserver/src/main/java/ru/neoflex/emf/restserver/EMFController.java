@@ -40,10 +40,10 @@ public class EMFController {
     }
 
     @PutMapping("/resource")
-    JsonNode putResource(Long id, @RequestBody ObjectNode body) throws Exception {
+    JsonNode putResource(Long id, Integer version, @RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            URI uri = tx.getDbServer().createURI(id);
+            URI uri = tx.getDbServer().createURI(id, version);
             Resource resource = rs.createResource(uri);
             new JsonHelper().fromJson(resource, body, uri);
             resource.save(null);
@@ -55,7 +55,7 @@ public class EMFController {
     JsonNode postResource(@RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            URI uri = tx.getDbServer().createURI(null);
+            URI uri = tx.getDbServer().createURI();
             Resource resource = rs.createResource(uri);
             new JsonHelper().fromJson(resource, body);
             resource.save(null);

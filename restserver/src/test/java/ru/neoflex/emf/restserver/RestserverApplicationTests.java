@@ -57,7 +57,7 @@ class RestserverApplicationTests {
         Group group = TestFactory.eINSTANCE.createGroup();
         group.setName("masters");
         dbServerSvc.getDbServer().inTransaction(true, tx -> {
-            HbResource resource = tx.createResource(tx.getDbServer().createURI(null));
+            HbResource resource = tx.createResource(tx.getDbServer().createURI());
             resource.getContents().add(group);
             byte[] content = new JsonHelper().toBytes(resource);
             ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/emf/resource")
