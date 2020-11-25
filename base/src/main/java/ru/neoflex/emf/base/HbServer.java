@@ -34,7 +34,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class HbServer implements AutoCloseable {
-    //    private static final Logger logger = LoggerFactory.getLogger(HBDBServer.class);
     public static final String CONFIG_DEFAULT_SCHEMA = "emfdb.hb.defaultSchema";
     public static final String CONFIG_DRIVER = "emfdb.hb.driver";
     public static final String CONFIG_URL = "emfdb.hb.url";
@@ -131,7 +130,6 @@ public class HbServer implements AutoCloseable {
 
     public void registerDynamicPackages() throws Exception {
         loadDynamicPackages().forEach(this::registerEPackage);
-
     }
 
     public EPackage.Registry getPackageRegistry() {
@@ -172,8 +170,7 @@ public class HbServer implements AutoCloseable {
 
     public Long getId(URI uri) {
         if (uri.segmentCount() >= 1) {
-            String id = String.join("/", uri.segments());
-            return id.length() > 0 ? Long.parseLong(id) : null;
+            return Long.parseLong(uri.segment(0));
         }
         return null;
     }
