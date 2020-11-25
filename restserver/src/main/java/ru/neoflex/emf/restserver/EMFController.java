@@ -55,7 +55,7 @@ public class EMFController {
     JsonNode postResource(@RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            URI uri = tx.getDbServer().createURI(null);
+            URI uri = tx.getDbServer().createURI();
             Resource resource = rs.createResource(uri);
             new JsonHelper().fromJson(resource, body);
             resource.save(null);

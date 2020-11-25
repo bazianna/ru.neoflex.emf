@@ -328,7 +328,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     if (dbRef.getProxy() != null) {
                         ((InternalEObject) refObject).eSetProxyURI(URI.createURI(dbRef.getProxy()));
                     } else {
-                        ((InternalEObject) refObject).eSetProxyURI(getDbServer().createURI(dbRef.getId()).appendFragment(String.valueOf(dbRef.getId())));
+                        ((InternalEObject) refObject).eSetProxyURI(getDbServer().createURI(dbRef.getId(), dbRef.getVersion()).appendFragment(String.valueOf(dbRef.getId())));
                     }
                 }
                 if (sf.isMany()) {
@@ -484,6 +484,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
         DBObject dbObject = getOrThrow(id);
         EObject eObject = loadEObject(resource, dbObject);
         resource.getContents().add(eObject);
+        resource.setURI(getDbServer().createURI(dbObject.getId(), dbObject.getVersion()));
         hbServer.getEvents().fireAfterLoad(eObject);
     }
 
