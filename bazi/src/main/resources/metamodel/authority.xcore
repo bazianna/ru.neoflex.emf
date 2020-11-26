@@ -8,7 +8,7 @@
 package ru.neoflex.nfcore.bazi.authority
 
 import ru.neoflex.nfcore.bazi.natalChart.NatalChart
-import ru.neoflex.nfcore.bazi.type.QName
+import ru.neoflex.nfcore.bazi.types.QName
 
 annotation "ru.neoflex.nfcore" as BaZi
 
@@ -35,5 +35,5 @@ class User extends Authority {
 class UserProfile {
     QName name
     String userName
-    contains Parameter[] params
+    contains NatalChart[] natalCharts
 }
