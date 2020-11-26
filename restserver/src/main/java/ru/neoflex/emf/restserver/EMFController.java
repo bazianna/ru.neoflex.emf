@@ -147,9 +147,9 @@ public class EMFController {
     }
 
     @PostMapping(value = "/query", consumes = {"text/plain"})
-    public List<JsonNode> query(@RequestParam List<String> params, @RequestBody String sql) throws Exception {
+    public List<JsonNode> query(@RequestParam(required = false) List<String> params, @RequestBody String sql) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
-            Query<Object> query = tx.getSession().createQuery(sql, Object.class);
+            Query query = tx.getSession().createQuery(sql);
             for (QueryParameter parameter: query.getParameterMetadata().getPositionalParameters()) {
                 query.setParameter(parameter, params.get(parameter.getPosition() - 1));
             }
