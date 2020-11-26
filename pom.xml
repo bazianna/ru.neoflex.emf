@@ -77,6 +77,7 @@
     <modules>
         <module>base</module>
         <module>restserver</module>
+        <module>bazi</module>
     </modules>
 
 </project>
