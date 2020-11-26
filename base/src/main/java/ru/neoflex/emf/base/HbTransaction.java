@@ -488,6 +488,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
         DBObject dbObject = getOrThrow(id);
         EObject eObject = loadEObject(resource, dbObject);
         resource.getContents().add(eObject);
+        resource.setURI(getDbServer().createURI(dbObject.getId(), dbObject.getVersion()));
         hbServer.getEvents().fireAfterLoad(eObject);
     }
 

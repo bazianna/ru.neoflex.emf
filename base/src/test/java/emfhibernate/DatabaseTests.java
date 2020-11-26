@@ -81,8 +81,8 @@ public class DatabaseTests extends TestBase {
         Assert.assertEquals("", view2.getElementName());
         long afterLoad = System.currentTimeMillis();
         System.out.println("Created " + count + " objects");
-        System.out.println("Inserted in " + (afterInsert-start)/1000 + "s. " + (afterInsert-start)*1000/count + " ms/1000*object.");
-        System.out.println("Loaded in " + (afterLoad-afterInsert)/1000 + "s. " + (afterLoad-afterInsert)*1000/count + " ms/1000*object.");
+        System.out.println("Inserted in " + (afterInsert-start)/1000 + "s. " + count*1000/(afterInsert-start) + " object/s.");
+        System.out.println("Loaded in " + (afterLoad-afterInsert)/1000 + "s. " + count*1000/(afterLoad-afterInsert) + " object/s.");
     }
 
     @Test
