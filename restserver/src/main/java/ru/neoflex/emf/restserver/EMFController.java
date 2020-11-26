@@ -1,6 +1,7 @@
 package ru.neoflex.emf.restserver;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -10,6 +11,8 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.hibernate.query.Query;
+import org.hibernate.query.QueryParameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -136,9 +140,22 @@ public class EMFController {
     }
 
     @GetMapping("/query")
-    public List<Object> query(@RequestParam("sql") String sql) throws Exception {
+    public List query(@RequestParam("sql") String sql) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
             return tx.getSession().createQuery(sql).list();
+        });
+    }
+
+    @PostMapping(value = "/query", consumes = {"text/plain"})
+    public List<JsonNode> query(@RequestParam List<String> params, @RequestBody String sql) throws Exception {
+        return dbServerSvc.getDbServer().inTransaction(true, tx -> {
+            Query<Object> query = tx.getSession().createQuery(sql, Object.class);
+            for (QueryParameter parameter: query.getParameterMetadata().getPositionalParameters()) {
+                query.setParameter(parameter, params.get(parameter.getPosition() - 1));
+            }
+            JsonMapper mapper = new JsonMapper();
+            Stream<JsonNode> nodeStream = query.list().stream().map(mapper::valueToTree);
+            return nodeStream.collect(Collectors.toList());
         });
     }
 }

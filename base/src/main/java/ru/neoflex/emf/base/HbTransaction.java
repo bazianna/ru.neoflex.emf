@@ -286,7 +286,8 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     private URI getProxyURI(DBObject dbObject) {
-        return getDbServer().createURI(getRootContainer(dbObject, null).getId())
+        DBObject root = getRootContainer(dbObject, null);
+        return getDbServer().createURI(root.getId(), root.getVersion())
                 .appendFragment(String.valueOf(dbObject.getId()));
     }
 
