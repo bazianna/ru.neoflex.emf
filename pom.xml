@@ -14,13 +14,13 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.fork>true</maven.compiler.fork>
-        <emf-version>2.18.0</emf-version>
+        <emf-version>2.23.0</emf-version>
         <emf-xmi-version>2.16.0</emf-xmi-version>
-        <emf-common-version>2.16.0</emf-common-version>
-        <xtext-version>2.21.0</xtext-version>
+        <emf-common-version>2.20.0</emf-common-version>
+        <xtext-version>2.24.0.M3</xtext-version>
         <ecore-xtext-version>1.4.0</ecore-xtext-version>
-        <ecore-xcore-version>1.13.0</ecore-xcore-version>
-        <ecore-xcore-lib-version>1.4.0</ecore-xcore-lib-version>
+        <ecore-xcore-version>1.14.0</ecore-xcore-version>
+        <ecore-xcore-lib-version>1.5.0</ecore-xcore-lib-version>
         <emf-codegen-version>2.16.0</emf-codegen-version>
         <emf-codegen-ecore-version>2.18.0</emf-codegen-ecore-version>
         <c3p0.version>0.9.5.5</c3p0.version>

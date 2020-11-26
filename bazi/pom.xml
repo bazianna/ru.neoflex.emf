@@ -11,6 +11,10 @@
 
     <artifactId>bazi</artifactId>
 
+    <properties>
+        <start-class>ru.neoflex.emf.restserver.RestserverApplication</start-class>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>ru.neoflex.emf</groupId>
@@ -31,12 +35,12 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>default</id>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
+<!--                    <execution>-->
+<!--                        <id>default</id>-->
+<!--                        <goals>-->
+<!--                            <goal>repackage</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
                     <execution>
                         <id>build-info</id>
                         <goals>

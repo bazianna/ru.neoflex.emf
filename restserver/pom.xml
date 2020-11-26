@@ -23,7 +23,7 @@
         <emf-version>2.22.0</emf-version>
         <emf-xmi-version>2.16.0</emf-xmi-version>
         <emf-common-version>2.16.0</emf-common-version>
-        <xtext-version>2.21.0</xtext-version>
+        <xtext-version>2.23.0</xtext-version>
         <ecore-xtext-version>1.4.0</ecore-xtext-version>
         <ecore-xcore-version>1.14.0</ecore-xcore-version>
         <ecore-xcore-lib-version>1.4.0</ecore-xcore-lib-version>
@@ -110,12 +110,12 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>default</id>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
+<!--                    <execution>-->
+<!--                        <id>default</id>-->
+<!--                        <goals>-->
+<!--                            <goal>repackage</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
                     <execution>
                         <id>build-info</id>
                         <goals>
