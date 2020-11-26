@@ -36,7 +36,7 @@
         <c3p0.version>0.9.5.5</c3p0.version>
         <hibernate.version>5.4.18.Final</hibernate.version>
         <h2.version>1.4.200</h2.version>
-<!--        <start-class>ru.neoflex.emf.restserver.RestserverApplication</start-class>-->
+        <start-class>ru.neoflex.emf.restserver.RestserverApplication</start-class>
     </properties>
 
     <dependencies>
