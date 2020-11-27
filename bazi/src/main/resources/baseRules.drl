@@ -1,0 +1,54 @@
+package ru.neoflex.emf.bazi
+
+import ru.neoflex.nfcore.bazi.natalChart.NatalChartFactory
+import ru.neoflex.nfcore.bazi.natalChart.NatalChart
+import ru.neoflex.nfcore.bazi.natalChart.Parameters
+import ru.neoflex.nfcore.bazi.calendar.Calendar
+import ru.neoflex.nfcore.bazi.calendar.CalendarFactory
+import ru.neoflex.nfcore.bazi.calendar.CalendarPackage
+import ru.neoflex.emf.restserver.DBServerSvc
+import ru.neoflex.emf.base.HbTransaction
+import java.util.stream.Collectors
+import java.util.List
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.resource.Resource
+
+global DBServerSvc dbServerSvc;
+global HbTransaction tx;
+
+function Calendar createCalendar() {
+    Calendar calendar = CalendarFactory.eINSTANCE.createCalendar();
+    return calendar;
+}
+
+rule "Create Calendar"
+when
+    not Calendar()
+then
+    Calendar calendar;
+    List<Resource> calendars = tx.findByClass(CalendarPackage.eINSTANCE.getCalendar());
+    if (calendars.size() > 0) {
+        calendar = (Calendar) calendars.get(0).getContents().get(0);
+    }
+    else {
+        calendar = createCalendar();
+        Resource resource = tx.createResource(tx.getDbServer().createURI());
+        resource.getContents().add(calendar);
+        resource.save(null);
+    }
+    insert(calendar);
+end;
+
+rule "Create NatalChart"
+when
+    parameters: Parameters()
+    not NatalChart()
+then
+    NatalChart natalChart = NatalChartFactory.eINSTANCE.createNatalChart();
+    natalChart.setParameters(parameters);
+    insert(natalChart);
+end;
+
+query "NatalCharts"
+    natalChart : NatalChart()
+end
