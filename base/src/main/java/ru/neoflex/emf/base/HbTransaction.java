@@ -544,6 +544,10 @@ public class HbTransaction implements AutoCloseable, Serializable {
         return (HbResource) getResourceSet().createResource(uri);
     }
 
+    public HbResource createResource() {
+        return (HbResource) getResourceSet().createResource(getDbServer().createURI());
+    }
+
     public ResourceSet createResourceSet() {
         ResourceSetImpl result = new ResourceSetImpl();
         result.setPackageRegistry(getDbServer().getPackageRegistry());

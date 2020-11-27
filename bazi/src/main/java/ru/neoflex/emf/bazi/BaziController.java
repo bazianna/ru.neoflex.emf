@@ -74,7 +74,7 @@ public class BaziController {
                 org.eclipse.emf.ecore.resource.Resource resource = rs.createResource(uri);
                 QueryResults queryResults = kieSession.getQueryResults("NatalCharts");
                 for (QueryResultsRow row: queryResults) {
-                    Object o = row.get("natalChart");
+                    Object o = row.get("$natalChart");
                     if (o instanceof NatalChart) {
                         resource.getContents().add((EObject) o);
                     }

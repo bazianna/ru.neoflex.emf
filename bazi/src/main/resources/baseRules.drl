@@ -32,7 +32,7 @@ then
     }
     else {
         calendar = createCalendar();
-        Resource resource = tx.createResource(tx.getDbServer().createURI());
+        Resource resource = tx.createResource();
         resource.getContents().add(calendar);
         resource.save(null);
     }
@@ -41,14 +41,14 @@ end;
 
 rule "Create NatalChart"
 when
-    parameters: Parameters()
-    not NatalChart()
+    $parameters: Parameters()
+    not NatalChart(parameters == $parameters)
 then
     NatalChart natalChart = NatalChartFactory.eINSTANCE.createNatalChart();
-    natalChart.setParameters(parameters);
+    natalChart.setParameters($parameters);
     insert(natalChart);
 end;
 
 query "NatalCharts"
-    natalChart : NatalChart()
+    $natalChart : NatalChart()
 end
