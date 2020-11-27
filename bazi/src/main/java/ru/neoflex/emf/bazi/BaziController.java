@@ -1,16 +1,15 @@
 package ru.neoflex.emf.bazi;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.neoflex.emf.restserver.DBServerSvc;
 import ru.neoflex.emf.restserver.JsonHelper;
 import ru.neoflex.nfcore.bazi.natalChart.*;
@@ -30,7 +29,7 @@ public class BaziController {
 
     @PostConstruct
     void init() {
-        droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<String, Object>("dbServerSvc", dbServerSvc));
+        droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<>("dbServerSvc", dbServerSvc));
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();
             resources.add(DroolsSvc.createClassPathResource("baseRules.drl", null));
@@ -69,14 +68,12 @@ public class BaziController {
                 kieSession.setGlobal("tx", tx);
                 kieSession.insert(parameters);
                 kieSession.fireAllRules();
-                ResourceSet rs = tx.getResourceSet();
-                URI uri = tx.getDbServer().createURI();
-                org.eclipse.emf.ecore.resource.Resource resource = rs.createResource(uri);
                 QueryResults queryResults = kieSession.getQueryResults("NatalCharts");
+                org.eclipse.emf.ecore.resource.Resource resource = tx.createResource();
                 for (QueryResultsRow row: queryResults) {
                     Object o = row.get("$natalChart");
                     if (o instanceof NatalChart) {
-                        resource.getContents().add((EObject) o);
+                        resource.getContents().add((NatalChart) o);
                     }
                 }
                 resource.save(null);
