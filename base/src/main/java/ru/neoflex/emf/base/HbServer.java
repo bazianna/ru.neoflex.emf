@@ -34,15 +34,15 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class HbServer implements AutoCloseable {
-    public static final String CONFIG_DEFAULT_SCHEMA = "emfdb.hb.defaultSchema";
-    public static final String CONFIG_DRIVER = "emfdb.hb.driver";
-    public static final String CONFIG_URL = "emfdb.hb.url";
-    public static final String CONFIG_USER = "emfdb.hb.user";
-    public static final String COMFIG_PASS = "emfdb.hb.pass";
-    public static final String CONFIG_DIALECT = "emfdb.hb.dialect";
-    public static final String CONFIG_SHOW_SQL = "emfdb.hb.show_sql";
-    public static final String CONFIG_MIN_POOL_SIZE = "emfdb.hb.min_pool_size";
-    public static final String CONFIG_MAX_POOL_SIZE = "emfdb.hb.max_pool_size";
+    public static final String CONFIG_DEFAULT_SCHEMA = "hb.defaultSchema";
+    public static final String CONFIG_DRIVER = "hb.driver";
+    public static final String CONFIG_URL = "hb.url";
+    public static final String CONFIG_USER = "hb.user";
+    public static final String COMFIG_PASS = "hb.pass";
+    public static final String CONFIG_DIALECT = "hb.dialect";
+    public static final String CONFIG_SHOW_SQL = "hb.show_sql";
+    public static final String CONFIG_MIN_POOL_SIZE = "hb.min_pool_size";
+    public static final String CONFIG_MAX_POOL_SIZE = "hb.max_pool_size";
     private static final Logger logger = LoggerFactory.getLogger(HbServer.class);
     protected static final ThreadLocal<String> tenantId = new InheritableThreadLocal<>();
 
