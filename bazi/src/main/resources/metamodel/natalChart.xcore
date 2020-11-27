@@ -35,8 +35,8 @@ enum TimeCategory {
 
 @BaZi(documentation="Пол")
 enum Sex {
-    MALE
-    FEMALE
+    MALE = 1
+    FEMALE = 2
 }
 
 @BaZi(documentation="Нательная карта")
