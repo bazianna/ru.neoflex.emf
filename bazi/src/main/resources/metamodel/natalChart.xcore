@@ -28,15 +28,15 @@ class Parameters {
 
 @BaZi(documentation="Время, по которому будут прооизводится расчеты: Местное солнечное время, ррезиновое время или 2-х часовки (если не известен час рождения)")
 enum TimeCategory {
-    LocalSolarTime
-    RubberTime
-    TwoHours
+    LOCAL_SOLAR_TIME
+    RUBBER_TIME
+    TWO_HOURS
 }
 
 @BaZi(documentation="Пол")
 enum Sex {
-    Male
-    Female
+    MALE
+    FEMALE
 }
 
 @BaZi(documentation="Нательная карта")

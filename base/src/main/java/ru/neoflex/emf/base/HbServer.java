@@ -237,7 +237,7 @@ public class HbServer implements AutoCloseable {
         settings.put(Environment.DIALECT, getConfig().getProperty(CONFIG_DIALECT, "org.hibernate.dialect.H2Dialect"));
         settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
         settings.put(Environment.HBM2DDL_AUTO, "none");
-        settings.put(Environment.SHOW_SQL, getConfig().getProperty(CONFIG_SHOW_SQL, "true"));
+        settings.put(Environment.SHOW_SQL, getConfig().getProperty(CONFIG_SHOW_SQL, "false"));
         settings.put(Environment.C3P0_MIN_SIZE, getConfig().getProperty(CONFIG_MIN_POOL_SIZE, "1"));
         settings.put(Environment.C3P0_MAX_SIZE, getConfig().getProperty(CONFIG_MAX_POOL_SIZE, "50"));
         settings.put(Environment.MULTI_TENANT, "SCHEMA");
