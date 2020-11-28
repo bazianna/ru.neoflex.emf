@@ -72,12 +72,12 @@ public class BaziController {
                 org.eclipse.emf.ecore.resource.Resource resource = tx.createResource();
                 for (QueryResultsRow row: queryResults) {
                     Object o = row.get("$natalChart");
-                    if (o instanceof NatalChart) {
-                        resource.getContents().add((NatalChart) o);
+                    if (o instanceof EObject) {
+                        resource.getContents().add((EObject) o);
                     }
                 }
                 resource.save(null);
-                return new JsonHelper().toJson(resource);
+                return JsonHelper.resourceToJson(resource);
             }
             finally {
                 kieSession.dispose();

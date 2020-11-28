@@ -23,8 +23,8 @@ public class DBObject {
     private byte[] image;
     @ElementCollection
     @CollectionTable(indexes = {
-            @Index(columnList = "refobject_id")
-    })
+            @Index(columnList = "containment,refobject_id")
+    }, joinColumns = @JoinColumn(name = "dbobject_id"))
     private List<DBReference> references;
     @ElementCollection
     @CollectionTable(indexes = {
@@ -72,10 +72,6 @@ public class DBObject {
         return references;
     }
 
-    public void setReferences(List<DBReference> references) {
-        this.references = references;
-    }
-
     public String getProxy() {
         return proxy;
     }
@@ -93,9 +89,5 @@ public class DBObject {
             attributes = new ArrayList<>();
         }
         return attributes;
-    }
-
-    public void setAttributes(List<DBAttribute> attributes) {
-        this.attributes = attributes;
     }
 }

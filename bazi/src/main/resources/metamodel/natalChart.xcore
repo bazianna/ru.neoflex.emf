@@ -45,7 +45,7 @@ class NatalChart {
     contains Pillar hour
     contains Pillar day
     contains Pillar month
-    contains Pillar year
+    refers Pillar year
     contains Tact[] tact
     contains BabyTact[] babyTact
 }

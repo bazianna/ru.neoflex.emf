@@ -84,7 +84,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
             session.save(dbObject);
         }
         proxies.forEach(session::delete);
-        dbObject.getReferences().forEach(r->unlinkRecursive(r.getRefObject()));
+        dbObject.getReferences().forEach(r -> unlinkRecursive(r.getRefObject()));
     }
 
     protected void deleteUnlinked(DBObject dbObject) {
@@ -152,11 +152,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 if (dbReference != null) {
                     toDeleteNC.remove(dbReference);
                 } else {
-                    dbReference = new DBReference();
-                    dbReference.setContainment(ref.getKey().isContainment());
-                    dbObject.getReferences().add(dbReference);
-                    dbReference.setFeature(feature);
-                    dbReference.setIndex(index);
                     DBObject refDBObject;
                     if (id2 != null) {
                         refDBObject = getOrThrow(id2);
@@ -166,7 +161,8 @@ public class HbTransaction implements AutoCloseable, Serializable {
                         refDBObject.setProxy(EcoreUtil.getURI(eRefObject).toString());
                         session.persist(refDBObject);
                     }
-                    dbReference.setRefObject(refDBObject);
+                    Boolean containment = ref.getKey().isContainment();
+                    createDBReference(dbObject, feature, index, refDBObject, containment);
                 }
             }
         }
@@ -186,6 +182,16 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     DBObject dbObject2 = getOrThrow(id2);
                     saveEObjectNonContainment(resource, dbObject2, eRefObject);
                 });
+    }
+
+    private static void createDBReference(DBObject dbObject, String feature, int index, DBObject refDBObject, Boolean containment) {
+        DBReference dbReference;
+        dbReference = new DBReference();
+        dbReference.setContainment(containment);
+        dbObject.getReferences().add(dbReference);
+        dbReference.setFeature(feature);
+        dbReference.setIndex(index);
+        dbReference.setRefObject(refDBObject);
     }
 
     private DBObject saveEObjectContainment(HbResource resource, DBObject dbObject, EObject eObject) {
@@ -268,12 +274,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 if (dbReference != null) {
                     toDeleteC.remove(dbReference);
                 } else {
-                    dbReference = new DBReference();
-                    dbReference.setContainment(ref.getKey().isContainment());
-                    dbObject.getReferences().add(dbReference);
-                    dbReference.setFeature(feature);
-                    dbReference.setIndex(index);
-                    dbReference.setRefObject(dbObject2);
+                    createDBReference(dbObject, feature, index, dbObject2, ref.getKey().isContainment());
                 }
             }
         }
@@ -414,7 +415,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .map(eObject -> getDbServer().getId(eObject)).filter(Objects::nonNull)
                 .flatMap(this::findReferencedTo)
                 .collect(Collectors.toList()).stream()
-                .map(dbObject->getRootContainer(dbObject, exclude)).filter(Objects::nonNull)
+                .map(dbObject -> getRootContainer(dbObject, exclude)).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         return topRefs.stream().map(dbObject -> createResource(resource.getResourceSet(), dbObject));
     }
@@ -479,6 +480,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
             Long id = hbServer.getId(eObject);
             saveEObjectNonContainment(resource, oldDbCache.get(id), eObject);
             hbServer.getEvents().fireAfterSave(oldECache.get(id), eObject);
+        }
+        List<String> multiContainment = session.createQuery(
+                "select r.refObject.id from DBObject o join o.references r on r.containment = true " +
+                        "group by r.refObject.id having count(r.dbObjectId) > 1", Long.class).getResultStream()
+                .map(o -> String.valueOf(o)).collect(Collectors.toList());
+        if (multiContainment.size() > 0) {
+            throw new RuntimeException("EObjects contained more then once: " + String.join(", ", multiContainment));
         }
         contents.stream()
                 .filter(eObject -> eObject instanceof EPackage)

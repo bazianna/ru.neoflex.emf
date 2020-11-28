@@ -7,12 +7,18 @@ public class DBReference {
     @Column(length = 512)
     private
     String feature;
+
     @Column
     private
     Integer index;
+
     @Column
     private
     Boolean containment;
+
+    @Column(name = "dbobject_id", insertable=false, updatable = false)
+    private Long dbObjectId;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "refobject_id", nullable = false)
     private DBObject refObject;
@@ -47,5 +53,13 @@ public class DBReference {
 
     public void setRefObject(DBObject dbObject) {
         this.refObject = dbObject;
+    }
+
+    public Long getDbObjectId() {
+        return dbObjectId;
+    }
+
+    public void setDbObjectId(Long dbobject_id) {
+        this.dbObjectId = dbobject_id;
     }
 }

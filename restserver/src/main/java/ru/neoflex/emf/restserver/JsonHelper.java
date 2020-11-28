@@ -105,6 +105,10 @@ public class JsonHelper {
         }
     }
 
+    public static ObjectNode resourceToJson(Resource resource) {
+        return new JsonHelper().toJson(resource);
+    }
+
     public ObjectNode toJson(Resource resource) {
         ObjectNode result = mapper.createObjectNode();
         result.put("uri", resource.getURI().toString());
