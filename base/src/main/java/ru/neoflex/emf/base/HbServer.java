@@ -7,6 +7,7 @@ import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -265,7 +266,8 @@ public class HbServer implements AutoCloseable {
     }
 
     public URI createURI(EObject eObject) {
-        return createURI(getId(eObject), getVersion(eObject));
+        EObject root = EcoreUtil.getRootContainer(eObject);
+        return createURI(getId(root), getVersion(root)).appendFragment(String.valueOf(getId(eObject)));
     }
 
     public URI createURI(Long id) {

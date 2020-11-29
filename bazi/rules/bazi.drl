@@ -1,0 +1,17 @@
+package ru.neoflex.emf.bazi
+
+import ru.neoflex.nfcore.bazi.natalChart.NatalChart
+import ru.neoflex.nfcore.bazi.natalChart.Parameters
+import ru.neoflex.nfcore.bazi.calendar.Calendar
+import ru.neoflex.nfcore.bazi.calendar.Year
+
+rule "TEST Set Year Pillar"
+when
+    $natalChart: NatalChart($parameters: parameters, parameters != null, year == null)
+    $calendar: Calendar($year: year)
+    $currentYear: Year(name == $parameters.year) from $year
+then
+    $natalChart.setYear($currentYear.getYear());
+    update($natalChart);
+end;
+

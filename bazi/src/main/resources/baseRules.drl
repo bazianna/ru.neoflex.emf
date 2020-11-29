@@ -21,21 +21,42 @@ import ru.neoflex.nfcore.bazi.calendar.impl.YearImpl
 global DBServerSvc dbServerSvc;
 global HbTransaction tx;
 
-query "NatalCharts"
-    $natalChart : NatalChart()
-end
-
-function Calendar createCalendar() {
+function Calendar createCalendar(HbTransaction tx) {
     Calendar calendar = CalendarFactory.eINSTANCE.createCalendar();
+    Resource resource = tx.createResource();
+    resource.getContents().add(calendar);
+    resource.save(null);
+    return calendar;
+}
+
+function Year createCalendarYear(HbTransaction tx, Calendar calendar, Integer name) {
     Year year = CalendarFactory.eINSTANCE.createYear();
     calendar.getYear().add(year);
-    year.setName(2020);
+    year.setName(name);
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
     year.setYear(pillar);
     pillar.setGod(God.DIRECT_OFFICER);
     pillar.setSky(Elements.EARTH_YANG);
-    return calendar;
+    Resource resource = tx.createResource();
+    resource.getContents().add(calendar);
+    resource.save(null);
+    return year;
 }
+
+query "EObjects"
+    $eObject : NatalChart()
+end
+
+rule "Create Calendar Year"
+when
+    $parameters: Parameters()
+    $calendar: Calendar($year: year)
+    not Year(name == $parameters.year) from $year
+then
+    createCalendarYear(tx, $calendar, $parameters.getYear());
+    update($calendar);
+end;
+
 
 rule "Create Calendar"
 when
@@ -47,10 +68,7 @@ then
         calendar = (Calendar) calendars.get(0).getContents().get(0);
     }
     else {
-        calendar = createCalendar();
-        Resource resource = tx.createResource();
-        resource.getContents().add(calendar);
-        resource.save(null);
+        calendar = createCalendar(tx);
     }
     insert(calendar);
 end;
@@ -63,15 +81,5 @@ then
     NatalChart natalChart = NatalChartFactory.eINSTANCE.createNatalChart();
     natalChart.setParameters($parameters);
     insert(natalChart);
-end;
-
-rule "TEST Set Year Pillar"
-when
-    $natalChart: NatalChart($parameters: parameters, parameters != null, year == null)
-    $calendar: Calendar($year: year)
-    $currentYear: Year(name == $parameters.year) from $year
-then
-    $natalChart.setYear($currentYear.getYear());
-    update($natalChart);
 end;
 

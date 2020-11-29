@@ -2,12 +2,14 @@ package ru.neoflex.emf.bazi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.neoflex.emf.restserver.DBServerSvc;
@@ -15,17 +17,27 @@ import ru.neoflex.emf.restserver.JsonHelper;
 import ru.neoflex.nfcore.bazi.natalChart.*;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController()
 @RequestMapping("/bazi")
 public class BaziController {
-    @Autowired
+    final
     DroolsSvc droolsSvc;
-    @Autowired
+    final
     DBServerSvc dbServerSvc;
+
+    public BaziController(DroolsSvc droolsSvc, DBServerSvc dbServerSvc) {
+        this.droolsSvc = droolsSvc;
+        this.dbServerSvc = dbServerSvc;
+    }
 
     @PostConstruct
     void init() {
@@ -33,8 +45,21 @@ public class BaziController {
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();
             resources.add(DroolsSvc.createClassPathResource("baseRules.drl", null));
+            try {
+                byte[] bazi = Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "bazi", "rules", "bazi.drl"));
+                resources.add(DroolsSvc.createByteArrayResource("bazi.drl", null, bazi));
+            }
+            catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
             return resources;
         });
+        droolsSvc.setDebug(true);
+    }
+
+    @PostMapping("/refresh")
+    void refreshRules() {
+        droolsSvc.disposeContainer();
     }
 
     @GetMapping("/natalChart")
@@ -68,16 +93,22 @@ public class BaziController {
                 kieSession.setGlobal("tx", tx);
                 kieSession.insert(parameters);
                 kieSession.fireAllRules();
-                QueryResults queryResults = kieSession.getQueryResults("NatalCharts");
-                org.eclipse.emf.ecore.resource.Resource resource = tx.createResource();
+                QueryResults queryResults = kieSession.getQueryResults("EObjects");
+                org.eclipse.emf.ecore.resource.Resource eObjects = tx.createResource();
                 for (QueryResultsRow row: queryResults) {
-                    Object o = row.get("$natalChart");
+                    Object o = row.get("$eObject");
                     if (o instanceof EObject) {
-                        resource.getContents().add((EObject) o);
+                        EObject eObject = (EObject) o;
+                        if (EcoreUtil.getRootContainer(eObject) == eObject) {
+                            eObjects.getContents().add(eObject);
+                        }
                     }
                 }
-                resource.save(null);
-                return JsonHelper.resourceToJson(resource);
+                eObjects.save(null);
+                org.eclipse.emf.ecore.resource.Resource natalCharts = tx.createResource();
+                natalCharts.getContents().addAll(eObjects.getContents().stream()
+                        .filter(eObject -> eObject instanceof NatalChart).collect(Collectors.toList()));
+                return JsonHelper.resourceToJson(natalCharts);
             }
             finally {
                 kieSession.dispose();

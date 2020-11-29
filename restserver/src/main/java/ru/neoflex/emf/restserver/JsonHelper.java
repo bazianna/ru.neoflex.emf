@@ -10,12 +10,11 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.xmi.XMIResource;
 import ru.neoflex.emf.base.HbResource;
 
 import java.io.IOException;
 import java.util.List;
-
-import static org.eclipse.emf.ecore.util.EcoreUtil.getURI;
 
 public class JsonHelper {
     JsonMapper mapper = new JsonMapper();
@@ -100,13 +99,22 @@ public class JsonHelper {
             if (!refObject.eClass().equals(eReference.getEReferenceType())) {
                 refNode.put("eClass", getURI(refObject.eClass()).toString());
             }
-            EObject root = EcoreUtil.getRootContainer(base);
-            URI refURI = EcoreUtil.isAncestor(root, refObject) ?
-                    getURI(refObject).deresolve(getURI(root)) :
-                    getURI(refObject);
+            Resource resource = base.eResource();
+            URI refURI = resource instanceof  HbResource ?
+                    ((HbResource) resource).deresolve(getURI(refObject)) :
+                    getURI(refObject).deresolve(base.eResource().getURI());
             refNode.put("$ref", refURI.toString());
             return refNode;
         }
+    }
+
+    URI getURI(EObject eObject) {
+        Resource resource = eObject.eResource();
+        if (resource instanceof HbResource) {
+            HbResource hbResource = (HbResource) resource;
+            return hbResource.getTx().getDbServer().createURI(eObject);
+        }
+        return EcoreUtil.getURI(eObject);
     }
 
     public static ObjectNode resourceToJson(Resource resource) {
@@ -244,7 +252,10 @@ public class JsonHelper {
             EObject refObject = EcoreUtil.create(referenceType);
             String ref = valueNode.get("$ref").asText();
             URI refUri = URI.createURI(ref);
-            ((InternalEObject)refObject).eSetProxyURI(refUri);
+            URI resolvedURI = resource instanceof  HbResource ?
+                    ((HbResource) resource).resolve(refUri) :
+                    refUri.resolve(resource.getURI());
+            ((InternalEObject)refObject).eSetProxyURI(resolvedURI);
             return refObject;
         }
     }

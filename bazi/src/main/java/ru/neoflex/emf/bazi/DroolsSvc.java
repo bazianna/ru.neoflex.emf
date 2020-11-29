@@ -1,8 +1,12 @@
 package ru.neoflex.emf.bazi;
 
 import org.drools.compiler.compiler.io.memory.MemoryFileSystem;
+import org.kie.api.KieBase;
 import org.kie.api.KieServices;
-import org.kie.api.builder.*;
+import org.kie.api.builder.KieBuilder;
+import org.kie.api.builder.KieFileSystem;
+import org.kie.api.builder.KieModule;
+import org.kie.api.builder.Message;
 import org.kie.api.io.KieResources;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceType;
@@ -12,13 +16,14 @@ import org.kie.internal.builder.DecisionTableConfiguration;
 import org.kie.internal.builder.DecisionTableInputType;
 import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.springframework.stereotype.Service;
-import org.kie.api.KieBase;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.InputStream;
-import java.util.*;
-import java.util.function.Function;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Supplier;
 
 @Service
@@ -37,14 +42,14 @@ public class DroolsSvc {
         disposeContainer();
     }
 
-    public void disposeContainer() {
+    public synchronized void disposeContainer() {
         if (kieContainer != null) {
             kieContainer.dispose();
             kieContainer = null;
         }
     }
 
-    public KieBase getKieBase() {
+    public synchronized KieBase getKieBase() {
         if (kieContainer == null) {
             KieServices kieServices = KieServices.Factory.get();
             KieFileSystem kieFileSystem = kieServices.newKieFileSystem();
@@ -59,6 +64,7 @@ public class DroolsSvc {
             KieModule kieModule = kieBuilder.getKieModule();
             kieContainer = kieServices.newKieContainer(kieModule.getReleaseId());
         }
+        //noinspection OptionalGetWithoutIsPresent
         String baseName = kieContainer.getKieBaseNames().stream().findFirst().get();
         return kieContainer.getKieBase(baseName);
     }
@@ -85,7 +91,7 @@ public class DroolsSvc {
 
     public KieSession createSession() {
         KieSession kieSession = getKieBase().newKieSession();
-        if (debug) {
+        if (isDebug()) {
             KieServices.Factory.get().getLoggers().newConsoleLogger(kieSession);
         }
         for (AbstractMap.SimpleEntry<String, Object> global: globals) {
@@ -122,6 +128,7 @@ public class DroolsSvc {
         DecisionTableConfiguration resourceConfiguration = KnowledgeBuilderFactory.newDecisionTableConfiguration();
         resourceConfiguration.setInputType(tableInputType);
         resource.setConfiguration(resourceConfiguration);
+        resource.setSourcePath(path);
         return resource;
     }
 

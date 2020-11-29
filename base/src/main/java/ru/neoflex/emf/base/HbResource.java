@@ -74,4 +74,20 @@ public class HbResource extends ResourceImpl {
         HbInputStream hbInputStream = (HbInputStream) inputStream;
         hbInputStream.loadResource(this);
     }
+
+    public URI resolve(URI uri) {
+        URI baseURI = getURI();
+        return getURI() != null && uri.isRelative() && uri.hasRelativePath() ? uri.resolve(baseURI) : uri;
+    }
+
+    public URI deresolve(URI uri) {
+        URI baseURI = getURI();
+        if (baseURI != null && !uri.isRelative()) {
+            URI deresolvedURI = uri.deresolve(baseURI, true, true, false);
+            if (deresolvedURI.hasRelativePath() && (!uri.isPlatform() || uri.segment(0).equals(baseURI.segment(0)))) {
+                uri = deresolvedURI;
+            }
+        }
+        return uri;
+    }
 }
