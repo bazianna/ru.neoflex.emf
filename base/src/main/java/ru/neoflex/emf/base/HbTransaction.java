@@ -266,13 +266,16 @@ public class HbTransaction implements AutoCloseable, Serializable {
         dbReference.setRefObject(refDBObject);
     }
 
-    private DBObject saveEObjectContainment(HbResource resource, DBObject dbObject, EObject eObject) {
+    private DBObject saveEObjectContainment(HbResource resource, DBObject dbObject, EObject eObject, DBObject container, String containingFeature, Integer containingIndex) {
         if (dbObject == null) {
             dbObject = new DBObject();
             dbObject.setVersion(0);
         }
         dbObject.setVersion(dbObject.getVersion() + 1);
         dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
+        dbObject.setContainer(container);
+        dbObject.setFeature(containingFeature);
+        dbObject.setIndex(containingIndex);
 
         List<AbstractMap.SimpleEntry<EAttribute, List>> attrs = eObject.eClass().getEAllAttributes().stream()
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf))
@@ -338,22 +341,28 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     throw new RuntimeException("Can't resolve " + ((InternalEObject) eObject2).eProxyURI().toString());
                 }
                 Long id2 = hbServer.getId(eObject2);
-                DBObject dbObject2 = id2 != null ? getOrThrow(id2) : saveEObjectContainment(resource, null, eObject2);
                 int index = ref.getValue().indexOf(eObject2);
-                DBObject containedDBObject = dbObject.getContent().stream()
-                        .filter(o -> o.getFeature().equals(feature) && o.getIndex() == index && o.getId().equals(id2))
-                        .findFirst().orElse(null);
-                if (containedDBObject != null) {
-                    toDeleteC.remove(containedDBObject);
-                } else {
-                    if (dbObject2.getContainer() != null && !dbObject2.getContainer().getId().equals(dbObject.getId())) {
-                        throw new RuntimeException("Can not change container for EObject id=" + dbObject2.getId() +
-                                ", old container=" + dbObject2.getContainer().getId()+", new container="+dbObject.getId());
+                DBObject dbObject2;
+                if (id2 != null) {
+                    dbObject2 = getOrThrow(id2);
+                    DBObject containedDBObject = dbObject.getContent().stream()
+                            .filter(o -> o.getFeature().equals(feature) && o.getIndex() == index && o.getId().equals(id2))
+                            .findFirst().orElse(null);
+                    if (containedDBObject != null) {
+                        toDeleteC.remove(containedDBObject);
+                    } else {
+                        if (dbObject2.getContainer() != null && !Objects.equals(dbObject2.getContainer().getId(), dbObject.getId())) {
+                            throw new RuntimeException("Can not change container for EObject id=" + dbObject2.getId() +
+                                    ", old container=" + dbObject2.getContainer().getId()+", new container="+dbObject.getId());
+                        }
+                        dbObject2.setContainer(dbObject);
+                        dbObject2.setFeature(feature);
+                        dbObject2.setIndex(index);
+                        getSession().save(dbObject2);
                     }
-                    dbObject2.setContainer(dbObject);
-                    dbObject2.setFeature(feature);
-                    dbObject2.setIndex(index);
-                    getSession().save(dbObject2);
+                }
+                else {
+                    dbObject2 = saveEObjectContainment(resource, null, eObject2, dbObject, feature, index);
                 }
             }
         }
@@ -559,7 +568,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         for (EObject eObject : contents) {
             Long id = hbServer.getId(eObject);
-            DBObject dbObject = saveEObjectContainment(resource, oldDbCache.get(id), eObject);
+            DBObject dbObject = saveEObjectContainment(resource, oldDbCache.get(id), eObject, null, null, null);
             oldDbCache.put(dbObject.getId(), dbObject);
         }
         for (EObject eObject : contents) {
@@ -574,12 +583,11 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     public static String getDiagnosticMessage(Diagnostic diagnostic) {
-        String message = diagnostic.getMessage();
-        for (Iterator i = diagnostic.getChildren().iterator(); i.hasNext(); ) {
-            Diagnostic childDiagnostic = (Diagnostic) i.next();
-            message += "\n" + childDiagnostic.getMessage();
+        StringBuilder message = new StringBuilder(diagnostic.getMessage());
+        for (Diagnostic childDiagnostic : diagnostic.getChildren()) {
+            message.append("\n").append(childDiagnostic.getMessage());
         }
-        return message;
+        return message.toString();
     }
 
     public void load(HbResource resource) {
