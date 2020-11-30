@@ -44,9 +44,9 @@ enum Sex {
 @BaZi(documentation="Нательная карта")
 class NatalChart {
     contains Parameters parameters
-    contains Pillar hour
-    contains Pillar day
-    contains Pillar month
+    refers Pillar hour
+    refers Pillar day
+    refers Pillar month
     refers Pillar year
     contains Tact[] tact
     contains BabyTact[] babyTact

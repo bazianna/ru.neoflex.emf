@@ -12,10 +12,6 @@ public class DBReference {
     private
     Integer index;
 
-    @Column
-    private
-    Boolean containment;
-
     @Column(name = "dbobject_id", insertable=false, updatable = false)
     private Long dbObjectId;
 
@@ -37,14 +33,6 @@ public class DBReference {
 
     public void setIndex(Integer index) {
         this.index = index;
-    }
-
-    public Boolean getContainment() {
-        return containment;
-    }
-
-    public void setContainment(Boolean contained) {
-        this.containment = contained;
     }
 
     public DBObject getRefObject() {
