@@ -17,12 +17,30 @@ import ru.neoflex.nfcore.bazi.natalChart.Pillar
 import ru.neoflex.nfcore.bazi.natalChart.God
 import ru.neoflex.nfcore.bazi.natalChart.Elements
 import ru.neoflex.nfcore.bazi.calendar.impl.YearImpl
+import java.util.Arrays
 
 global DBServerSvc dbServerSvc;
 global HbTransaction tx;
 
 function Calendar createCalendar(HbTransaction tx) {
     Calendar calendar = CalendarFactory.eINSTANCE.createCalendar();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyIndex = elements.indexOf(Elements.WATER_YIN);
+    Integer earthIndex = elements.indexOf(Elements.METAL_YIN);
+
+    for(int i = 1993; i <= 2021; i++) {
+        Year year = CalendarFactory.eINSTANCE.createYear();
+        year.setName(i);
+        Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
+        pillar.setSky(elements.get(skyIndex));
+        skyIndex = skyIndex < 10 ? skyIndex + 1 : 1;
+        pillar.setEarth(elements.get(earthIndex));
+        earthIndex = earthIndex < 10 ? earthIndex + 1 : 1;
+        year.setYear(pillar);
+        calendar.getYear().add(year);
+    }
+
     Resource resource = tx.createResource();
     resource.getContents().add(calendar);
     resource.save(null);
