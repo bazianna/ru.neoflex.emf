@@ -44,10 +44,10 @@ enum Sex {
 @BaZi(documentation="Нательная карта")
 class NatalChart {
     contains Parameters parameters
-    refers Pillar hour
-    refers Pillar day
-    refers Pillar month
-    refers Pillar year
+    contains Pillar hour
+    contains Pillar day
+    contains Pillar month
+    contains Pillar year
     contains Tact[] tact
     contains BabyTact[] babyTact
 }
@@ -99,16 +99,17 @@ enum God {
 
 @BaZi(documentation="Элементы в карте Ба Цзы. Всего 10. Из них состоит вся карта")
 enum Elements {
-    TreeYin
+    _UNDEFINED_
     TreeYang
-    FireYin
+    TreeYin
     FireYang
-    EarthYin
+    FireYin
     EarthYang
-    MetalYin
+    EarthYin
     MetalYang
-    WaterYin
+    MetalYin
     WaterYang
+    WaterYin
 }
 
 @BaZi(documentation="Фаза Ци. У каждого столпа есть фаза ци 1-ой и 2-ой степени")

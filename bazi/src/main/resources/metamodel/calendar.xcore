@@ -11,12 +11,13 @@ import ru.neoflex.nfcore.bazi.natalChart.Pillar
 
 annotation "ru.neoflex.nfcore" as BaZi
 
-@BaZi(documentation="Солнечный календарь с годами +- 60 лет от текущего. Генерируются встроенной функцией один раз")
+@BaZi(documentation="Солнечный календарь. Пекинское время. Года генерируются встроенной функцией один раз")
 class Calendar {
     contains Year[] year
     op String createYears(String yearFrom, String yearTo)
 }
 
+@BaZi(documentation="Год начинается с февраля")
 class Year {
     Integer name
     contains Pillar year

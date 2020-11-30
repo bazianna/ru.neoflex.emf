@@ -4,6 +4,9 @@ import ru.neoflex.nfcore.bazi.natalChart.NatalChart
 import ru.neoflex.nfcore.bazi.natalChart.Parameters
 import ru.neoflex.nfcore.bazi.calendar.Calendar
 import ru.neoflex.nfcore.bazi.calendar.Year
+import ru.neoflex.nfcore.bazi.calendar.CalendarFactory
+import ru.neoflex.nfcore.bazi.natalChart.NatalChartFactory
+import ru.neoflex.nfcore.bazi.natalChart.Pillar
 
 rule "TEST Set Year Pillar"
 when
@@ -11,7 +14,10 @@ when
     $calendar: Calendar($year: year)
     $currentYear: Year(name == $parameters.year, year != null) from $year
 then
-    $natalChart.setYear($currentYear.getYear());
+    Pillar year = NatalChartFactory.eINSTANCE.createPillar();
+    year.setSky($currentYear.getYear().getSky());
+    year.setEarth($currentYear.getYear().getEarth());
+    $natalChart.setYear(year);
     update($natalChart);
 end;
 
