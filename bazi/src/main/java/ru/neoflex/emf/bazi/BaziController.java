@@ -57,7 +57,7 @@ public class BaziController {
         droolsSvc.setDebug(true);
     }
 
-    @PostMapping("/refresh")
+    @PostMapping("/refreshRules")
     void refreshRules() {
         droolsSvc.disposeContainer();
     }
