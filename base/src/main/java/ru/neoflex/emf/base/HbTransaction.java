@@ -154,7 +154,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
 
     protected void deleteRecursive(DBObject dbObject) {
         unlinkRecursive(dbObject);
-        deleteUnlinked(dbObject);
+        session.delete(dbObject);
     }
 
     protected void unlinkRecursive(DBObject dbObject) {
@@ -162,7 +162,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .map(DBReference::getRefObject).filter(DBObject::isProxy).collect(Collectors.toList());
         if (dbObject.getReferences().size() > 0) {
             dbObject.getReferences().clear();
-            session.save(dbObject);
+//            session.save(dbObject);
         }
         proxies.forEach(session::delete);
         dbObject.getContent().forEach(this::unlinkRecursive);
@@ -241,7 +241,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
             }
         }
         dbObject.getReferences().removeAll(toDeleteNC);
-        getSession().save(dbObject);
+//        getSession().save(dbObject);
         toDeleteNC.forEach(dbReference -> {
             if (dbReference.getRefObject().isProxy()) {
                 deleteRecursive(dbReference.getRefObject());
@@ -267,15 +267,18 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     private DBObject saveEObjectContainment(HbResource resource, DBObject dbObject, EObject eObject, DBObject container, String containingFeature, Integer containingIndex) {
+        boolean needPersist = dbObject == null;
         if (dbObject == null) {
             dbObject = new DBObject();
-            dbObject.setVersion(0);
+            dbObject.setVersion(1);
+            dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
+            dbObject.setContainer(container);
+            dbObject.setFeature(containingFeature);
+            dbObject.setIndex(containingIndex);
         }
-        dbObject.setVersion(dbObject.getVersion() + 1);
-        dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
-        dbObject.setContainer(container);
-        dbObject.setFeature(containingFeature);
-        dbObject.setIndex(containingIndex);
+        else {
+            dbObject.setVersion(dbObject.getVersion() + 1);
+        }
 
         List<AbstractMap.SimpleEntry<EAttribute, List>> attrs = eObject.eClass().getEAllAttributes().stream()
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf))
@@ -327,6 +330,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
             throw new RuntimeException(e);
         }
         dbObject.setImage(baos.toByteArray());
+
+        if (needPersist) {
+            getSession().persist(dbObject);
+            hbServer.setId(eObject, dbObject.getId());
+            hbServer.setVersion(eObject, dbObject.getVersion());
+        }
+
         List<AbstractMap.SimpleEntry<EReference, List<EObject>>> refsC = eObject.eClass().getEAllReferences().stream()
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && !sf.isContainer() && sf.isContainment() && eObject.eIsSet(sf))
                 .map(sf -> new AbstractMap.SimpleEntry<>(sf,
@@ -358,7 +368,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
                         dbObject2.setContainer(dbObject);
                         dbObject2.setFeature(feature);
                         dbObject2.setIndex(index);
-                        getSession().save(dbObject2);
                     }
                 }
                 else {
@@ -366,15 +375,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 }
             }
         }
-        getSession().saveOrUpdate(dbObject);
         toDeleteC.forEach(this::deleteRecursive);
-        hbServer.setId(eObject, dbObject.getId());
-        hbServer.setVersion(eObject, dbObject.getVersion());
         return dbObject;
     }
 
     private URI getProxyURI(DBObject dbObject) {
         DBObject root = getRootContainer(dbObject, null);
+//        DBObject root = dbObject;
         return getDbServer().createURI(root.getId(), root.getVersion())
                 .appendFragment(String.valueOf(dbObject.getId()));
     }

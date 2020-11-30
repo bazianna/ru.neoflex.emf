@@ -27,20 +27,20 @@ public class DBObject {
     @Column(length = 10485760)
     private byte[] image;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(indexes = {
             @Index(columnList = "refobject_id"),
             @Index(columnList = "dbobject_id,index")
     }, joinColumns = @JoinColumn(name = "dbobject_id"))
     private List<DBReference> references;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(indexes = {
             @Index(columnList = "feature,value")
     })
     private List<DBAttribute> attributes;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "container")
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL}, mappedBy = "container")
     private List<DBObject> content;
 
     @ManyToOne(fetch = FetchType.LAZY)

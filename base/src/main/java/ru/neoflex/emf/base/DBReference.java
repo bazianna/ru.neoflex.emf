@@ -15,7 +15,7 @@ public class DBReference {
     @Column(name = "dbobject_id", insertable=false, updatable = false)
     private Long dbObjectId;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "refobject_id", nullable = false)
     private DBObject refObject;
 

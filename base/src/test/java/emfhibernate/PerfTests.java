@@ -21,7 +21,7 @@ public class PerfTests extends TestBase {
     int nUsers = 100;
     int nThreads = 10;
     int nUpdates = 10;
-    int deep = 2;
+    int deep = 3;
     int wide = 10;
     List<Long> groupIds = new ArrayList<>();
     List<Long> userIds = new ArrayList<>();

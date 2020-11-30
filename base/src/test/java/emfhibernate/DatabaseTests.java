@@ -210,24 +210,24 @@ public class DatabaseTests extends TestBase {
             Assert.assertEquals("ID", user.getPKey().getColumns().get(0).getName());
             return null;
         });
-        hbServer.inTransaction(true, tx -> {
-            ResourceSet rs = tx.getResourceSet();
-            List<Resource> views = tx.findByClass(rs, TestPackage.eINSTANCE.getDBView()).collect(Collectors.toList());
-            DBView user_group = (DBView) views.get(0).getContents().get(0);
-            Assert.assertEquals("ID", user_group.getColumns().get(0).getName());
-            Assert.assertEquals("NAME", user_group.getColumns().get(1).getName());
-            Assert.assertEquals(4, user_group.getColumns().size());
-            EObject table_User = tx.findByClass(rs, TestPackage.eINSTANCE.getDBTable()).map(r->r.getContents().get(0))
-                    .filter(o -> ((DBTable) o).getName().equals("USER")).findFirst().get();
-            try {
+        try {
+            hbServer.inTransaction(false, tx -> {
+                ResourceSet rs = tx.getResourceSet();
+                List<Resource> views = tx.findByClass(rs, TestPackage.eINSTANCE.getDBView()).collect(Collectors.toList());
+                DBView user_group = (DBView) views.get(0).getContents().get(0);
+                Assert.assertEquals("ID", user_group.getColumns().get(0).getName());
+                Assert.assertEquals("NAME", user_group.getColumns().get(1).getName());
+                Assert.assertEquals(4, user_group.getColumns().size());
+                EObject table_User = tx.findByClass(rs, TestPackage.eINSTANCE.getDBTable()).map(r -> r.getContents().get(0))
+                        .filter(o -> ((DBTable) o).getName().equals("USER")).findFirst().get();
                 Resource resource = tx.getResourceSet().createResource(tx.getDbServer().createURI(table_User));
                 resource.delete(null);
-                Assert.fail("Can't delete referenced Resource");
-            } catch (IllegalArgumentException e) {
-                Assert.assertTrue(e.getMessage().startsWith("Can not delete"));
-            }
-            return null;
-        });
+                return null;
+            });
+            Assert.fail("Can't delete referenced Resource");
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
+        }
         DBView extView = hbServer.inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
             List<Resource> users = tx.findByClass(rs, TestPackage.eINSTANCE.getDBTable()).filter(r -> ((DBTable) r.getContents().get(0)).getName().equals("USER")).collect(Collectors.toList());
