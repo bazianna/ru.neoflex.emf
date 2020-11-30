@@ -22,7 +22,12 @@ public class TestBase {
 
     public static HbServer getDatabase() throws Exception {
         Properties properties = new Properties();
-        //properties.setProperty("emfdb.hb.show_sql", "true");
+//        properties.setProperty("hb.show_sql", "true");
+//        properties.setProperty("hb.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+//        properties.setProperty("hb.driver", "org.postgresql.Driver");
+//        properties.setProperty("hb.url", "jdbc:postgresql://localhost:5432/hbtest");
+//        properties.setProperty("hb.user", "postgres");
+//        properties.setProperty("hb.pass", "ne0f1ex");
         HbServer server = new HbServer(HBDB, properties);
         server.registerEPackage(TestPackage.eINSTANCE);
         return server;
