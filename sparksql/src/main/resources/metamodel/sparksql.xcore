@@ -1,0 +1,48 @@
+@GenModel(
+    bundleManifest="false",
+    modelDirectory="src/java/java-gen",
+    complianceLevel="7.0",
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl",
+    rootExtendsInterface="org.eclipse.emf.ecore.EObject"
+)
+package ru.neoflex.nfcore.sparksql
+
+class QueryLogicalPlan {
+    String sql
+    contains Node logicalPlan
+}
+
+class Node {
+    String nodeName
+    String description
+    contains Node[] children
+}
+
+class ProjectNode extends Node {
+    contains Node[] projectList
+}
+
+class AttributeNode extends Node {
+    String name
+}
+
+class LiteralNode extends Node {
+    Object value
+    String dataType
+}
+
+class BinaryOperatorNode extends Node {
+    String symbol
+}
+
+class SubqueryAliasNode extends Node {
+    String alias
+}
+
+class NamedRelationNode extends Node {
+    String name
+}
+
+class FilterNode extends Node {
+    contains Node expression
+}
