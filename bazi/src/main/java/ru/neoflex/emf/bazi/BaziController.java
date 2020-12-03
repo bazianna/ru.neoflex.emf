@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.neoflex.emf.drools.DroolsSvc;
-import ru.neoflex.emf.restserver.DBServerSvc;
-import ru.neoflex.emf.restserver.JsonHelper;
 import ru.neoflex.emf.bazi.natalChart.*;
+import ru.neoflex.emf.drools.DroolsSvc;
+import ru.neoflex.emf.restserver.JsonHelper;
+import ru.neoflex.emf.restserver.DBServerSvc;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -40,6 +40,7 @@ public class BaziController {
 
     @PostConstruct
     void init() {
+        dbServerSvc.getDbServer().registerEPackage(NatalChartPackage.eINSTANCE);
         droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<>("dbServerSvc", dbServerSvc));
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();

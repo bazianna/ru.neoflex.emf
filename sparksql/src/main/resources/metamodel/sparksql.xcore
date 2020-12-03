@@ -44,5 +44,5 @@ class NamedRelationNode extends Node {
 }
 
 class FilterNode extends Node {
-    contains Node expression
+    contains Node condition
 }

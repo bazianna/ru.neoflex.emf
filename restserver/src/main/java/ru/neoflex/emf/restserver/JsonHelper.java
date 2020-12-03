@@ -15,6 +15,7 @@ import ru.neoflex.emf.base.HbResource;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class JsonHelper {
     JsonMapper mapper = new JsonMapper();
@@ -173,6 +174,7 @@ public class JsonHelper {
         if (eClassNode != null) {
             URI classUri = URI.createURI(eClassNode.asText());
             eClass = (EClass) resource.getResourceSet().getEObject(classUri, false);
+            Objects.requireNonNull(eClass, ()->"Class not found " + eClassNode.asText());
         }
         EObject eObject = EcoreUtil.create(eClass);
         for (EStructuralFeature sf: eClass.getEAllStructuralFeatures()) {
@@ -233,7 +235,7 @@ public class JsonHelper {
             for (JsonNode element: elements) {
                 EObject refObject = fromJson(resource, eObject, eReference, (ObjectNode)element);
                 list.add(refObject);
-                setIdVersion(refObject, (ObjectNode)valueNode);
+                setIdVersion(refObject, (ObjectNode)element);
             }
         }
     }

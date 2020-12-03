@@ -1,20 +1,28 @@
 package ru.neoflex.emf.sparksql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.spark.sql.catalyst.analysis.NamedRelation;
+import org.apache.spark.sql.catalyst.expressions.Attribute;
+import org.apache.spark.sql.catalyst.expressions.BinaryOperator;
+import org.apache.spark.sql.catalyst.expressions.Literal;
+import org.apache.spark.sql.catalyst.plans.logical.Filter;
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan;
 import org.apache.spark.sql.catalyst.plans.logical.Project;
+import org.apache.spark.sql.catalyst.plans.logical.SubqueryAlias;
 import org.apache.spark.sql.catalyst.trees.TreeNode;
 import org.apache.spark.sql.execution.SparkSqlParser;
 import org.apache.spark.sql.internal.SQLConf;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.neoflex.emf.restserver.DBServerSvc;
 import ru.neoflex.emf.restserver.JsonHelper;
-import ru.neoflex.emf.sparksql.Node;
-import ru.neoflex.emf.sparksql.ProjectNode;
-import ru.neoflex.emf.sparksql.QueryLogicalPlan;
-import ru.neoflex.emf.sparksql.SparksqlFactory;
 import scala.collection.Iterator;
+
+import javax.annotation.PostConstruct;
 
 @RestController()
 @RequestMapping("/sparksql")
@@ -25,10 +33,33 @@ public class SparksqlController {
         this.dbServerSvc = dbServerSvc;
     }
 
+    @PostConstruct
+    void init() {
+        dbServerSvc.getDbServer().registerEPackage(SparksqlPackage.eINSTANCE);
+    }
+
     Node createNode(TreeNode treeNode) {
         Node result;
         if (treeNode instanceof Project) {
             result = createProjectNode((Project) treeNode);
+        }
+        else if (treeNode instanceof Attribute) {
+            result = createAttributeNode((Attribute) treeNode);
+        }
+        else if (treeNode instanceof Literal) {
+            result = createLiteralNode((Literal) treeNode);
+        }
+        else if (treeNode instanceof BinaryOperator) {
+            result = createBinaryOperatorNode((BinaryOperator) treeNode);
+        }
+        else if (treeNode instanceof SubqueryAlias) {
+            result = createSubqueryAliasNode((SubqueryAlias) treeNode);
+        }
+        else if (treeNode instanceof NamedRelation) {
+            result = createNamedRelationNode((NamedRelation) treeNode);
+        }
+        else if (treeNode instanceof Filter) {
+            result = createFilterNode((Filter) treeNode);
         }
         else {
             result = SparksqlFactory.eINSTANCE.createNode();
@@ -44,14 +75,48 @@ public class SparksqlController {
     }
 
     private Node createProjectNode(Project treeNode) {
-        Node result;
-        ProjectNode projectNode = SparksqlFactory.eINSTANCE.createProjectNode();
-        Project project = treeNode;
-        for(Iterator it = project.projectList().iterator(); it.hasNext();) {
+        ProjectNode result = SparksqlFactory.eINSTANCE.createProjectNode();
+        for(Iterator it = treeNode.projectList().iterator(); it.hasNext();) {
             TreeNode t = (TreeNode) it.next();
-            projectNode.getProjectList().add(createNode(t));
+            result.getProjectList().add(createNode(t));
         }
-        result = projectNode;
+        return result;
+    }
+
+    private Node createAttributeNode(Attribute treeNode) {
+        AttributeNode result = SparksqlFactory.eINSTANCE.createAttributeNode();
+        result.setName(treeNode.name());
+        return result;
+    }
+
+    private Node createLiteralNode(Literal treeNode) {
+        LiteralNode result = SparksqlFactory.eINSTANCE.createLiteralNode();
+        result.setValue(treeNode.value());
+        result.setDataType(treeNode.dataType().typeName());
+        return result;
+    }
+
+    private Node createBinaryOperatorNode(BinaryOperator treeNode) {
+        BinaryOperatorNode result = SparksqlFactory.eINSTANCE.createBinaryOperatorNode();
+        result.setSymbol(treeNode.symbol());
+        return result;
+    }
+
+    private Node createSubqueryAliasNode(SubqueryAlias treeNode) {
+        SubqueryAliasNode result = SparksqlFactory.eINSTANCE.createSubqueryAliasNode();
+        result.setAlias(treeNode.alias());
+        return result;
+    }
+
+    private Node createNamedRelationNode(NamedRelation treeNode) {
+        NamedRelationNode result = SparksqlFactory.eINSTANCE.createNamedRelationNode();
+        result.setName(treeNode.name());
+        return result;
+    }
+
+    private Node createFilterNode(Filter treeNode) {
+        FilterNode result = SparksqlFactory.eINSTANCE.createFilterNode();
+        result.setCondition(createNode(treeNode.condition()));
         return result;
     }
 
