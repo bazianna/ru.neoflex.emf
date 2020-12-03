@@ -1,15 +1,15 @@
 @GenModel(
     bundleManifest="false",
-    modelDirectory="ru.neoflex.nfcore.bazi/src/java/java-gen",
+    modelDirectory="src/java/java-gen",
     complianceLevel="7.0",
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl",
     rootExtendsInterface="org.eclipse.emf.ecore.EObject"
 )
-package ru.neoflex.nfcore.bazi.spirit
+package ru.neoflex.emf.bazi.spirit
 
-import ru.neoflex.nfcore.bazi.types.QName
+import ru.neoflex.emf.bazi.types.QName
 
-annotation "ru.neoflex.nfcore" as BaZi
+annotation "ru.neoflex.emf.bazi" as BaZi
 
 @BaZi(documentation="Духи или символические звезды. Расчитываются индивидуально для каждого человека к каждому Столпу")
 class Spirit {

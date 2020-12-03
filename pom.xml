@@ -79,6 +79,7 @@
         <module>restserver</module>
         <module>bazi</module>
         <module>sparksql</module>
+        <module>drools</module>
     </modules>
 
 </project>

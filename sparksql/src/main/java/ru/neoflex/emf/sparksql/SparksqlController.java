@@ -10,11 +10,10 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.springframework.web.bind.annotation.*;
 import ru.neoflex.emf.restserver.DBServerSvc;
 import ru.neoflex.emf.restserver.JsonHelper;
-import ru.neoflex.nfcore.sparksql.Node;
-//import ru.neoflex.nfcore.bazi.sparksql.Project;
-import ru.neoflex.nfcore.sparksql.ProjectNode;
-import ru.neoflex.nfcore.sparksql.QueryLogicalPlan;
-import ru.neoflex.nfcore.sparksql.SparksqlFactory;
+import ru.neoflex.emf.sparksql.Node;
+import ru.neoflex.emf.sparksql.ProjectNode;
+import ru.neoflex.emf.sparksql.QueryLogicalPlan;
+import ru.neoflex.emf.sparksql.SparksqlFactory;
 import scala.collection.Iterator;
 
 @RestController()

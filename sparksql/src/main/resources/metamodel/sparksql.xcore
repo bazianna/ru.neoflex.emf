@@ -5,7 +5,7 @@
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl",
     rootExtendsInterface="org.eclipse.emf.ecore.EObject"
 )
-package ru.neoflex.nfcore.sparksql
+package ru.neoflex.emf.sparksql
 
 class QueryLogicalPlan {
     String sql
