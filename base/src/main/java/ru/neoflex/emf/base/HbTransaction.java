@@ -389,6 +389,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     private EObject loadEObject(HbResource resource, DBObject dbObject) {
         String classUri = dbObject.getClassUri();
         EClass eClass = (EClass) getResourceSet().getEObject(URI.createURI(classUri), false);
+        Objects.requireNonNull(eClass, ()->String.format("Class not found %s", classUri));
         EObject eObject = EcoreUtil.create(eClass);
         if (dbObject.getImage() != null) {
             try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dbObject.getImage()))) {
