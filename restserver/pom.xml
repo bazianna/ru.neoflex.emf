@@ -1,39 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.3.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <groupId>ru.neoflex.emf</groupId>
+        <artifactId>parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <groupId>ru.neoflex.emf</groupId>
+
     <artifactId>restserver</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>restserver</name>
     <description>Rest Server for EMF framework</description>
-
-    <properties>
-        <java.version>1.8</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.fork>true</maven.compiler.fork>
-        <emf-version>2.23.0</emf-version>
-        <emf-xmi-version>2.16.0</emf-xmi-version>
-        <emf-common-version>2.20.0</emf-common-version>
-        <xtext-version>2.24.0.M3</xtext-version>
-        <ecore-xtext-version>1.4.0</ecore-xtext-version>
-        <ecore-xcore-version>1.14.0</ecore-xcore-version>
-        <ecore-xcore-lib-version>1.5.0</ecore-xcore-lib-version>
-        <emf-codegen-version>2.16.0</emf-codegen-version>
-        <emf-codegen-ecore-version>2.18.0</emf-codegen-ecore-version>
-        <c3p0.version>0.9.5.5</c3p0.version>
-        <hibernate.version>5.4.18.Final</hibernate.version>
-        <h2.version>1.4.200</h2.version>
-        <start-class>ru.neoflex.emf.restserver.RestserverApplication</start-class>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -56,54 +35,27 @@
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
-            <version>2.9.2</version>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.9.2</version>
         </dependency>
         <dependency>
             <groupId>ru.neoflex.emf</groupId>
             <artifactId>base</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>2.5.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf</groupId>
-            <artifactId>org.eclipse.emf.common</artifactId>
-            <version>${emf-common-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf</groupId>
-            <artifactId>org.eclipse.emf.ecore</artifactId>
-            <version>${emf-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf</groupId>
-            <artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
-            <version>${ecore-xcore-lib-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf</groupId>
-            <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
-            <version>${emf-xmi-version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.ecore.xcore</artifactId>
-            <version>${ecore-xcore-version}</version>
-            <!--            <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.eclipse.xtext</groupId>
             <artifactId>org.eclipse.xtext</artifactId>
-            <version>${xtext-version}</version>
-<!--            <scope>test</scope>-->
         </dependency>
     </dependencies>
 
@@ -112,132 +64,17 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.9.1</version>
-                <executions>
-                    <execution>
-                        <id>add-test-source</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${basedir}/src/test/java-gen</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.eclipse.xtext</groupId>
                 <artifactId>xtext-maven-plugin</artifactId>
-                <version>${xtext-version}</version>
-                <executions>
-                    <execution>
-                        <id>generate-test-sources</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <languages>
-                                <language>
-                                    <setup>org.eclipse.xtext.ecore.EcoreSupport</setup>
-                                </language>
-                                <language>
-                                    <setup>org.eclipse.emf.codegen.ecore.xtext.GenModelSupport</setup>
-                                </language>
-                                <language>
-                                    <setup>org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup</setup>
-                                    <outputConfigurations>
-                                        <outputConfiguration>
-                                            <outputDirectory>${project.basedir}/src/test/java-gen</outputDirectory>
-                                        </outputConfiguration>
-                                    </outputConfigurations>
-                                </language>
-                            </languages>
-                            <sourceRoots>
-                                <root>${basedir}/src/test/resources/metamodel</root>
-                            </sourceRoots>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.eclipse.text</groupId>
-                        <artifactId>org.eclipse.text</artifactId>
-                        <version>3.5.101</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.core</groupId>
-                        <artifactId>org.eclipse.core.resources</artifactId>
-                        <version>3.7.100</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.xtext</groupId>
-                        <artifactId>org.eclipse.xtext.ecore</artifactId>
-                        <version>${xtext-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.emf</groupId>
-                        <artifactId>org.eclipse.emf.codegen.ecore.xtext</artifactId>
-                        <version>${ecore-xtext-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.emf</groupId>
-                        <artifactId>org.eclipse.emf.common</artifactId>
-                        <version>${emf-common-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.emf</groupId>
-                        <artifactId>org.eclipse.emf.ecore</artifactId>
-                        <version>${emf-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.emf</groupId>
-                        <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
-                        <version>${emf-xmi-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.emf</groupId>
-                        <artifactId>org.eclipse.emf.codegen</artifactId>
-                        <version>${emf-codegen-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.emf</groupId>
-                        <artifactId>org.eclipse.emf.codegen.ecore</artifactId>
-                        <version>${emf-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.emf</groupId>
-                        <artifactId>org.eclipse.emf.ecore.xcore</artifactId>
-                        <version>${ecore-xcore-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.emf</groupId>
-                        <artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
-                        <version>${ecore-xcore-lib-version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>src/test/java-gen</directory>
-                        </fileset>
-                    </filesets>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.2</version>
-                <configuration>
-                    <tagNameFormat>@{project.version}</tagNameFormat>
-                </configuration>
             </plugin>
         </plugins>
     </build>
