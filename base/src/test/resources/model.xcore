@@ -1,6 +1,6 @@
 @GenModel(
     bundleManifest="false",
-    modelDirectory="emf-memdb/src/test/java-gen",
+    modelDirectory="src/test/java-gen",
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl",
     complianceLevel="7.0"
 )
