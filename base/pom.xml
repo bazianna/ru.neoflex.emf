@@ -21,6 +21,7 @@
             <artifactId>javax.persistence-api</artifactId>
             <scope>compile</scope>
         </dependency>
+
         <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.codegen.ecore</artifactId>
@@ -75,9 +76,9 @@
                 <groupId>org.eclipse.xtext</groupId>
                 <artifactId>xtext-maven-plugin</artifactId>
             </plugin>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-            </plugin>
+<!--            <plugin>-->
+<!--                <artifactId>maven-clean-plugin</artifactId>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 

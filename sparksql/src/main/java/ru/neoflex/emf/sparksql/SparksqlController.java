@@ -2,6 +2,7 @@ package ru.neoflex.emf.sparksql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.spark.sql.catalyst.analysis.NamedRelation;
+import org.apache.spark.sql.catalyst.analysis.UnresolvedFunction;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.spark.sql.catalyst.expressions.BinaryOperator;
 import org.apache.spark.sql.catalyst.expressions.Literal;
@@ -13,7 +14,6 @@ import org.apache.spark.sql.catalyst.trees.TreeNode;
 import org.apache.spark.sql.execution.SparkSqlParser;
 import org.apache.spark.sql.internal.SQLConf;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,30 +42,27 @@ public class SparksqlController {
         Node result;
         if (treeNode instanceof Project) {
             result = createProjectNode((Project) treeNode);
-        }
-        else if (treeNode instanceof Attribute) {
+        } else if (treeNode instanceof Attribute) {
             result = createAttributeNode((Attribute) treeNode);
-        }
-        else if (treeNode instanceof Literal) {
+        } else if (treeNode instanceof Literal) {
             result = createLiteralNode((Literal) treeNode);
-        }
-        else if (treeNode instanceof BinaryOperator) {
+        } else if (treeNode instanceof BinaryOperator) {
             result = createBinaryOperatorNode((BinaryOperator) treeNode);
-        }
-        else if (treeNode instanceof SubqueryAlias) {
+        } else if (treeNode instanceof SubqueryAlias) {
             result = createSubqueryAliasNode((SubqueryAlias) treeNode);
-        }
-        else if (treeNode instanceof NamedRelation) {
+        } else if (treeNode instanceof NamedRelation) {
             result = createNamedRelationNode((NamedRelation) treeNode);
-        }
-        else if (treeNode instanceof Filter) {
+        } else if (treeNode instanceof Filter) {
             result = createFilterNode((Filter) treeNode);
-        }
-        else {
+        } else if (treeNode instanceof UnresolvedFunction) {
+            result = createUnresolvedFunctionNode((UnresolvedFunction) treeNode);
+        } else {
             result = SparksqlFactory.eINSTANCE.createNode();
         }
         result.setNodeName(treeNode.getClass().getSimpleName());
         result.setDescription(treeNode.toString());
+        result.setLine(treeNode.origin().line().getOrElse(() -> 0) - 1);
+        result.setStartPosition(treeNode.origin().startPosition().getOrElse(() -> null));
         Iterator it = treeNode.children().iterator();
         while (it.hasNext()) {
             TreeNode child = (TreeNode) it.next();
@@ -74,9 +71,19 @@ public class SparksqlController {
         return result;
     }
 
+    private Node createUnresolvedFunctionNode(UnresolvedFunction treeNode) {
+        UnresolvedFunctionNode result = SparksqlFactory.eINSTANCE.createUnresolvedFunctionNode();
+        result.setName(treeNode.name().toString());
+        for (Iterator it = treeNode.arguments().iterator(); it.hasNext(); ) {
+            TreeNode t = (TreeNode) it.next();
+            result.getArguments().add(createNode(t));
+        }
+        return result;
+    }
+
     private Node createProjectNode(Project treeNode) {
         ProjectNode result = SparksqlFactory.eINSTANCE.createProjectNode();
-        for(Iterator it = treeNode.projectList().iterator(); it.hasNext();) {
+        for (Iterator it = treeNode.projectList().iterator(); it.hasNext(); ) {
             TreeNode t = (TreeNode) it.next();
             result.getProjectList().add(createNode(t));
         }
@@ -121,7 +128,7 @@ public class SparksqlController {
     }
 
     @PostMapping(value = "/parse", consumes = {"text/plain"})
-    JsonNode parse(@RequestBody String sql) throws Exception {
+    public JsonNode parse(@RequestBody String sql) throws Exception {
         SQLConf sqlConf = new SQLConf();
         SparkSqlParser parser = new SparkSqlParser(sqlConf);
         LogicalPlan plan = parser.parsePlan(sql);

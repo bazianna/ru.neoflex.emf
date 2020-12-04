@@ -445,8 +445,8 @@
                     <configuration>
                         <filesets>
                             <fileset>
-                                <directory>src/java/java-gen</directory>
-                                <directory>src/test/java-gen</directory>
+                                <directory>${project.basedir}/src/main/java-gen</directory>
+                                <directory>${project.basedir}/src/test/java-gen</directory>
                             </fileset>
                         </filesets>
                     </configuration>
