@@ -481,12 +481,20 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource));
     }
 
-    public List<Resource> findByClassAndFeature(EClass eClass, String feature, String value) {
+    public Stream<Resource> queryObjects(String sql) {
+        return queryObjects(getResourceSet(), sql);
+    }
+
+    public Stream<Resource> queryObjects(ResourceSet rs, String sql) {
+        return session.createQuery(sql, DBObject.class).getResultStream()
+                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource));
+    }
+
+    public Stream<Resource> findByClassAndFeature(EClass eClass, String feature, String value) {
         ResourceSet rs = getResourceSet();
         return getDbServer().getConcreteDescendants(eClass).stream()
                 .flatMap(eClassDesc -> findByClassAndFeature(EcoreUtil.getURI(eClass).trimQuery().toString(), feature, value))
-                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource));
     }
 
     public Stream<Resource> findByClassAndQName(ResourceSet rs, EClass eClass, String qName) {
