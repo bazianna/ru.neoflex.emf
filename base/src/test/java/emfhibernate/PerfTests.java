@@ -23,8 +23,8 @@ public class PerfTests extends TestBase {
     int nUpdates = 10;
     int deep = 3;
     int wide = 10;
-    int nTables = 500;
-    int nColumns = 100;
+    int nTables = 50;
+    int nColumns = 10;
     List<Long> groupIds = new ArrayList<>();
     List<Long> userIds = new ArrayList<>();
 
