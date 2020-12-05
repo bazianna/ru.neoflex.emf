@@ -7,9 +7,14 @@
 )
 package ru.neoflex.emf.sparksql
 
-class QueryLogicalPlan {
+enum ParsingType {
+    PLAN
+    EXPRESSION
+}
+class ParsingQuery {
+    ParsingType parsingType
     String sql
-    contains Node logicalPlan
+    contains Node parsingResult
 }
 
 class Node {
@@ -52,4 +57,8 @@ class FilterNode extends Node {
 class UnresolvedFunctionNode extends Node {
     String name
     contains Node[] arguments
+}
+
+class NamedExpressionNode extends Node {
+    String name
 }

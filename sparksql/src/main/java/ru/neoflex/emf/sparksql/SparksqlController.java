@@ -3,11 +3,8 @@ package ru.neoflex.emf.sparksql;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.spark.sql.catalyst.analysis.NamedRelation;
 import org.apache.spark.sql.catalyst.analysis.UnresolvedFunction;
-import org.apache.spark.sql.catalyst.expressions.Attribute;
-import org.apache.spark.sql.catalyst.expressions.BinaryOperator;
-import org.apache.spark.sql.catalyst.expressions.Literal;
+import org.apache.spark.sql.catalyst.expressions.*;
 import org.apache.spark.sql.catalyst.plans.logical.Filter;
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan;
 import org.apache.spark.sql.catalyst.plans.logical.Project;
 import org.apache.spark.sql.catalyst.plans.logical.SubqueryAlias;
 import org.apache.spark.sql.catalyst.trees.TreeNode;
@@ -23,6 +20,7 @@ import ru.neoflex.emf.restserver.JsonHelper;
 import scala.collection.Iterator;
 
 import javax.annotation.PostConstruct;
+import java.util.Objects;
 
 @RestController()
 @RequestMapping("/sparksql")
@@ -56,6 +54,8 @@ public class SparksqlController {
             result = createFilterNode((Filter) treeNode);
         } else if (treeNode instanceof UnresolvedFunction) {
             result = createUnresolvedFunctionNode((UnresolvedFunction) treeNode);
+        } else if (treeNode instanceof NamedExpression) {
+            result = createNamedExpressionNode((NamedExpression) treeNode);
         } else {
             result = SparksqlFactory.eINSTANCE.createNode();
         }
@@ -127,18 +127,28 @@ public class SparksqlController {
         return result;
     }
 
+    private Node createNamedExpressionNode(NamedExpression treeNode) {
+        NamedExpressionNode result = SparksqlFactory.eINSTANCE.createNamedExpressionNode();
+        result.setName(treeNode.name());
+        return result;
+    }
+
     @PostMapping(value = "/parse", consumes = {"text/plain"})
-    public JsonNode parse(@RequestBody String sql) throws Exception {
+    public JsonNode parse(ParsingType parsingType, @RequestBody String sql) throws Exception {
         SQLConf sqlConf = new SQLConf();
         SparkSqlParser parser = new SparkSqlParser(sqlConf);
-        LogicalPlan plan = parser.parsePlan(sql);
-        QueryLogicalPlan queryLogicalPlan = SparksqlFactory.eINSTANCE.createQueryLogicalPlan();
-        queryLogicalPlan.setSql(sql);
+        ParsingQuery parsingQuery = SparksqlFactory.eINSTANCE.createParsingQuery();
+        if (parsingType != null) {
+            parsingQuery.setParsingType(parsingType);
+        }
+        parsingQuery.setSql(sql);
+        TreeNode plan = Objects.equals(parsingQuery.getParsingType(), ParsingType.PLAN) ?
+            parser.parsePlan(sql) : parser.parseExpression(sql);
         Node planNode = createNode(plan);
-        queryLogicalPlan.setLogicalPlan(planNode);
+        parsingQuery.setParsingResult(planNode);
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             Resource resource = tx.createResource();
-            resource.getContents().add(queryLogicalPlan);
+            resource.getContents().add(parsingQuery);
             resource.save(null);
             return JsonHelper.resourceToJson(resource);
         });
