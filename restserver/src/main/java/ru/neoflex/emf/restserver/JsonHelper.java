@@ -3,17 +3,15 @@ package ru.neoflex.emf.restserver;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.*;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.XMIResource;
 import ru.neoflex.emf.base.HbResource;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -69,7 +67,16 @@ public class JsonHelper {
         }
     }
 
-    private TextNode toJson(EAttribute eAttribute, Object value) {
+    private ValueNode toJson(EAttribute eAttribute, Object value) {
+        if (value == null) {
+            return NullNode.instance;
+        }
+        if (value instanceof Number) {
+            return DecimalNode.valueOf(new BigDecimal(value.toString()));
+        }
+        if (value instanceof Boolean) {
+            return BooleanNode.valueOf((Boolean) value);
+        }
         EDataType eDataType = eAttribute.getEAttributeType();
         String image = EcoreUtil.convertToString(eDataType, value);
         return TextNode.valueOf(image);
