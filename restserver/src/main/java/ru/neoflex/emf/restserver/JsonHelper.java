@@ -70,6 +70,12 @@ public class JsonHelper {
         if (value == null) {
             return NullNode.instance;
         }
+        if (value instanceof Float) {
+            return FloatNode.valueOf((Float) value);
+        }
+        if (value instanceof Double) {
+            return DoubleNode.valueOf((Double) value);
+        }
         if (value instanceof Number) {
             return DecimalNode.valueOf(new BigDecimal(value.toString()));
         }
@@ -169,6 +175,11 @@ public class JsonHelper {
                         EcoreUtil.replace(setting, internalEObject, resolved);
                     }
                 }
+            }
+            else {
+                URI relProxy = proxyURI.trimQuery().resolve(resource.getURI().trimQuery(),
+                        true).appendQuery(proxyURI.query());
+                internalEObject.eSetProxyURI(relProxy);
             }
         }
     }

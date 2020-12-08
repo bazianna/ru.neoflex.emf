@@ -345,21 +345,22 @@ public class HbTransaction implements AutoCloseable, Serializable {
         Set<DBObject> toDeleteC = new HashSet<>(dbObject.getContent());
         for (AbstractMap.SimpleEntry<EReference, List<EObject>> ref : refsC) {
             String feature = ref.getKey().getName();
-            for (EObject eObject2 : ref.getValue()) {
+            for (int index = 0; index < ref.getValue().size(); ++index) {
+                EObject eObject2 = ref.getValue().get(index);
                 EcoreUtil.resolveAll(eObject2);
                 if (eObject2.eIsProxy()) {
                     throw new RuntimeException("Can't resolve " + ((InternalEObject) eObject2).eProxyURI().toString());
                 }
                 Long id2 = hbServer.getId(eObject2);
-                int index = ref.getValue().indexOf(eObject2);
                 DBObject dbObject2;
                 if (id2 != null) {
                     dbObject2 = getOrThrow(id2);
                     DBObject containedDBObject = dbObject.getContent().stream()
-                            .filter(o -> o.getFeature().equals(feature) && o.getIndex() == index && o.getId().equals(id2))
+                            .filter(o -> o.getFeature().equals(feature) && o.getId().equals(id2))
                             .findFirst().orElse(null);
                     if (containedDBObject != null) {
                         toDeleteC.remove(containedDBObject);
+                        containedDBObject.setIndex(index);
                     } else {
                         if (dbObject2.getContainer() != null && !Objects.equals(dbObject2.getContainer().getId(), dbObject.getId())) {
                             throw new RuntimeException("Can not change container for EObject id=" + dbObject2.getId() +
