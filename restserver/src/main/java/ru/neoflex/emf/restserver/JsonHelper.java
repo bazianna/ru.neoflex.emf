@@ -12,8 +12,7 @@ import ru.neoflex.emf.base.HbResource;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class JsonHelper {
     JsonMapper mapper = new JsonMapper();
@@ -25,7 +24,7 @@ public class JsonHelper {
     public ObjectNode toJson(EObject eObject, EClass eClass) {
         ObjectNode result = mapper.createObjectNode();
         if (!eObject.eClass().equals(eClass)) {
-            result.put("eClass", getURI(eObject.eClass()).toString());
+            result.put("eClass", EcoreUtil.getURI(eObject.eClass()).toString());
         }
         result.put("_id", eObject.eResource().getURIFragment(eObject));
         if (eObject.eResource() instanceof HbResource) {
@@ -105,24 +104,14 @@ public class JsonHelper {
         else {
             ObjectNode refNode = mapper.createObjectNode();
             if (!refObject.eClass().equals(eReference.getEReferenceType())) {
-                refNode.put("eClass", getURI(refObject.eClass()).toString());
+                refNode.put("eClass", EcoreUtil.getURI(refObject.eClass()).toString());
             }
-            Resource resource = base.eResource();
-            URI refURI = resource instanceof  HbResource ?
-                    ((HbResource) resource).deresolve(getURI(refObject)) :
-                    getURI(refObject).deresolve(base.eResource().getURI());
+            URI refURI = EcoreUtil.getURI(refObject).trimQuery()
+                    .deresolve(EcoreUtil.getURI(base).trimQuery(),
+                            true, true, false);
             refNode.put("$ref", refURI.toString());
             return refNode;
         }
-    }
-
-    URI getURI(EObject eObject) {
-        Resource resource = eObject.eResource();
-        if (resource instanceof HbResource) {
-            HbResource hbResource = (HbResource) resource;
-            return hbResource.getTx().getDbServer().createURI(eObject);
-        }
-        return EcoreUtil.getURI(eObject);
     }
 
     public static ObjectNode resourceToJson(Resource resource) {
@@ -168,6 +157,19 @@ public class JsonHelper {
         for (JsonNode eObjectNode: contents) {
             EObject eObject = eObjectFromJson(resource, (ObjectNode)eObjectNode, null);
             resource.getContents().add(eObject);
+        }
+        Map<EObject, Collection<EStructuralFeature.Setting>> crs = EcoreUtil.UnresolvedProxyCrossReferencer.find(resource);
+        for (Map.Entry<EObject, Collection<EStructuralFeature.Setting>> entry: crs.entrySet()) {
+            InternalEObject internalEObject = (InternalEObject) entry.getKey();
+            URI proxyURI = internalEObject.eProxyURI();
+            if (proxyURI.isCurrentDocumentReference()) {
+                EObject resolved = resource.getEObject(proxyURI.fragment());
+                if (resolved != null) {
+                    for (EStructuralFeature.Setting setting: entry.getValue()) {
+                        EcoreUtil.replace(setting, internalEObject, resolved);
+                    }
+                }
+            }
         }
     }
 
@@ -258,13 +260,10 @@ public class JsonHelper {
                 URI classUri = URI.createURI(eClassNode.asText());
                 referenceType = (EClass) resource.getResourceSet().getEObject(classUri, false);
             }
-            EObject refObject = EcoreUtil.create(referenceType);
             String ref = valueNode.get("$ref").asText();
             URI refUri = URI.createURI(ref);
-            URI resolvedURI = resource instanceof  HbResource ?
-                    ((HbResource) resource).resolve(refUri) :
-                    refUri.resolve(resource.getURI());
-            ((InternalEObject)refObject).eSetProxyURI(resolvedURI);
+            EObject refObject = EcoreUtil.create(referenceType);
+            ((InternalEObject)refObject).eSetProxyURI(refUri);
             return refObject;
         }
     }
