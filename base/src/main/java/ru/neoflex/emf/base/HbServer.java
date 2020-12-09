@@ -39,7 +39,7 @@ public class HbServer implements AutoCloseable {
     public static final String CONFIG_DRIVER = "hb.driver";
     public static final String CONFIG_URL = "hb.url";
     public static final String CONFIG_USER = "hb.user";
-    public static final String COMFIG_PASS = "hb.pass";
+    public static final String CONFIG_PASS = "hb.pass";
     public static final String CONFIG_DIALECT = "hb.dialect";
     public static final String CONFIG_SHOW_SQL = "hb.show_sql";
     public static final String CONFIG_MIN_POOL_SIZE = "hb.min_pool_size";
@@ -53,11 +53,6 @@ public class HbServer implements AutoCloseable {
 
     public void setIndexedAttributeDelegate(Function<EAttribute, Boolean> indexedAttributeDelegate) {
         this.indexedAttributeDelegate = indexedAttributeDelegate;
-    }
-
-    public static class DBObjectHandle {
-        Long id;
-        Integer version;
     }
 
     private static final ThreadLocal<Map<EObject, Long>> eObjectToIdMap = new ThreadLocal<>();
@@ -214,7 +209,7 @@ public class HbServer implements AutoCloseable {
         settings.put(Environment.DRIVER, getConfig().getProperty(CONFIG_DRIVER, "org.h2.Driver"));
         settings.put(Environment.URL, getConfig().getProperty(CONFIG_URL, "jdbc:h2:" + System.getProperty("user.home") + "/.h2home/" + this.getDbName()));
         settings.put(Environment.USER, getConfig().getProperty(CONFIG_USER, "sa"));
-        settings.put(Environment.PASS, getConfig().getProperty(COMFIG_PASS, ""));
+        settings.put(Environment.PASS, getConfig().getProperty(CONFIG_PASS, ""));
         settings.put(Environment.DIALECT, getConfig().getProperty(CONFIG_DIALECT, "org.hibernate.dialect.H2Dialect"));
         settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
         settings.put(Environment.HBM2DDL_AUTO, "none");

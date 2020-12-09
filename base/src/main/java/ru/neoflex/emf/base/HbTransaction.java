@@ -31,8 +31,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
     public HbTransaction(boolean readOnly, HbServer hbServer) {
         this.readOnly = readOnly;
         this.hbServer = hbServer;
-        session = getDbServer().getSessionFactory().openSession();
+        session = getDbServer().createSession();
     }
+
     public ResourceSet getResourceSet() {
         if (resourceSet == null) {
             resourceSet = createResourceSet();
