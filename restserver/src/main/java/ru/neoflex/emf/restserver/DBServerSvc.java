@@ -176,9 +176,9 @@ public class DBServerSvc {
     public static JsonHelper createJsonHelper() {
         return new JsonHelper() {
             @Override
-            protected void setId(EObject eObject, String id) {
-                if (eObject.eResource() instanceof HbResource) {
-                    HbResource hbResource = (HbResource) eObject.eResource();
+            protected void setId(Resource resource, EObject eObject, String id) {
+                if (resource instanceof HbResource) {
+                    HbResource hbResource = (HbResource) resource;
                     if (id != null) {
                         hbResource.getTx().getDbServer().setId(eObject, Long.parseLong(id));
                     }

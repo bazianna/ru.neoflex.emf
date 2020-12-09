@@ -202,7 +202,7 @@ public abstract class JsonHelper {
         }
         String id = eObjectNode.path("_id").asText(null);
         if (id != null) {
-            setId(eObject, id);
+            setId(resource, eObject, id);
         }
         return eObject;
     }
@@ -212,7 +212,7 @@ public abstract class JsonHelper {
         else if (sf instanceof EReference) fromJson(resource, eObject, (EReference) sf, valueNode);
     }
 
-    abstract protected void setId(EObject eObject, String id);
+    abstract protected void setId(Resource resource, EObject eObject, String id);
 
     private void fromJson(Resource resource, EObject eObject, EReference eReference, JsonNode valueNode) {
         if (eReference.isContainer()) return;
@@ -222,7 +222,7 @@ public abstract class JsonHelper {
             ObjectNode objectNode = (ObjectNode)valueNode;
             String id = objectNode.path("_id").asText(null);
             if (id != null) {
-                setId(eObject, id);
+                setId(resource, eObject, id);
             }
         }
         else {
@@ -234,7 +234,7 @@ public abstract class JsonHelper {
                 list.add(refObject);
                 String id = objectNode.path("_id").asText(null);
                 if (id != null) {
-                    setId(refObject, id);
+                    setId(resource, refObject, id);
                 }
             }
         }
