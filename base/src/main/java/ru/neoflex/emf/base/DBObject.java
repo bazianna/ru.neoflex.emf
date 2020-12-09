@@ -16,7 +16,7 @@ public class DBObject {
     private Long id;
 
     @Column(name = "version")
-    private Integer version;
+    private Long version;
 
     @Column(name = "class_uri", length = 512)
     private String classUri;
@@ -60,11 +60,11 @@ public class DBObject {
         this.id = id;
     }
 
-    public Integer getVersion() {
+    public Long getVersion() {
         return version;
     }
 
-    public void setVersion(Integer version) {
+    public void setVersion(Long version) {
         this.version = version;
     }
 

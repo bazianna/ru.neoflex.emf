@@ -19,6 +19,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import ru.neoflex.emf.base.HbResource;
 import ru.neoflex.emf.base.HbServer;
 
 import javax.annotation.PostConstruct;
@@ -170,5 +171,21 @@ public class DBServerSvc {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static JsonHelper createJsonHelper() {
+        return new JsonHelper() {
+            @Override
+            protected void setId(EObject eObject, String id) {
+                if (eObject.eResource() instanceof HbResource) {
+                    HbResource hbResource = (HbResource) eObject.eResource();
+                    if (id != null) {
+                        hbResource.getTx().getDbServer().setId(eObject, Long.parseLong(id));
+                    }
+                }
+            }
+
+        };
+
     }
 }

@@ -150,7 +150,7 @@ public class SparksqlController {
             Resource resource = tx.createResource();
             resource.getContents().add(parsingQuery);
             resource.save(null);
-            return JsonHelper.resourceToJson(resource);
+            return DBServerSvc.createJsonHelper().toJson(resource);
         });
     }
 

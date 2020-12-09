@@ -60,7 +60,7 @@ public class HbServer implements AutoCloseable {
         Integer version;
     }
 
-    private static final ThreadLocal<Map<EObject, DBObjectHandle>> eObjectToIdMap = new ThreadLocal<>();
+    private static final ThreadLocal<Map<EObject, Long>> eObjectToIdMap = new ThreadLocal<>();
     protected final SessionFactory sessionFactory;
     private final String dbName;
     private final Events events = new Events();
@@ -84,7 +84,7 @@ public class HbServer implements AutoCloseable {
         setSchema(defaultSchema);
     }
 
-    public Map<EObject, HbServer.DBObjectHandle> getEObjectToIdMap() {
+    public Map<EObject, Long> getEObjectToIdMap() {
         if (eObjectToIdMap.get() == null) {
             eObjectToIdMap.set(new WeakHashMap<>());
         }
@@ -92,31 +92,11 @@ public class HbServer implements AutoCloseable {
     }
 
     public Long getId(EObject eObject) {
-        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
-        return handle != null ? handle.id : null;
+        return getEObjectToIdMap().get(eObject);
     }
 
     public void setId(EObject eObject, Long id) {
-        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
-        if (handle == null) {
-            handle = new HbServer.DBObjectHandle();
-            getEObjectToIdMap().put(eObject, handle);
-        }
-        handle.id = id;
-    }
-
-    public Integer getVersion(EObject eObject) {
-        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
-        return handle != null ? handle.version : null;
-    }
-
-    public void setVersion(EObject eObject, Integer version) {
-        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
-        if (handle == null) {
-            handle = new HbServer.DBObjectHandle();
-            getEObjectToIdMap().put(eObject, handle);
-        }
-        handle.version = version;
+        getEObjectToIdMap().put(eObject, id);
     }
 
     public List<EPackage> loadDynamicPackages() throws Exception {
@@ -180,13 +160,13 @@ public class HbServer implements AutoCloseable {
         return getScheme().equals(uri.scheme()) && Objects.equals(uri.authority(), getDbName());
     }
 
-    public Integer getVersion(URI uri) {
+    public Long getVersion(URI uri) {
         String query = uri.query();
         if (query == null || !query.contains("rev=")) {
             return null;
         }
         String versionStr = query.split("rev=", -1)[1];
-        return StringUtils.isEmpty(versionStr) ? null : Integer.parseInt(versionStr);
+        return StringUtils.isEmpty(versionStr) ? null : Long.parseLong(versionStr);
     }
 
     public Function<EClass, EStructuralFeature> getQualifiedNameDelegate() {
@@ -257,7 +237,7 @@ public class HbServer implements AutoCloseable {
         return new HbTransaction(readOnly, this);
     }
 
-    private String createURIString(Long id, Integer version) {
+    private String createURIString(Long id, Long version) {
         return getScheme() + "://" + dbName + "/" + (id != null ? id : "") + (version != null ? ("?rev=" + version) : "");
     }
 
@@ -267,14 +247,14 @@ public class HbServer implements AutoCloseable {
 
     public URI createURI(EObject eObject) {
         EObject root = EcoreUtil.getRootContainer(eObject);
-        return createURI(getId(root), getVersion(root)).appendFragment(String.valueOf(getId(eObject)));
+        return createURI(getId(root), eObject.eResource().getTimeStamp()).appendFragment(String.valueOf(getId(eObject)));
     }
 
     public URI createURI(Long id) {
         return URI.createURI(createURIString(id, null));
     }
 
-    public URI createURI(Long id, Integer version) {
+    public URI createURI(Long id, Long version) {
         return URI.createURI(createURIString(id, version));
     }
 

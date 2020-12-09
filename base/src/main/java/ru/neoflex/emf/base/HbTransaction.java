@@ -270,15 +270,23 @@ public class HbTransaction implements AutoCloseable, Serializable {
         boolean needPersist = dbObject == null;
         if (dbObject == null) {
             dbObject = new DBObject();
-            dbObject.setVersion(1);
             dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
             dbObject.setContainer(container);
             dbObject.setFeature(containingFeature);
             dbObject.setIndex(containingIndex);
         }
         else {
-            dbObject.setVersion(dbObject.getVersion() + 1);
+            Long version = resource.getTimeStamp();
+            if (resource.getTimeStamp() == 0) {
+                throw new IllegalArgumentException(String.format("Version for updated resource %s not defined", resource.getURI().toString()));
+            }
+            if (version < dbObject.getVersion()) {
+                throw new IllegalArgumentException(String.format(
+                        "Version (%d) for updated object %d less then the version in the DB (%d)",
+                        version, dbObject.getId(), dbObject.getVersion()));
+            }
         }
+        dbObject.setVersion(resource.getTimeStamp());
 
         List<AbstractMap.SimpleEntry<EAttribute, List>> attrs = eObject.eClass().getEAllAttributes().stream()
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf))
@@ -334,7 +342,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
         if (needPersist) {
             getSession().persist(dbObject);
             hbServer.setId(eObject, dbObject.getId());
-            hbServer.setVersion(eObject, dbObject.getVersion());
         }
 
         List<AbstractMap.SimpleEntry<EReference, List<EObject>>> refsC = eObject.eClass().getEAllReferences().stream()
@@ -455,7 +462,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
             }
         }
         hbServer.setId(eObject, dbObject.getId());
-        hbServer.setVersion(eObject, dbObject.getVersion());
         return eObject;
     }
 
@@ -464,6 +470,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
         HbResource resource = (HbResource) rs.createResource(uri);
         EObject eObject = loadEObject(resource, dbObject);
         resource.getContents().add(eObject);
+        resource.setTimeStamp(new Date().getTime());
         return resource;
     }
 
@@ -566,16 +573,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
             Long id = hbServer.getId(eObject);
             EObject oldObject = null;
             if (id != null) {
-                Integer version = hbServer.getVersion(eObject);
-                if (version == null) {
-                    throw new IllegalArgumentException(String.format("Version for updated resource %s not defined", id));
-                }
                 DBObject dbObject = getOrThrow(id);
-                if (!dbObject.getVersion().equals(version)) {
-                    throw new IllegalArgumentException(String.format(
-                            "Version (%d) for updated resource %d is not equals to the version in the DB (%d)",
-                            version, id, dbObject.getVersion()));
-                }
                 oldDbCache.put(id, dbObject);
                 oldObject = loadEObject(oldResource, dbObject);
                 oldResource.getContents().add(oldObject);
@@ -615,6 +613,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
         resource.getContents().add(eObject);
         resource.setURI(getDbServer().createURI(dbObject.getId(), dbObject.getVersion()));
         hbServer.getEvents().fireAfterLoad(eObject);
+        resource.setTimeStamp(new Date().getTime());
     }
 
     public void delete(URI uri) {
@@ -622,15 +621,15 @@ public class HbTransaction implements AutoCloseable, Serializable {
         if (id == null) {
             throw new IllegalArgumentException("Id for deleted object not defined");
         }
-        Integer version = hbServer.getVersion(uri);
+        Long version = hbServer.getVersion(uri);
         if (version == null) {
             throw new IllegalArgumentException(String.format("Version for deleted object %s not defined", id));
         }
         DBObject dbObject = getOrThrow(id);
-        Integer oldVersion = dbObject.getVersion();
-        if (!version.equals(oldVersion)) {
+        Long oldVersion = dbObject.getVersion();
+        if (version < oldVersion) {
             throw new IllegalArgumentException(String.format(
-                    "Version (%d) for deleted object %d is not equals to the version in the DB (%d)",
+                    "Version (%d) for deleted object %d is less then the version in the DB (%d)",
                     version, id, oldVersion));
         }
         ResourceSet rs = getResourceSet();

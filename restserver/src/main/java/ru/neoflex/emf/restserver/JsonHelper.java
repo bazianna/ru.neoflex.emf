@@ -8,13 +8,13 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import ru.neoflex.emf.base.HbResource;
+//import ru.neoflex.emf.base.HbResource;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class JsonHelper {
+public abstract class JsonHelper {
     JsonMapper mapper = new JsonMapper();
 
     public ObjectNode toJson(EObject eObject) {
@@ -27,13 +27,6 @@ public class JsonHelper {
             result.put("eClass", EcoreUtil.getURI(eObject.eClass()).toString());
         }
         result.put("_id", eObject.eResource().getURIFragment(eObject));
-        if (eObject.eResource() instanceof HbResource) {
-            HbResource hbResource = (HbResource) eObject.eResource();
-            Integer version = hbResource.getTx().getDbServer().getVersion(eObject);
-            if (version != null) {
-                result.put("_rev", version.toString());
-            }
-        }
         for (EStructuralFeature sf: eObject.eClass().getEAllStructuralFeatures()) {
             if (!sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf)) {
                 JsonNode valueNode = toJson(eObject, sf);
@@ -120,13 +113,10 @@ public class JsonHelper {
         }
     }
 
-    public static ObjectNode resourceToJson(Resource resource) {
-        return new JsonHelper().toJson(resource);
-    }
-
     public ObjectNode toJson(Resource resource) {
         ObjectNode result = mapper.createObjectNode();
         result.put("uri", resource.getURI().toString());
+        result.put("timestamp", resource.getTimeStamp());
         ArrayNode contents = result.withArray("contents");
         resource.getContents().stream().forEach(eObject -> contents.add(toJson(eObject)));
         return result;
@@ -158,6 +148,11 @@ public class JsonHelper {
         URI uri = uriNode == null || uriNode.asText().length() == 0 ? defaultUri : URI.createURI(uriNode.asText());
         if (uri != null) {
             resource.setURI(uri);
+        }
+        JsonNode timestampNode = body.get("timestamp");
+        Long timestamp = timestampNode == null ? null : timestampNode.asLong();
+        if (timestamp != null) {
+            resource.setTimeStamp(timestamp);
         }
         ArrayNode contents = body.withArray("contents");
         for (JsonNode eObjectNode: contents) {
@@ -205,20 +200,9 @@ public class JsonHelper {
                 }
             }
         }
-        if (resource instanceof HbResource) {
-            HbResource hbResource = (HbResource) resource;
-            try {
-                Long id = Long.valueOf(eObjectNode.get("_id").asText(""));
-                hbResource.getTx().getDbServer().setId(eObject, id);
-            }
-            catch (Throwable e) {
-            }
-            try {
-                Integer version = Integer.valueOf(eObjectNode.get("_rev").asText(""));
-                hbResource.getTx().getDbServer().setVersion(eObject, version);
-            }
-            catch (Throwable e) {
-            }
+        String id = eObjectNode.path("_id").asText(null);
+        if (id != null) {
+            setId(eObject, id);
         }
         return eObject;
     }
@@ -228,34 +212,30 @@ public class JsonHelper {
         else if (sf instanceof EReference) fromJson(resource, eObject, (EReference) sf, valueNode);
     }
 
-    private void setIdVersion(EObject eObject, ObjectNode objectNode) {
-        if (eObject.eResource() instanceof HbResource) {
-            HbResource hbResource = (HbResource) eObject.eResource();
-            String id = objectNode.get("_id").asText();
-            if (id != null) {
-                hbResource.getTx().getDbServer().setId(eObject, Long.parseLong(id));
-            }
-            String version = objectNode.get("_rev").asText();
-            if (version != null) {
-                hbResource.getTx().getDbServer().setVersion(eObject, Integer.parseInt(version));
-            }
-        }
-    }
+    abstract protected void setId(EObject eObject, String id);
 
     private void fromJson(Resource resource, EObject eObject, EReference eReference, JsonNode valueNode) {
         if (eReference.isContainer()) return;
         if (!eReference.isMany()) {
             EObject refObject = fromJson(resource, eObject, eReference, (ObjectNode)valueNode);
             eObject.eSet(eReference, refObject);
-            setIdVersion(refObject, (ObjectNode)valueNode);
+            ObjectNode objectNode = (ObjectNode)valueNode;
+            String id = objectNode.path("_id").asText(null);
+            if (id != null) {
+                setId(eObject, id);
+            }
         }
         else {
             List<EObject> list = (List<EObject>) eObject.eGet(eReference);
             ArrayNode elements = (ArrayNode) valueNode;
             for (JsonNode element: elements) {
-                EObject refObject = fromJson(resource, eObject, eReference, (ObjectNode)element);
+                ObjectNode objectNode = (ObjectNode)element;
+                EObject refObject = fromJson(resource, eObject, eReference, objectNode);
                 list.add(refObject);
-                setIdVersion(refObject, (ObjectNode)element);
+                String id = objectNode.path("_id").asText(null);
+                if (id != null) {
+                    setId(refObject, id);
+                }
             }
         }
     }
