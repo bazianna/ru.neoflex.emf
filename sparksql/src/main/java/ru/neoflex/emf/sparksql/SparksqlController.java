@@ -1,9 +1,15 @@
 package ru.neoflex.emf.sparksql;
 
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+import antlr.collections.AST;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.spark.sql.catalyst.analysis.NamedRelation;
 import org.apache.spark.sql.catalyst.analysis.UnresolvedFunction;
-import org.apache.spark.sql.catalyst.expressions.*;
+import org.apache.spark.sql.catalyst.expressions.Attribute;
+import org.apache.spark.sql.catalyst.expressions.BinaryOperator;
+import org.apache.spark.sql.catalyst.expressions.Literal;
+import org.apache.spark.sql.catalyst.expressions.NamedExpression;
 import org.apache.spark.sql.catalyst.plans.logical.Filter;
 import org.apache.spark.sql.catalyst.plans.logical.Project;
 import org.apache.spark.sql.catalyst.plans.logical.SubqueryAlias;
@@ -11,20 +17,27 @@ import org.apache.spark.sql.catalyst.trees.TreeNode;
 import org.apache.spark.sql.execution.SparkSqlParser;
 import org.apache.spark.sql.internal.SQLConf;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.hql.internal.ast.HqlParser;
+import org.hibernate.hql.internal.ast.QueryTranslatorImpl;
+import org.hibernate.hql.internal.ast.util.NodeTraverser;
+import org.hibernate.hql.internal.ast.util.TokenPrinters;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.neoflex.emf.restserver.DBServerSvc;
-import ru.neoflex.emf.restserver.JsonHelper;
 import scala.collection.Iterator;
 
 import javax.annotation.PostConstruct;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 @RestController()
 @RequestMapping("/sparksql")
 public class SparksqlController {
+    Logger logger = Logger.getLogger(SparksqlController.class.getName());
     final DBServerSvc dbServerSvc;
 
     public SparksqlController(DBServerSvc dbServerSvc) {
@@ -133,8 +146,8 @@ public class SparksqlController {
         return result;
     }
 
-    @PostMapping(value = "/parse", consumes = {"text/plain"})
-    public JsonNode parse(ParsingType parsingType, @RequestBody String sql) throws Exception {
+    @PostMapping(value = "/parseSparkSQL", consumes = {"text/plain"})
+    public JsonNode parseSparkSQL(ParsingType parsingType, @RequestBody String sql) throws Exception {
         SQLConf sqlConf = new SQLConf();
         SparkSqlParser parser = new SparkSqlParser(sqlConf);
         ParsingQuery parsingQuery = SparksqlFactory.eINSTANCE.createParsingQuery();
@@ -154,4 +167,25 @@ public class SparksqlController {
         });
     }
 
+    @PostMapping(value = "/parseHQL", consumes = {"text/plain"})
+    public AST parseHQL(@RequestBody String hql) {
+        final HqlParser parser = HqlParser.getInstance( hql );
+        parser.setFilter( true );
+
+        try {
+            parser.statement();
+        }
+        catch (RecognitionException | TokenStreamException e) {
+            throw new HibernateException( "Unexpected error parsing HQL", e );
+        }
+
+        final AST hqlAst = parser.getAST();
+        parser.getParseErrorHandler().throwQueryException();
+        final NodeTraverser walker = new NodeTraverser( new QueryTranslatorImpl.JavaConstantConverter((SessionFactoryImplementor) dbServerSvc.getDbServer().getSessionFactory()) );
+        walker.traverseDepthFirst( hqlAst );
+
+        logger.info(TokenPrinters.HQL_TOKEN_PRINTER.showAsString( hqlAst, "--- HQL AST ---" ));
+
+        return hqlAst;
+    }
 }
