@@ -4,6 +4,7 @@ import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mchange.v2.c3p0.impl.NewProxyConnection;
 import org.apache.spark.sql.catalyst.analysis.NamedRelation;
 import org.apache.spark.sql.catalyst.analysis.UnresolvedFunction;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
@@ -17,20 +18,27 @@ import org.apache.spark.sql.catalyst.trees.TreeNode;
 import org.apache.spark.sql.execution.SparkSqlParser;
 import org.apache.spark.sql.internal.SQLConf;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.h2.command.Command;
+import org.h2.engine.Session;
+import org.h2.jdbc.JdbcConnection;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.internal.ast.HqlParser;
 import org.hibernate.hql.internal.ast.QueryTranslatorImpl;
 import org.hibernate.hql.internal.ast.util.NodeTraverser;
 import org.hibernate.hql.internal.ast.util.TokenPrinters;
+import org.hibernate.jdbc.ReturningWork;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.neoflex.emf.restserver.DBServerSvc;
 import scala.collection.Iterator;
+import org.h2.command.Parser;
 
 import javax.annotation.PostConstruct;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -156,7 +164,7 @@ public class SparksqlController {
         }
         parsingQuery.setSql(sql);
         TreeNode plan = Objects.equals(parsingQuery.getParsingType(), ParsingType.PLAN) ?
-            parser.parsePlan(sql) : parser.parseExpression(sql);
+                parser.parsePlan(sql) : parser.parseExpression(sql);
         Node planNode = createNode(plan);
         parsingQuery.setParsingResult(planNode);
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
@@ -169,23 +177,43 @@ public class SparksqlController {
 
     @PostMapping(value = "/parseHQL", consumes = {"text/plain"})
     public AST parseHQL(@RequestBody String hql) {
-        final HqlParser parser = HqlParser.getInstance( hql );
-        parser.setFilter( true );
+        final HqlParser parser = HqlParser.getInstance(hql);
+        parser.setFilter(true);
 
         try {
             parser.statement();
-        }
-        catch (RecognitionException | TokenStreamException e) {
-            throw new HibernateException( "Unexpected error parsing HQL", e );
+        } catch (RecognitionException | TokenStreamException e) {
+            throw new HibernateException("Unexpected error parsing HQL", e);
         }
 
         final AST hqlAst = parser.getAST();
         parser.getParseErrorHandler().throwQueryException();
-        final NodeTraverser walker = new NodeTraverser( new QueryTranslatorImpl.JavaConstantConverter((SessionFactoryImplementor) dbServerSvc.getDbServer().getSessionFactory()) );
-        walker.traverseDepthFirst( hqlAst );
+        final NodeTraverser walker = new NodeTraverser(new QueryTranslatorImpl.JavaConstantConverter((SessionFactoryImplementor) dbServerSvc.getDbServer().getSessionFactory()));
+        walker.traverseDepthFirst(hqlAst);
 
-        logger.info(TokenPrinters.HQL_TOKEN_PRINTER.showAsString( hqlAst, "--- HQL AST ---" ));
+        logger.info(TokenPrinters.HQL_TOKEN_PRINTER.showAsString(hqlAst, "--- HQL AST ---"));
 
         return hqlAst;
+    }
+
+    @PostMapping(value = "/parseH2", consumes = {"text/plain"})
+    public Command parseH2(@RequestBody String sql) throws Exception {
+        return dbServerSvc.getDbServer().inTransaction(true, tx ->
+                tx.getSession().doReturningWork(connection ->
+                {
+                    NewProxyConnection proxyConnection = (NewProxyConnection) connection;
+                    org.h2.jdbc.JdbcConnection jdbcConnection = (JdbcConnection) proxyConnection.unwrap(JdbcConnection.class);
+                    Parser parser = new Parser((Session) jdbcConnection.getSession());
+                    Command command = parser.prepareCommand(sql);
+                    command.prepareJoinBatch();
+                    return command;
+                }));
+    }
+
+    @PostMapping(value = "/queryNative", consumes = {"text/plain"})
+    public Object queryNative(@RequestBody String sql) throws Exception {
+        return dbServerSvc.getDbServer().inTransaction(true, tx -> {
+            return tx.getSession().createSQLQuery(sql).list();
+        });
     }
 }
