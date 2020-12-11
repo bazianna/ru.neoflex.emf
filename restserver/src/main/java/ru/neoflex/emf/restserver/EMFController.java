@@ -9,6 +9,7 @@ import groovy.lang.Script;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.hibernate.query.Query;
@@ -20,10 +21,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ru.neoflex.emf.base.HbResource;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,25 +34,27 @@ public class EMFController {
     @Autowired
     DBServerSvc dbServerSvc;
 
+    JsonHelper jsonHelper = DBServerSvc.createJsonHelper();
+
     @GetMapping("/resource")
     JsonNode getResource(Long id) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
             ResourceSet rs = tx.getResourceSet();
             URI uri = tx.getDbServer().createURI(id);
             Resource resource = rs.getResource(uri, true);
-            return new JsonHelper().toJson(resource);
+            return jsonHelper.toJson(resource);
         });
     }
 
     @PutMapping("/resource")
-    JsonNode putResource(Long id, Integer version, @RequestBody ObjectNode body) throws Exception {
+    JsonNode putResource(Long id, Long version, @RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
             URI uri = tx.getDbServer().createURI(id, version);
             Resource resource = rs.createResource(uri);
-            new JsonHelper().fromJson(resource, body, uri);
+            jsonHelper.fromJson(resource, body, uri);
             resource.save(null);
-            return new JsonHelper().toJson(resource);
+            return jsonHelper.toJson(resource);
         });
     }
 
@@ -61,14 +64,14 @@ public class EMFController {
             ResourceSet rs = tx.getResourceSet();
             URI uri = tx.getDbServer().createURI();
             Resource resource = rs.createResource(uri);
-            new JsonHelper().fromJson(resource, body);
+            jsonHelper.fromJson(resource, body);
             resource.save(null);
-            return new JsonHelper().toJson(resource);
+            return jsonHelper.toJson(resource);
         });
     }
 
     @DeleteMapping("/resource")
-    void deleteResource(Long id, Integer version) throws Exception {
+    void deleteResource(Long id, Long version) throws Exception {
         dbServerSvc.getDbServer().inTransaction(false, tx -> {
             URI uri = tx.getDbServer().createURI(id, version);
             tx.delete(uri);
@@ -107,20 +110,20 @@ public class EMFController {
                 });
             }
             List<Resource> resources = stream.collect(Collectors.toList());
-            return new JsonHelper().toJson(resources);
+            return jsonHelper.toJson(resources);
         });
     }
 
     @PostMapping("/xcore")
     public ObjectNode uploadXcore(@RequestParam("file") MultipartFile file) throws IOException {
         Resource resource = dbServerSvc.uploadXcore(file.getInputStream(), file.getOriginalFilename());
-        return new JsonHelper().toJson(resource);
+        return jsonHelper.toJson(resource);
     }
 
     @PostMapping("/ecore")
     public ObjectNode uploadEcore(@RequestParam("file") MultipartFile file) throws IOException {
         Resource resource = dbServerSvc.uploadEcore(file.getInputStream(), file.getOriginalFilename());
-        return new JsonHelper().toJson(resource);
+        return jsonHelper.toJson(resource);
     }
 
     @GetMapping("/ecore")
@@ -157,5 +160,11 @@ public class EMFController {
             Stream<JsonNode> nodeStream = query.list().stream().map(mapper::valueToTree);
             return nodeStream.collect(Collectors.toList());
         });
+    }
+
+    @PostMapping(value = "/queryObjects", consumes = {"text/plain"})
+    public List<JsonNode> queryObjects(@RequestBody String sql) throws Exception {
+        return dbServerSvc.getDbServer().inTransaction(true, tx ->
+                tx.queryObjects(sql).map(jsonHelper::toJson).collect(Collectors.toList()));
     }
 }

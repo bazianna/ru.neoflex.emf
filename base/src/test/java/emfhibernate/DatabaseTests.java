@@ -65,6 +65,7 @@ public class DatabaseTests extends TestBase {
             metaView.setAClass(EcorePackage.eINSTANCE.getEOperation());
             ResourceSet rs = tx.createResourceSet();
             Resource resource = rs.createResource(metaView.eResource().getURI());
+            resource.setTimeStamp(metaView.eResource().getTimeStamp());
             resource.getContents().add(metaView);
             resource.save(null);
             return null;

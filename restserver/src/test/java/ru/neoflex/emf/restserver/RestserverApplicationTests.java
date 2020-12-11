@@ -59,15 +59,14 @@ class RestserverApplicationTests {
         dbServerSvc.getDbServer().inTransaction(true, tx -> {
             HbResource resource = tx.createResource(tx.getDbServer().createURI());
             resource.getContents().add(group);
-            byte[] content = new JsonHelper().toBytes(resource);
+            byte[] content = DBServerSvc.createJsonHelper().toBytes(resource);
             ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/emf/resource")
                     .content(content).contentType(MediaType.APPLICATION_JSON));
             MvcResult mvcResult = resultActions.andDo(MockMvcResultHandlers.print()).andExpect(status().isOk()).andReturn();
             byte[] contentResult = mvcResult.getResponse().getContentAsByteArray();
             resource.unload();
-            new JsonHelper().fromJson(resource, contentResult);
-            Integer version = dbServerSvc.getDbServer().getVersion(resource.getContents().get(0));
-            Assert.notNull(version, "version not null");
+            DBServerSvc.createJsonHelper().fromJson(resource, contentResult);
+            Assert.isTrue(resource.getTimeStamp() != 0, "version not null");
             return resource;
         });
     }

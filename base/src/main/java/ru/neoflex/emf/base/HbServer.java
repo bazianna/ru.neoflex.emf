@@ -39,7 +39,7 @@ public class HbServer implements AutoCloseable {
     public static final String CONFIG_DRIVER = "hb.driver";
     public static final String CONFIG_URL = "hb.url";
     public static final String CONFIG_USER = "hb.user";
-    public static final String COMFIG_PASS = "hb.pass";
+    public static final String CONFIG_PASS = "hb.pass";
     public static final String CONFIG_DIALECT = "hb.dialect";
     public static final String CONFIG_SHOW_SQL = "hb.show_sql";
     public static final String CONFIG_MIN_POOL_SIZE = "hb.min_pool_size";
@@ -55,12 +55,7 @@ public class HbServer implements AutoCloseable {
         this.indexedAttributeDelegate = indexedAttributeDelegate;
     }
 
-    public static class DBObjectHandle {
-        Long id;
-        Integer version;
-    }
-
-    private static final ThreadLocal<Map<EObject, DBObjectHandle>> eObjectToIdMap = new ThreadLocal<>();
+    private static final ThreadLocal<Map<EObject, Long>> eObjectToIdMap = new ThreadLocal<>();
     protected final SessionFactory sessionFactory;
     private final String dbName;
     private final Events events = new Events();
@@ -84,7 +79,7 @@ public class HbServer implements AutoCloseable {
         setSchema(defaultSchema);
     }
 
-    public Map<EObject, HbServer.DBObjectHandle> getEObjectToIdMap() {
+    public Map<EObject, Long> getEObjectToIdMap() {
         if (eObjectToIdMap.get() == null) {
             eObjectToIdMap.set(new WeakHashMap<>());
         }
@@ -92,31 +87,11 @@ public class HbServer implements AutoCloseable {
     }
 
     public Long getId(EObject eObject) {
-        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
-        return handle != null ? handle.id : null;
+        return getEObjectToIdMap().get(eObject);
     }
 
     public void setId(EObject eObject, Long id) {
-        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
-        if (handle == null) {
-            handle = new HbServer.DBObjectHandle();
-            getEObjectToIdMap().put(eObject, handle);
-        }
-        handle.id = id;
-    }
-
-    public Integer getVersion(EObject eObject) {
-        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
-        return handle != null ? handle.version : null;
-    }
-
-    public void setVersion(EObject eObject, Integer version) {
-        HbServer.DBObjectHandle handle = getEObjectToIdMap().get(eObject);
-        if (handle == null) {
-            handle = new HbServer.DBObjectHandle();
-            getEObjectToIdMap().put(eObject, handle);
-        }
-        handle.version = version;
+        getEObjectToIdMap().put(eObject, id);
     }
 
     public List<EPackage> loadDynamicPackages() throws Exception {
@@ -180,13 +155,13 @@ public class HbServer implements AutoCloseable {
         return getScheme().equals(uri.scheme()) && Objects.equals(uri.authority(), getDbName());
     }
 
-    public Integer getVersion(URI uri) {
+    public Long getVersion(URI uri) {
         String query = uri.query();
         if (query == null || !query.contains("rev=")) {
             return null;
         }
         String versionStr = query.split("rev=", -1)[1];
-        return StringUtils.isEmpty(versionStr) ? null : Integer.parseInt(versionStr);
+        return StringUtils.isEmpty(versionStr) ? null : Long.parseLong(versionStr);
     }
 
     public Function<EClass, EStructuralFeature> getQualifiedNameDelegate() {
@@ -234,7 +209,7 @@ public class HbServer implements AutoCloseable {
         settings.put(Environment.DRIVER, getConfig().getProperty(CONFIG_DRIVER, "org.h2.Driver"));
         settings.put(Environment.URL, getConfig().getProperty(CONFIG_URL, "jdbc:h2:" + System.getProperty("user.home") + "/.h2home/" + this.getDbName()));
         settings.put(Environment.USER, getConfig().getProperty(CONFIG_USER, "sa"));
-        settings.put(Environment.PASS, getConfig().getProperty(COMFIG_PASS, ""));
+        settings.put(Environment.PASS, getConfig().getProperty(CONFIG_PASS, ""));
         settings.put(Environment.DIALECT, getConfig().getProperty(CONFIG_DIALECT, "org.hibernate.dialect.H2Dialect"));
         settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
         settings.put(Environment.HBM2DDL_AUTO, "none");
@@ -257,7 +232,7 @@ public class HbServer implements AutoCloseable {
         return new HbTransaction(readOnly, this);
     }
 
-    private String createURIString(Long id, Integer version) {
+    private String createURIString(Long id, Long version) {
         return getScheme() + "://" + dbName + "/" + (id != null ? id : "") + (version != null ? ("?rev=" + version) : "");
     }
 
@@ -267,14 +242,14 @@ public class HbServer implements AutoCloseable {
 
     public URI createURI(EObject eObject) {
         EObject root = EcoreUtil.getRootContainer(eObject);
-        return createURI(getId(root), getVersion(root)).appendFragment(String.valueOf(getId(eObject)));
+        return createURI(getId(root), eObject.eResource().getTimeStamp()).appendFragment(String.valueOf(getId(eObject)));
     }
 
     public URI createURI(Long id) {
         return URI.createURI(createURIString(id, null));
     }
 
-    public URI createURI(Long id, Integer version) {
+    public URI createURI(Long id, Long version) {
         return URI.createURI(createURIString(id, version));
     }
 

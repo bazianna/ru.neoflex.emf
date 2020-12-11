@@ -23,6 +23,8 @@ public class PerfTests extends TestBase {
     int nUpdates = 10;
     int deep = 3;
     int wide = 10;
+    int nTables = 50;
+    int nColumns = 10;
     List<Long> groupIds = new ArrayList<>();
     List<Long> userIds = new ArrayList<>();
 
@@ -36,6 +38,76 @@ public class PerfTests extends TestBase {
         hbServer.close();
     }
 
+    Schema createSchema(String name, int nTables, int nColumns) {
+        Schema schema = TestFactory.eINSTANCE.createSchema();
+        schema.setName(name);
+        for (int i = 0; i < nTables; ++i) {
+            if (i <= nTables * 3 / 4) {
+                DBTable dbTable = TestFactory.eINSTANCE.createDBTable();
+                schema.getEntities().add(dbTable);
+                dbTable.setName("table" + i);
+                for (int j = 0; j < nColumns; ++j) {
+                    Column column = TestFactory.eINSTANCE.createColumn();
+                    dbTable.getColumns().add(column);
+                    column.setName("column" + j);
+                    column.setDbType("varchar(100)");
+                }
+                PKey pKey = TestFactory.eINSTANCE.createPKey();
+                pKey.setName("table" + i + "_pkey");
+                pKey.getColumns().add(dbTable.getColumns().get(0));
+                dbTable.setPKey(pKey);
+                for (int j = 0; j < 3; ++j) {
+                    IEKey ieKey = TestFactory.eINSTANCE.createIEKey();
+                    dbTable.getIndexes().add(ieKey);
+                    ieKey.setName("table" + i + "_pkey" + j);
+                    ieKey.getColumns().add(dbTable.getColumns().get(j + 1));
+                    ieKey.getColumns().add(dbTable.getColumns().get(j + 2));
+                }
+            } else {
+                DBView dbView = TestFactory.eINSTANCE.createDBView();
+                schema.getEntities().add(dbView);
+                dbView.setName("view" + i);
+                DBTable dbTable = (DBTable) schema.getEntities().get(i - nTables/2);
+                for (int j = 0; j < nColumns; ++j) {
+                    Column column = dbTable.getColumns().get(j);
+                    dbView.getColumns().add(column);
+                }
+            }
+        }
+        return schema;
+    }
+
+    @Test
+    public void testSchema() throws Exception {
+        long count0 = hbServer.getEObjectToIdMap().size();
+        long start = System.currentTimeMillis();
+        Schema schema1 = hbServer.inTransaction(false, tx -> {
+            ResourceSet rs = tx.getResourceSet();
+            Resource resource = rs.createResource(tx.getDbServer().createURI());
+            Schema schema = createSchema("emf", nTables, nColumns);
+            resource.getContents().add(schema);
+            resource.save(null);
+            return schema;
+        });
+        Long id = hbServer.getId(schema1);
+        Assert.assertNotNull(id);
+        long afterInsert = System.currentTimeMillis();
+        long count = hbServer.getEObjectToIdMap().size() - count0;
+        Schema schema2 = hbServer.inTransaction(true, tx -> {
+            ResourceSet rs = tx.getResourceSet();
+            Resource resource = rs.createResource(tx.getDbServer().createURI(id));
+            resource.load(null);
+//            EcoreUtil.resolveAll(rs);
+            Assert.assertEquals(1, resource.getContents().size());
+            return (Schema) resource.getContents().get(0);
+        });
+        Assert.assertEquals("emf", schema2.getName());
+        long afterLoad = System.currentTimeMillis();
+        System.out.println("Created " + count + " objects");
+        System.out.println("Inserted in " + (afterInsert - start) / 1000 + "s. " + count * 1000 / (afterInsert - start) + " object/s.");
+        System.out.println("Loaded in " + (afterLoad - afterInsert) / 1000 + "s. " + count * 1000 / (afterLoad - afterInsert) + " object/s.");
+    }
+
     ViewBase createView(String prefix, int deep, int wide) {
         if (deep > 1) {
             ViewContainer viewContainer = TestFactory.eINSTANCE.createViewContainer();
@@ -46,8 +118,7 @@ public class PerfTests extends TestBase {
                 child.setFirstSibling(child.getParent().getElements().get(0));
             }
             return viewContainer;
-        }
-        else {
+        } else {
             ViewElement viewElement = TestFactory.eINSTANCE.createViewElement();
             viewElement.setElementName(prefix);
             viewElement.setCreated(new Date());
@@ -84,8 +155,8 @@ public class PerfTests extends TestBase {
         Assert.assertEquals("", view2.getElementName());
         long afterLoad = System.currentTimeMillis();
         System.out.println("Created " + count + " objects");
-        System.out.println("Inserted in " + (afterInsert-start)/1000 + "s. " + count*1000/(afterInsert-start) + " object/s.");
-        System.out.println("Loaded in " + (afterLoad-afterInsert)/1000 + "s. " + count*1000/(afterLoad-afterInsert) + " object/s.");
+        System.out.println("Inserted in " + (afterInsert - start) / 1000 + "s. " + count * 1000 / (afterInsert - start) + " object/s.");
+        System.out.println("Loaded in " + (afterLoad - afterInsert) / 1000 + "s. " + count * 1000 / (afterLoad - afterInsert) + " object/s.");
     }
 
     @Test
@@ -165,13 +236,13 @@ public class PerfTests extends TestBase {
             thread.start();
             threads.add(thread);
         }
-        for (Thread thread: threads) {
+        for (Thread thread : threads) {
             thread.join();
         }
         long finish = System.currentTimeMillis();
-        System.out.println("Created " + nGroups + " groups in " + (created1 - start)/1000 + " sec");
-        System.out.println("Created " + nUsers + " users  in " + (created2 - created1)/1000 + " sec");
-        System.out.println("Updated " + (nUpdates*nThreads) + " users in " + nThreads + " threads in " + (finish - created2)/1000 + " sec. " + (nUpdates*nThreads)*1000/(finish - created2) + " object/s");
+        System.out.println("Created " + nGroups + " groups in " + (created1 - start) / 1000 + " sec");
+        System.out.println("Created " + nUsers + " users  in " + (created2 - created1) / 1000 + " sec");
+        System.out.println("Updated " + (nUpdates * nThreads) + " users in " + nThreads + " threads in " + (finish - created2) / 1000 + " sec. " + (nUpdates * nThreads) * 1000 / (finish - created2) + " object/s");
         System.out.println("Errors found: " + eCount.get());
         Assert.assertEquals(0, eCount.get());
     }

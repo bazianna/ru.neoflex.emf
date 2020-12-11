@@ -1,15 +1,15 @@
 @GenModel(
     bundleManifest="false",
-    modelDirectory="ru.neoflex.nfcore.bazi/src/java/java-gen",
+    modelDirectory="src/java/java-gen",
     complianceLevel="7.0",
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl",
     rootExtendsInterface="org.eclipse.emf.ecore.EObject"
 )
-package ru.neoflex.nfcore.bazi.calendar
+package ru.neoflex.emf.bazi.calendar
 
-import ru.neoflex.nfcore.bazi.natalChart.CalendarPillar
+import ru.neoflex.emf.bazi.natalChart.CalendarPillar
 
-annotation "ru.neoflex.nfcore" as BaZi
+annotation "ru.neoflex.emf.bazi" as BaZi
 
 @BaZi(documentation="Солнечный календарь. Пекинское время. Года генерируются встроенной функцией один раз")
 class Calendar {

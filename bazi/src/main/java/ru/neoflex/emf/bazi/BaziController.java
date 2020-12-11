@@ -7,18 +7,17 @@ import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.neoflex.emf.restserver.DBServerSvc;
+import ru.neoflex.emf.bazi.natalChart.*;
+import ru.neoflex.emf.drools.DroolsSvc;
 import ru.neoflex.emf.restserver.JsonHelper;
-import ru.neoflex.nfcore.bazi.natalChart.*;
+import ru.neoflex.emf.restserver.DBServerSvc;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
@@ -41,6 +40,7 @@ public class BaziController {
 
     @PostConstruct
     void init() {
+        dbServerSvc.getDbServer().registerEPackage(NatalChartPackage.eINSTANCE);
         droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<>("dbServerSvc", dbServerSvc));
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();
@@ -108,7 +108,7 @@ public class BaziController {
                 org.eclipse.emf.ecore.resource.Resource natalCharts = tx.createResource();
                 natalCharts.getContents().addAll(eObjects.getContents().stream()
                         .filter(eObject -> eObject instanceof NatalChart).collect(Collectors.toList()));
-                return JsonHelper.resourceToJson(natalCharts);
+                return DBServerSvc.createJsonHelper().toJson(natalCharts);
             }
             finally {
                 kieSession.dispose();

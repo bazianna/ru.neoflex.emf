@@ -1,6 +1,6 @@
 @GenModel(
     bundleManifest="false",
-    modelDirectory="emf-memdb/src/test/java-gen",
+    modelDirectory="src/test/java-gen",
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl",
     complianceLevel="7.0"
 )
@@ -54,6 +54,11 @@ class DBTable extends DBEntity {
 class DBView extends DBEntity {
 	refers Column[] columns
 	boolean isMaterialized
+}
+
+class Schema {
+	String name
+    contains DBEntity[] entities
 }
 
 class MetaView {

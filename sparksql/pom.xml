@@ -15,19 +15,23 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>bazi</artifactId>
-    <name>bazi</name>
-    <description>Bazi sample for EMF framework</description>
+    <artifactId>sparksql</artifactId>
+    <name>sparksql</name>
+    <description>sparksql sample for EMF framework</description>
 
     <dependencies>
         <dependency>
             <groupId>ru.neoflex.emf</groupId>
-            <artifactId>drools</artifactId>
-            <version>${project.version}</version>
+            <artifactId>restserver</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-sql -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.12</artifactId>
+            <version>3.0.1</version>
+        </dependency>
     </dependencies>
-
 
     <build>
         <plugins>
@@ -54,7 +58,6 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
             </plugin>
-
             <plugin>
                 <groupId>org.eclipse.xtext</groupId>
                 <artifactId>xtext-maven-plugin</artifactId>

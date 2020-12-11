@@ -2,6 +2,7 @@ package ru.neoflex.emf.base;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 
 import java.io.IOException;
@@ -73,21 +74,5 @@ public class HbResource extends ResourceImpl {
     protected void doLoad(InputStream inputStream, Map<?, ?> options) throws IOException {
         HbInputStream hbInputStream = (HbInputStream) inputStream;
         hbInputStream.loadResource(this);
-    }
-
-    public URI resolve(URI uri) {
-        URI baseURI = getURI();
-        return getURI() != null && uri.isRelative() && uri.hasRelativePath() ? uri.resolve(baseURI) : uri;
-    }
-
-    public URI deresolve(URI uri) {
-        URI baseURI = getURI();
-        if (baseURI != null && !uri.isRelative()) {
-            URI deresolvedURI = uri.deresolve(baseURI, true, true, false);
-            if (deresolvedURI.hasRelativePath() && (!uri.isPlatform() || uri.segment(0).equals(baseURI.segment(0)))) {
-                uri = deresolvedURI;
-            }
-        }
-        return uri;
     }
 }

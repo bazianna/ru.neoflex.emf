@@ -1,4 +1,4 @@
-package ru.neoflex.emf.bazi;
+package ru.neoflex.emf.drools;
 
 import org.drools.compiler.compiler.io.memory.MemoryFileSystem;
 import org.kie.api.KieBase;
