@@ -18,25 +18,46 @@ import ru.neoflex.nfcore.bazi.natalChart.God
 import ru.neoflex.nfcore.bazi.natalChart.Elements
 import ru.neoflex.nfcore.bazi.calendar.impl.YearImpl
 import java.util.Arrays
+import ru.neoflex.nfcore.bazi.natalChart.CalendarPillar
+import ru.neoflex.nfcore.bazi.natalChart.Zoo
 
 global DBServerSvc dbServerSvc;
 global HbTransaction tx;
+
+function void createCalendarPillars(HbTransaction tx) {
+    List<Elements> elements = Arrays.asList(Elements.values());
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer skyIndex = 1;
+    Integer zooIndex = 1;
+
+    for(int i = 0; i < 60; i++) {
+        CalendarPillar pillar = NatalChartFactory.eINSTANCE.createCalendarPillar();
+        pillar.setSky(elements.get(skyIndex));
+        skyIndex = skyIndex < 10 ? skyIndex + 1 : 1;
+        pillar.setEarth(zoo.get(zooIndex));
+        zooIndex = zooIndex < 12 ? zooIndex + 1 : 1;
+
+        Resource resource = tx.createResource();
+        resource.getContents().add(pillar);
+        resource.save(null);
+    }
+}
 
 function Calendar createCalendar(HbTransaction tx) {
     Calendar calendar = CalendarFactory.eINSTANCE.createCalendar();
 
     List<Elements> elements = Arrays.asList(Elements.values());
     Integer skyIndex = elements.indexOf(Elements.WATER_YIN);
-    Integer earthIndex = elements.indexOf(Elements.METAL_YIN);
+
 
     for(int i = 1993; i <= 2021; i++) {
         Year year = CalendarFactory.eINSTANCE.createYear();
         year.setName(i);
-        Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
+        CalendarPillar pillar = NatalChartFactory.eINSTANCE.createCalendarPillar();
         pillar.setSky(elements.get(skyIndex));
         skyIndex = skyIndex < 10 ? skyIndex + 1 : 1;
-        pillar.setEarth(elements.get(earthIndex));
-        earthIndex = earthIndex < 10 ? earthIndex + 1 : 1;
+
         year.setYear(pillar);
         calendar.getYear().add(year);
     }
@@ -75,6 +96,12 @@ then
     update($calendar);
 end;
 
+rule "Create CalendarPillars"
+when
+    not CalendarPillar()
+then
+    createCalendarPillars(tx);
+end;
 
 rule "Create Calendar"
 when
