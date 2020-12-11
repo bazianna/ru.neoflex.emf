@@ -9,33 +9,72 @@ import java.io.OutputStream;
 import java.util.Map;
 
 public class HbHandler extends URIHandlerImpl {
+    private HbServer hbServer;
     private HbTransaction tx;
 
-    HbHandler(HbTransaction tx) {
+    HbHandler(HbServer hbServer, HbTransaction tx) {
+        this.hbServer = hbServer;
         this.tx = tx;
     }
 
     @Override
     public boolean canHandle(URI uri) {
-        return tx.getDbServer().canHandle(uri);
+        return getDbServer().canHandle(uri);
     }
 
     @Override
     public OutputStream createOutputStream(URI uri, Map<?, ?> options) throws IOException {
-        return new HbOutputStream(tx, uri, options);
+        if (tx != null) {
+            return new HbOutputStream(tx, uri, options);
+        }
+        HbTransaction effectiveTx = getDbServer().createDBTransaction(false);
+        effectiveTx.begin();
+        return new HbOutputStream(effectiveTx, uri, options) {
+            @Override
+            public void close() throws IOException {
+                try {
+                    this.tx.commit();
+                }
+                catch (Throwable e) {
+                    this.tx.rollback();
+                    throw e;
+                }
+                finally {
+                    this.tx.close();
+                }
+            }
+        };
     }
 
     @Override
     public InputStream createInputStream(URI uri, Map<?, ?> options) throws IOException {
-        return new HbInputStream(tx, uri, options);
+        HbTransaction effectiveTx = tx != null ? tx : getDbServer().createDBTransaction(false);
+        return new HbInputStream(effectiveTx, uri, options);
     }
 
     @Override
     public void delete(URI uri, Map<?, ?> options) throws IOException {
-        tx.delete(uri);
+        if (tx != null) {
+            tx.delete(uri);
+        }
+        else {
+            HbTransaction effectiveTx = getDbServer().createDBTransaction(false);
+            effectiveTx.begin();
+            try {
+                effectiveTx.delete(uri);
+                effectiveTx.commit();
+            }
+            catch (Throwable e) {
+                effectiveTx.rollback();
+                throw e;
+            }
+            finally {
+                effectiveTx.close();
+            }
+        }
     }
 
-    public HbTransaction getTx() {
-        return tx;
+    public HbServer getDbServer() {
+        return hbServer;
     }
 }

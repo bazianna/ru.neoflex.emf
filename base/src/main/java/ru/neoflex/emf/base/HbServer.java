@@ -7,6 +7,8 @@ import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -303,6 +305,33 @@ public class HbServer implements AutoCloseable {
         public int maxAttempts = 10;
         public List<Class<?>> retryClasses = new ArrayList<>();
     }
+
+    public ResourceSet createResourceSet() {
+        return createResourceSet(null);
+    }
+
+    public HbResource createResource() {
+        return (HbResource) createResourceSet().createResource(createURI());
+    }
+
+    public ResourceSet createResourceSet(HbTransaction tx) {
+        ResourceSetImpl result = new ResourceSetImpl();
+        result.setPackageRegistry(getPackageRegistry());
+        result.setURIResourceMap(new HashMap<>());
+        result.getResourceFactoryRegistry()
+                .getProtocolToFactoryMap()
+                .put(getScheme(), new ResourceFactoryImpl() {
+                    @Override
+                    public Resource createResource(URI uri) {
+                        return HbServer.this.createResource(uri);
+                    }
+                });
+        result.getURIConverter()
+                .getURIHandlers()
+                .add(0, new HbHandler(this, tx));
+        return result;
+    }
+
 
     protected TxRetryStrategy createTxRetryStrategy() {
         return new TxRetryStrategy();

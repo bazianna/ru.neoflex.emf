@@ -45,12 +45,10 @@ public class SpringTemplateController {
         ParseTree tree = parser.init();
         logger.info(tree.toStringTree(parser));
         ETreeElement eTree = parseTreeToETree(tree, parser);
-        return dbServerSvc.getDbServer().inTransaction(false, tx -> {
-            Resource resource = tx.createResource();
-            resource.getContents().add(eTree);
-            resource.save(null);
-            return DBServerSvc.createJsonHelper().toJson(resource);
-        });
+        Resource resource = dbServerSvc.getDbServer().createResource();
+        resource.getContents().add(eTree);
+        resource.save(null);
+        return DBServerSvc.createJsonHelper().toJson(resource);
     }
 
     public ETreeElement parseTreeToETree(ParseTree tree, Parser parser) {

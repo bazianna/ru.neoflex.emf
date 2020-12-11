@@ -5,8 +5,6 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.hibernate.Session;
@@ -50,21 +48,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     public ResourceSet createResourceSet() {
-        ResourceSetImpl result = new ResourceSetImpl();
-        result.setPackageRegistry(getDbServer().getPackageRegistry());
-        result.setURIResourceMap(new HashMap<>());
-        result.getResourceFactoryRegistry()
-                .getProtocolToFactoryMap()
-                .put(hbServer.getScheme(), new ResourceFactoryImpl() {
-                    @Override
-                    public Resource createResource(URI uri) {
-                        return hbServer.createResource(uri);
-                    }
-                });
-        result.getURIConverter()
-                .getURIHandlers()
-                .add(0, new HbHandler(this));
-        return result;
+        return hbServer.createResourceSet(this);
     }
 
     public HbServer getDbServer() {

@@ -27,9 +27,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -180,7 +181,7 @@ public class DBServerSvc {
                 if (resource instanceof HbResource) {
                     HbResource hbResource = (HbResource) resource;
                     if (id != null) {
-                        hbResource.getTx().getDbServer().setId(eObject, Long.parseLong(id));
+                        hbResource.getDbServer().setId(eObject, Long.parseLong(id));
                     }
                 }
             }

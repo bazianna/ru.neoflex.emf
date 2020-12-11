@@ -9,7 +9,7 @@ import java.io.OutputStream;
 import java.util.Map;
 
 public class HbOutputStream extends OutputStream implements URIConverter.Saveable {
-    private HbTransaction tx;
+    protected HbTransaction tx;
     private URI uri;
     private Map<?, ?> options;
 

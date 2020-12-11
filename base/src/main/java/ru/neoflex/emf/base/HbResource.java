@@ -2,7 +2,6 @@ package ru.neoflex.emf.base;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 
 import java.io.IOException;
@@ -28,7 +27,7 @@ public class HbResource extends ResourceImpl {
 
     @Override
     public String getURIFragment(EObject eObject) {
-        Long idl = getTx().getDbServer().getId(eObject);
+        Long idl = getDbServer().getId(eObject);
         return idl != null ? idl.toString() : super.getURIFragment(eObject);
     }
 
@@ -47,20 +46,20 @@ public class HbResource extends ResourceImpl {
         return true;
     }
 
-    public HbTransaction getTx() {
+    public HbServer getDbServer() {
         HbHandler hbHandler = (HbHandler) getResourceSet().getURIConverter().getURIHandlers().get(0);
-        return hbHandler.getTx();
+        return hbHandler.getDbServer();
     }
 
     protected void attachedHelper(EObject eObject) {
-        Long id = getTx().getDbServer().getId(eObject);
+        Long id = getDbServer().getId(eObject);
         if (id != null) {
             getIDToEObjectMap().put(id, eObject);
         }
     }
 
     protected void detachedHelper(EObject eObject) {
-        Long id = getTx().getDbServer().getId(eObject);
+        Long id = getDbServer().getId(eObject);
         if (id != null) {
             getIDToEObjectMap().remove(id);
         }
