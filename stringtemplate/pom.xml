@@ -22,11 +22,42 @@
             <artifactId>restserver</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+<!--
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>ST4</artifactId>
             <version>4.3.1</version>
         </dependency>
+-->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4</artifactId>
+            <version>4.9</version>
+        </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.xtext</groupId>
+                <artifactId>xtext-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

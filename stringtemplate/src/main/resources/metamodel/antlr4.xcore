@@ -1,0 +1,33 @@
+@GenModel(
+    bundleManifest="false",
+    modelDirectory="src/java/java-gen",
+    complianceLevel="7.0",
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl",
+    rootExtendsInterface="org.eclipse.emf.ecore.EObject"
+)
+package ru.neoflex.emf.antlr4
+
+abstract class ETreeElement {
+    container EParseTree parent opposite children
+}
+
+abstract class EParseTree extends ETreeElement {
+    contains ETreeElement[] children opposite parent
+}
+
+class ERule extends EParseTree {
+    int ruleIndex
+    String ruleName
+    int altNumber
+}
+
+class ETerminal extends ETreeElement {
+    int tokenType
+    String typeName
+    String tokenName
+    String label
+    String text
+}
+
+class EError extends ETerminal {
+}
