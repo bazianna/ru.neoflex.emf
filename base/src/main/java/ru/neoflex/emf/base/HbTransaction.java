@@ -596,6 +596,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .filter(eObject -> eObject instanceof EPackage)
                 .map(eObject -> (EPackage) eObject)
                 .forEach(ePackage -> getDbServer().getPackageRegistry().put(ePackage.getNsURI(), ePackage));
+        resource.setTimeStamp(new Date().getTime());
     }
 
     public static String getDiagnosticMessage(Diagnostic diagnostic) {

@@ -16,16 +16,14 @@ abstract class EParseTree extends ETreeElement {
 }
 
 class ERule extends EParseTree {
-    int ruleIndex
+    int ruleIndex = "-1"
     String ruleName
     int altNumber
 }
 
 class ETerminal extends ETreeElement {
-    int tokenType
+    int tokenType = "-1"
     String typeName
-    String tokenName
-    String label
     String text
 }
 
