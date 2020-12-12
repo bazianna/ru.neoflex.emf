@@ -58,6 +58,7 @@ public class SpringTemplateController {
             eNode.setRuleIndex(node.getRuleContext().getRuleIndex());
             eNode.setRuleName(parser.getRuleNames()[eNode.getRuleIndex()]);
             eNode.setAltNumber(node.getRuleContext().getAltNumber());
+            eNode.setLabel(node.getClass().getSimpleName().replaceAll("Context$",""));
             for (int i = 0; i < node.getChildCount(); ++i) {
                 ParseTree child = node.getChild(i);
                 ETreeElement eTreeElement = parseTreeToETree(child, parser);

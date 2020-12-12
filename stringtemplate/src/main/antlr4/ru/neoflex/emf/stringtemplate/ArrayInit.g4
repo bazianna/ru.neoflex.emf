@@ -7,8 +7,8 @@ grammar ArrayInit;
 init  : '{' value (',' value)* '}' ;  // must match at least one value
 
 /** A value can be either a nested array/struct or a simple integer (INT) */
-value : init
-      | INT
+value : init # CompoundValue
+      | INT  # IntValue
       ;
 
 // parser rules start with lowercase letters, lexer rules with uppercase

@@ -19,6 +19,7 @@ class ERule extends EParseTree {
     int ruleIndex = "-1"
     String ruleName
     int altNumber
+    String label
 }
 
 class ETerminal extends ETreeElement {

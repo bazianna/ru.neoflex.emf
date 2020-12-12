@@ -42,6 +42,12 @@
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
                 <version>4.3</version>
+                <configuration>
+                    <options>
+                        <contextSuperClass>org.antlr.v4.runtime.RuleContextWithAltNum</contextSuperClass>
+                    </options>
+                    <outputDirectory>src/main/java-gen</outputDirectory>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -49,6 +55,13 @@
                         </goals>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4</artifactId>
+                        <version>4.9</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
