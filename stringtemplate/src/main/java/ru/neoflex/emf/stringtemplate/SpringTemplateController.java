@@ -15,6 +15,8 @@ import ru.neoflex.emf.antlr4.Antlr4Factory;
 import ru.neoflex.emf.antlr4.ERule;
 import ru.neoflex.emf.antlr4.ETerminal;
 import ru.neoflex.emf.antlr4.ETreeElement;
+import ru.neoflex.emf.hron.HronLexer;
+import ru.neoflex.emf.hron.HronParser;
 import ru.neoflex.emf.restserver.DBServerSvc;
 
 import javax.annotation.PostConstruct;
@@ -35,14 +37,14 @@ public class SpringTemplateController {
     void init() {
     }
 
-    @PostMapping(value = "/parse", consumes = {"text/plain"})
-    public ObjectNode parse(@RequestBody String sql) throws Exception {
+    @PostMapping(value = "/parseHron", consumes = {"text/plain"})
+    public ObjectNode parseHron(@RequestBody String sql) throws Exception {
         CharStream input = CodePointCharStream.fromBuffer(
                 CodePointBuffer.withChars(CharBuffer.wrap(sql.toCharArray())));
-        ArrayInitLexer lexer = new ArrayInitLexer(input);
+        HronLexer lexer = new HronLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        ArrayInitParser parser = new ArrayInitParser(tokens);
-        ParseTree tree = parser.init();
+        HronParser parser = new HronParser(tokens);
+        ParseTree tree = parser.resource();
         logger.info(tree.toStringTree(parser));
         ETreeElement eTree = parseTreeToETree(tree, parser);
         Resource resource = dbServerSvc.getDbServer().createResource();
