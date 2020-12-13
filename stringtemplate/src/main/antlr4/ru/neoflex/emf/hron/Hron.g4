@@ -1,7 +1,7 @@
 
 grammar Hron;
 
-resource: '[' (eObject (',' eObject)?)? ','? ']';
+resource: '[' (eObject (',' eObject)*)? ','? ']';
 
 eObject: label? eClass? '{' eFeature*  '}';
 
@@ -11,15 +11,17 @@ eClass: ID '.' ID;
 
 eFeature: ID '=' (expr|list) ';';
 
-list: '[' (expr (',' expr)?)? ','? ']';
+list: '[' (expr (',' expr)*)? ','? ']';
 
-expr: label |
+expr: labelRef |
       eObject |
-      ref |
+      extRef |
       STRING
       ;
 
-ref: '#' '{' eClass STRING (path|label)?'}';
+labelRef: ':' ID;
+
+extRef: '#' '{' eClass STRING (path)? '}';
 
 path: STRING;
 

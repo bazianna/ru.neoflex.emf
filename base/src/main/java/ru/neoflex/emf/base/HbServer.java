@@ -179,6 +179,9 @@ public class HbServer implements AutoCloseable {
     }
 
     protected Resource createResource(URI uri) {
+        if (uri == null) {
+            uri = createURI();
+        }
         return new HbResource(uri);
     }
 

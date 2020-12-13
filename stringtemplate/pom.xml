@@ -46,6 +46,8 @@
                     <options>
                         <contextSuperClass>org.antlr.v4.runtime.RuleContextWithAltNum</contextSuperClass>
                     </options>
+                    <listener>true</listener>
+                    <visitor>false</visitor>
                     <outputDirectory>src/main/java-gen</outputDirectory>
                 </configuration>
                 <executions>

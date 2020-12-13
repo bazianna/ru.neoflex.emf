@@ -1,0 +1,24 @@
+@GenModel(
+    bundleManifest="false",
+    modelDirectory="src/java/java-gen",
+    complianceLevel="7.0",
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl",
+    rootExtendsInterface="org.eclipse.emf.ecore.EObject"
+)
+package ru.neoflex.emf.stringtemplate
+
+abstract class TemplateElement {
+    String typeName
+    container TemplateTree parent opposite children
+}
+
+abstract class TemplateTree extends TemplateElement {
+    contains TemplateElement[] children opposite parent
+}
+
+class TemplateRule extends TemplateTree {
+}
+
+class TemplateTerminal extends TemplateElement {
+    String text
+}
