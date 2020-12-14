@@ -9,7 +9,6 @@ import groovy.lang.Script;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.hibernate.query.Query;
@@ -21,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ru.neoflex.emf.base.HbResource;
 
 import java.io.IOException;
 import java.util.List;
@@ -86,31 +84,30 @@ public class EMFController {
             @RequestParam(required = false) String filter) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            Stream<Resource> stream;
+            Resource resource;
             if (StringUtils.isEmpty(classUri)) {
-                stream = tx.findAll(rs);
+                resource = dbServerSvc.getDbServer().findAll(rs);
             }
             else {
                 EClass eClass = (EClass) rs.getEObject(URI.createURI(classUri), false);
                 if (StringUtils.isEmpty(qName)) {
-                    stream = tx.findByClass(rs, eClass);
+                    resource = dbServerSvc.getDbServer().findBy(rs, eClass);
                 }
                 else {
-                    stream = tx.findByClassAndQName(rs, eClass, qName);
+                    resource = dbServerSvc.getDbServer().findBy(rs, eClass, qName);
                 }
             }
             if (StringUtils.isNoneEmpty(filter)) {
                 GroovyShell shell = new GroovyShell();
                 Script script = shell.parse(filter);
-                stream = stream.filter(resource -> {
+                resource.getContents().removeIf(eObject -> {
                     Binding binding = new Binding();
-                    binding.setProperty("resource", resource);
+                    binding.setProperty("eObject", eObject);
                     script.setBinding(binding);
-                    return Boolean.TRUE.equals(script.run());
+                    return !Boolean.TRUE.equals(script.run());
                 });
             }
-            List<Resource> resources = stream.collect(Collectors.toList());
-            return jsonHelper.toJson(resources);
+            return jsonHelper.toJson(resource);
         });
     }
 
@@ -163,8 +160,12 @@ public class EMFController {
     }
 
     @PostMapping(value = "/queryObjects", consumes = {"text/plain"})
-    public List<JsonNode> queryObjects(@RequestBody String sql) throws Exception {
-        return dbServerSvc.getDbServer().inTransaction(true, tx ->
-                tx.queryObjects(sql).map(jsonHelper::toJson).collect(Collectors.toList()));
+    public JsonNode queryObjects(@RequestBody String sql) throws Exception {
+        return dbServerSvc.getDbServer().inTransaction(true, tx -> {
+            ResourceSet rs = tx.createResourceSet();
+            Resource resource = rs.createResource(dbServerSvc.getDbServer().createURI(sql));
+            resource.load(null);
+            return jsonHelper.toJson(resource);
+        });
     }
 }

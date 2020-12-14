@@ -13,11 +13,7 @@ import ru.neoflex.emf.base.HbTransaction;
 import ru.neoflex.emf.hibernatedb.test.*;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.Statement;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 //import java.io.ByteArrayOutputStream;
 //import org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup;
 //import org.eclipse.xtext.resource.XtextResourceSet;
@@ -204,10 +200,10 @@ public class DatabaseTests extends TestBase {
         });
         hbServer.inTransaction(true, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            List<Resource> users = tx.findByClass(rs, TestPackage.eINSTANCE.getDBTable()).filter(r -> ((DBTable) r.getContents().get(0)).getName().equals("USER")).collect(Collectors.toList());
-            Assert.assertEquals(1, users.size());
-            EcoreUtil.resolveAll(users.get(0));
-            DBTable user = (DBTable) users.get(0).getContents().get(0);
+            Resource users = hbServer.findBy(rs, TestPackage.eINSTANCE.getDBTable(), TestPackage.eINSTANCE.getDBEntity_Name(), "USER");
+            Assert.assertEquals(1, users.getContents().size());
+            EcoreUtil.resolveAll(users);
+            DBTable user = (DBTable) users.getContents().get(0);
             Assert.assertEquals("GROUP_ID", user.getFKeys().get(0).getColumns().get(0).getName());
             Assert.assertEquals("ID", user.getPKey().getColumns().get(0).getName());
             return null;
@@ -215,14 +211,13 @@ public class DatabaseTests extends TestBase {
         try {
             hbServer.inTransaction(false, tx -> {
                 ResourceSet rs = tx.getResourceSet();
-                List<Resource> views = tx.findByClass(rs, TestPackage.eINSTANCE.getDBView()).collect(Collectors.toList());
-                DBView user_group = (DBView) views.get(0).getContents().get(0);
+                Resource views = hbServer.findBy(rs, TestPackage.eINSTANCE.getDBView());
+                DBView user_group = (DBView) views.getContents().get(0);
                 Assert.assertEquals("ID", user_group.getColumns().get(0).getName());
                 Assert.assertEquals("NAME", user_group.getColumns().get(1).getName());
                 Assert.assertEquals(4, user_group.getColumns().size());
-                EObject table_User = tx.findByClass(rs, TestPackage.eINSTANCE.getDBTable()).map(r -> r.getContents().get(0))
-                        .filter(o -> ((DBTable) o).getName().equals("USER")).findFirst().get();
-                Resource resource = tx.getResourceSet().createResource(tx.getDbServer().createURI(table_User));
+                EObject table_User = hbServer.findBy(rs, TestPackage.eINSTANCE.getDBTable(), TestPackage.eINSTANCE.getDBEntity_Name(), "USER").getContents().get(0);
+                Resource resource = rs.createResource(hbServer.createURI(table_User));
                 resource.delete(null);
                 return null;
             });
@@ -232,19 +227,19 @@ public class DatabaseTests extends TestBase {
         }
         DBView extView = hbServer.inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            List<Resource> users = tx.findByClass(rs, TestPackage.eINSTANCE.getDBTable()).filter(r -> ((DBTable) r.getContents().get(0)).getName().equals("USER")).collect(Collectors.toList());
-            DBTable user = (DBTable) users.get(0).getContents().get(0);
+            Resource users = hbServer.findBy(rs, TestPackage.eINSTANCE.getDBTable(), TestPackage.eINSTANCE.getDBEntity_Name(), "USER");
+            DBTable user = (DBTable) users.getContents().get(0);
             Column group_id = user.getColumns().stream().filter(column -> column.getName().equals("GROUP_ID")).findFirst().get();
-            List<Resource> views = tx.findByClass(rs, TestPackage.eINSTANCE.getDBView()).collect(Collectors.toList());
-            DBView user_group = (DBView) views.get(0).getContents().get(0);
+            Resource views = hbServer.findBy(rs, TestPackage.eINSTANCE.getDBView());
+            DBView user_group = (DBView) views.getContents().get(0);
             user_group.getColumns().add(0, group_id);
             user_group.eResource().save(null);
             return user_group;
         });
         hbServer.inTransaction(true, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            List<Resource> views = tx.findByClass(rs, TestPackage.eINSTANCE.getDBView()).collect(Collectors.toList());
-            DBView user_group = (DBView) views.get(0).getContents().get(0);
+            Resource views = hbServer.findBy(rs, TestPackage.eINSTANCE.getDBView());
+            DBView user_group = (DBView) views.getContents().get(0);
             Assert.assertEquals("GROUP_ID", user_group.getColumns().get(0).getName());
             Assert.assertEquals("ID", user_group.getColumns().get(1).getName());
             Assert.assertEquals(5, user_group.getColumns().size());
@@ -252,10 +247,9 @@ public class DatabaseTests extends TestBase {
         });
         hbServer.inTransaction(true, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            List<Resource> users = tx.findByClass(rs, TestPackage.eINSTANCE.getDBTable()).filter(r -> ((DBTable) r.getContents().get(0)).getName().equals("USER")).collect(Collectors.toList());
-            Resource userRes = users.get(0);
-            List<Resource> refs = tx.findReferencedTo(userRes).collect(Collectors.toList());
-            Assert.assertEquals(1, refs.size());
+            Resource users = hbServer.findBy(rs, TestPackage.eINSTANCE.getDBTable(), TestPackage.eINSTANCE.getDBEntity_Name(), "USER");
+            Resource refs = hbServer.findReferencedTo(rs, users);
+            Assert.assertEquals(1, refs.getContents().size());
             return null;
         });
     }

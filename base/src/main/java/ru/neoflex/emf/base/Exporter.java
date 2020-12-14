@@ -91,8 +91,8 @@ public class Exporter {
         EClass eClass = (EClass) rs.getEObject(URI.createURI(classUri), false);
         String qName = element.getAttribute("q-name");
         String fragment = element.getAttribute("fragment");
-        List<EObject> eObjects = tx.findByClassAndQName(rs, eClass, qName)
-                .flatMap(resource -> resource.getContents().stream())
+        List<EObject> eObjects = tx.getDbServer().findBy(rs, eClass, qName)
+                .getContents().stream()
                 .map(eObject -> fragment.length() == 0 ? eObject : EcoreUtil.getEObject(eObject, fragment))
                 .filter(eObject -> eObject != null)
                 .collect(Collectors.toList());
@@ -229,24 +229,26 @@ public class Exporter {
         });
     }
 
-    private List<Resource> importResource(String fileName, byte[] bytes, HbTransaction tx) throws IOException {
+    private List<Resource> importResource(String fileName, byte[] bytes, ResourceSet rs) throws IOException {
         ResourceSet resourceSet = new ResourceSetImpl();
         resourceSet.setPackageRegistry(hbServer.getPackageRegistry());
         resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
                 .put(Resource.Factory.Registry.DEFAULT_EXTENSION, new XMIResourceFactoryImpl());
         Resource resourceIn = resourceSet.createResource(URI.createURI(fileName));
         resourceIn.load(new ByteArrayInputStream(bytes), null);
-        ResourceSet rs = tx.getResourceSet();
         List<Resource> result = new ArrayList<>();
         for (EObject eObject : resourceIn.getContents()) {
             String qName = hbServer.getQName(eObject);
             if (qName == null || qName.length() == 0) {
                 throw new IllegalArgumentException("No qName");
             }
-            List<Resource> resources = tx.findByClassAndQName(rs, eObject.eClass(), qName).collect(Collectors.toList());
-            URI uri = resources.size() == 0 ? hbServer.createURI() : resources.get(0).getURI();
-            Resource resource = rs.createResource(uri);
-            resource.getContents().add(EcoreUtil.copy(eObject));
+            Resource resource = hbServer.findBy(rs, eObject.eClass(), qName);
+            EObject newObject = EcoreUtil.copy(eObject);
+            if (resource.getContents().size() > 0) {
+                hbServer.setId(newObject, hbServer.getId(resource.getContents().get(0)));
+            }
+            resource.getContents().clear();
+            resource.getContents().add(eObject);
             resource.save(null);
             result.add(resource);
         }
@@ -306,7 +308,7 @@ public class Exporter {
                 .forEach(path -> {
                     try {
                         byte[] bytes = Files.readAllBytes(path);
-                        hbServer.inTransaction(false, tx -> importResource(path.toString(), bytes, tx));
+                        hbServer.inTransaction(false, tx -> importResource(path.toString(), bytes, tx.getResourceSet()));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -350,7 +352,7 @@ public class Exporter {
                     }
                     String entryName = zipEntry.getName();
                     if (entryName.toLowerCase().endsWith(XMI)) {
-                        hbServer.inTransaction(false, tx -> importResource(entryName, outputStream.toByteArray(), tx));
+                        hbServer.inTransaction(false, tx -> importResource(entryName, outputStream.toByteArray(), tx.getResourceSet()));
                         ++entityCount;
                     }
                     else if (entryName.toLowerCase().endsWith(REFS_XML)) {

@@ -4,6 +4,8 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 import ru.neoflex.emf.base.HbServer;
 
 import java.util.HashMap;
@@ -31,19 +33,17 @@ public class HbHronSupport implements HronSupport {
     }
 
     @Override
-    public EObject lookupEObject(EClass eClass, String qName) {
-        try {
-            return hbServer.inTransaction(true, tx->{
-                return tx.findByClassAndQName(tx.getResourceSet(), eClass, qName).findFirst().get().getContents().get(0);
-            });
-        } catch (Exception e) {
+    public EObject lookupEObject(ResourceSet rs, EClass eClass, String qName) {
+        Resource resource = hbServer.findBy(rs, eClass, qName);
+        if (resource.getContents().size() == 0) {
             throw new IllegalArgumentException("EObject not found " +
-                    eClass.getEPackage().getNsPrefix() + "." + eClass.getName() + "/" +qName, e);
+                    eClass.getEPackage().getNsPrefix() + "." + eClass.getName() + "/" +qName);
         }
+        return resource.getContents().get(0);
     }
 
     @Override
-    public EClass lookupEClass(String nsPrefix, String name) {
+    public EClass lookupEClass(ResourceSet rs, String nsPrefix, String name) {
         EClass eClass = nameToEClassMap.get(nsPrefix + "." + name);
         if (eClass == null) {
             throw new IllegalArgumentException("EClass not found " +

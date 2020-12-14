@@ -112,10 +112,8 @@ public class HbServer implements AutoCloseable {
     public List<EPackage> loadDynamicPackages() throws Exception {
         return inTransaction(true, tx -> {
             ResourceSet resourceSet = tx.getResourceSet();
-            return tx.findByClass(resourceSet, EcorePackage.Literals.EPACKAGE)
-                    .flatMap(resource -> resource.getContents().stream())
-                    .map(eObject -> (EPackage) eObject)
-                    .collect(Collectors.toList());
+            return findBy(resourceSet, EcorePackage.Literals.EPACKAGE).getContents().stream()
+                    .map(eObject -> (EPackage)eObject).collect(Collectors.toList());
         });
     }
 

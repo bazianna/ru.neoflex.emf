@@ -80,14 +80,10 @@ rule "Create Calendar"
 when
     not Calendar()
 then
-    Calendar calendar;
-    List<Resource> calendars = tx.findByClass(CalendarPackage.eINSTANCE.getCalendar());
-    if (calendars.size() > 0) {
-        calendar = (Calendar) calendars.get(0).getContents().get(0);
-    }
-    else {
-        calendar = createCalendar(tx);
-    }
+    Resource calendars = tx.getDbServer().findBy(CalendarPackage.eINSTANCE.getCalendar());
+    Calendar calendar = calendars.getContents().size() > 0 ?
+        (Calendar) calendars.getContents().get(0) :
+        createCalendar(tx);
     insert(calendar);
 end;
 

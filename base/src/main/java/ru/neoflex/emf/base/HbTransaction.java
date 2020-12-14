@@ -15,7 +15,6 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class HbTransaction implements AutoCloseable, Serializable {
     protected final Session session;
@@ -111,30 +110,11 @@ public class HbTransaction implements AutoCloseable, Serializable {
         return session.get(DBObject.class, id);
     }
 
-    protected Stream<DBObject> findAll() {
-        return session.createQuery(
-                "select o from DBObject o " +
-                        "where o.proxy is null and o.container is null"
-                , DBObject.class).getResultStream();
-    }
-
-    protected Stream<DBObject> findByClass(String classUri) {
-        return session.createQuery("select o from DBObject o where o.classUri = :classUri", DBObject.class)
-                .setParameter("classUri", classUri)
-                .getResultStream();
-    }
-
     protected Stream<DBObject> findByClassAndFeature(String classUri, String feature, String value) {
         return session.createQuery("select o from DBObject o join o.attributes a where o.classUri = :classUri and a.feature = :feature and a.value = :value", DBObject.class)
                 .setParameter("classUri", classUri)
                 .setParameter("feature", feature)
                 .setParameter("value", value)
-                .getResultStream();
-    }
-
-    protected Stream<DBObject> findReferencedTo(Long id) {
-        return session.createQuery("select o from DBObject o join o.references r where r.refObject.id = :id", DBObject.class)
-                .setParameter("id", id)
                 .getResultStream();
     }
 
@@ -148,24 +128,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .map(DBReference::getRefObject).filter(DBObject::isProxy).collect(Collectors.toList());
         if (dbObject.getReferences().size() > 0) {
             dbObject.getReferences().clear();
-//            session.save(dbObject);
         }
         proxies.forEach(session::delete);
         dbObject.getContent().forEach(this::unlinkRecursive);
-    }
-
-    protected void deleteUnlinked(DBObject dbObject) {
-        dbObject.getContent().forEach(this::deleteUnlinked);
-        Set<String> deps = session.createQuery(
-                "select o from DBObject o join o.references r " +
-                        "where r.refObject.id = :refdb_id"
-                , DBObject.class).setParameter("refdb_id", dbObject.getId()).getResultStream()
-                .map(o -> String.valueOf(o.getId())).collect(Collectors.toSet());
-        if (deps.size() > 0) {
-            throw new IllegalArgumentException(String.format(
-                    "Can not delete Resource %d, referenced by [%s]", dbObject.getId(), String.join(", ", deps)));
-        }
-        session.delete(dbObject);
     }
 
     public boolean truncate() {
@@ -461,34 +426,12 @@ public class HbTransaction implements AutoCloseable, Serializable {
         return resource;
     }
 
-    public Stream<Resource> findAll(ResourceSet rs) {
-        return findAll().collect(Collectors.toList()).stream()
-                .map(dbResource -> createResource(rs, dbResource, null));
-    }
-
-    public List<Resource> findByClass(EClass eClass) {
-        return findByClass(getResourceSet(), eClass).collect(Collectors.toList());
-    }
-
-    public Stream<Resource> findByClass(ResourceSet rs, EClass eClass) {
-        return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClass(EcoreUtil.getURI(eClassDesc).trimQuery().toString()))
-                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource, null));
-    }
-
     public Stream<Resource> queryObjects(String sql) {
         return queryObjects(getResourceSet(), sql);
     }
 
     public Stream<Resource> queryObjects(ResourceSet rs, String sql) {
         return session.createQuery(sql, DBObject.class).getResultStream()
-                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource, null));
-    }
-
-    public Stream<Resource> findByClassAndFeature(EClass eClass, String feature, String value) {
-        ResourceSet rs = getResourceSet();
-        return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClassAndFeature(EcoreUtil.getURI(eClass).trimQuery().toString(), feature, value))
                 .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource, null));
     }
 
@@ -511,19 +454,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
             dbObject = parent;
         }
         return null;
-    }
-
-    public Stream<Resource> findReferencedTo(Resource resource) {
-        Set<Long> exclude = resource.getContents().stream().map(eObject -> getDbServer().getId(eObject))
-                .filter(Objects::nonNull).collect(Collectors.toSet());
-        Iterable<EObject> iterable = resource::getAllContents;
-        Set<DBObject> topRefs = StreamSupport.stream(iterable.spliterator(), false)
-                .map(eObject -> getDbServer().getId(eObject)).filter(Objects::nonNull)
-                .flatMap(this::findReferencedTo)
-                .collect(Collectors.toList()).stream()
-                .map(dbObject -> getRootContainer(dbObject, exclude)).filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        return topRefs.stream().map(dbObject -> createResource(resource.getResourceSet(), dbObject, null));
     }
 
     public void save(HbResource resource) {

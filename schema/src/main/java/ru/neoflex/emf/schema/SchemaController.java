@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.neoflex.emf.restserver.DBServerSvc;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController()
 @RequestMapping("/schema")
@@ -23,12 +21,11 @@ public class SchemaController {
     public void init() throws Exception {
         dbServerSvc.getDbServer().registerEPackage(SchemaPackage.eINSTANCE);
         dbServerSvc.getDbServer().inTransaction(false, tx -> {
-            List<Resource> views = tx.findByClass(SchemaPackage.eINSTANCE.getDBView());
-            if (views.size() > 0) {
+            ResourceSet rs = tx.getResourceSet();
+            Resource views = dbServerSvc.getDbServer().findBy(rs, SchemaPackage.eINSTANCE.getDBView());
+            if (views.getContents().size() > 0) {
                 return null;
             }
-
-            ResourceSet rs = tx.getResourceSet();
 
             DBTable group = SchemaFactory.eINSTANCE.createDBTable();
             group.setName("GROUP");
