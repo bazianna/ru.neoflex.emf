@@ -280,9 +280,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .collect(Collectors.toList());
 
         Set<DBAttribute> toDeleteA = dbObject.getAttributes().stream().collect(Collectors.toSet());
-        EStructuralFeature qNameSF = getDbServer().getQualifiedNameDelegate().apply(eObject.eClass());
+        EStructuralFeature qNameSF = getDbServer().getQNameSF(eObject.eClass());
         for (AbstractMap.SimpleEntry<EAttribute, List> attr : attrs) {
-            if (!attr.getKey().isID() && attr.getKey() != qNameSF && !getDbServer().getIndexedAttributeDelegate().apply(attr.getKey())) {
+            if (attr.getKey() != qNameSF && !getDbServer().getIndexedAttributeDelegate().apply(attr.getKey())) {
                 continue;
             }
             EDataType eDataType = attr.getKey().getEAttributeType();

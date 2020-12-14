@@ -62,7 +62,6 @@ public class HbServer implements AutoCloseable {
     private final String dbName;
     private final Events events = new Events();
     private final Set<String> updatedSchemas = new HashSet<>();
-    private Function<EClass, EStructuralFeature> qualifiedNameDelegate = eClass -> eClass.getEStructuralFeature("name");
     private Function<EAttribute, Boolean> indexedAttributeDelegate = eAttribute -> eAttribute.getEAttributeType() == EcorePackage.eINSTANCE.getEString();
     private final Properties config;
     private final EPackage.Registry packageRegistry = new EPackageRegistryImpl(EPackage.Registry.INSTANCE);
@@ -166,14 +165,6 @@ public class HbServer implements AutoCloseable {
         return StringUtils.isEmpty(versionStr) ? null : Long.parseLong(versionStr);
     }
 
-    public Function<EClass, EStructuralFeature> getQualifiedNameDelegate() {
-        return qualifiedNameDelegate;
-    }
-
-    public void setQualifiedNameDelegate(Function<EClass, EStructuralFeature> qualifiedNameDelegate) {
-        this.qualifiedNameDelegate = qualifiedNameDelegate;
-    }
-
     public Events getEvents() {
         return events;
     }
@@ -263,7 +254,7 @@ public class HbServer implements AutoCloseable {
         if (EcorePackage.Literals.EPACKAGE == eClass) {
             sf = EcorePackage.Literals.EPACKAGE__NS_URI;
         } else {
-            sf = getQualifiedNameDelegate().apply(eClass);
+            sf = eClass.getEIDAttribute();
         }
         return sf;
     }
