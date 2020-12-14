@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class HbHandler extends URIHandlerImpl {
     public static final String OPTION_GET_ROOT_CONTAINER = "__OPTION_GET_ROOT_CONTAINER__";
@@ -53,7 +50,7 @@ public class HbHandler extends URIHandlerImpl {
     @Override
     public InputStream createInputStream(URI uri, Map<?, ?> options) throws IOException {
         HbTransaction effectiveTx = tx != null ? tx : getDbServer().createDBTransaction(false);
-        return new HbInputStream(effectiveTx, uri, options);
+        return new HbInputStream(effectiveTx, uri, (Map<String, Object>) options);
     }
 
     @Override

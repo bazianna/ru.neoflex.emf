@@ -378,8 +378,8 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .appendFragment(String.valueOf(dbObject.getId()));
     }
 
-    private EObject loadEObject(HbResource resource, DBObject dbObject, Map<?, ?> options) {
-        if (options != null && (Boolean) options.get(HbHandler.OPTION_GET_ROOT_CONTAINER)) {
+    private EObject loadEObject(HbResource resource, DBObject dbObject, Map<String, Object> options) {
+        if (options != null && (Boolean) options.getOrDefault(HbHandler.OPTION_GET_ROOT_CONTAINER, Boolean.FALSE)) {
             dbObject = getRootContainer(dbObject, null);
         }
         String classUri = dbObject.getClassUri();
@@ -452,7 +452,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
         return eObject;
     }
 
-    protected Resource createResource(ResourceSet rs, DBObject dbObject, Map<?, ?> options) {
+    protected Resource createResource(ResourceSet rs, DBObject dbObject, Map<String, Object> options) {
         URI uri = getDbServer().createURI(dbObject.getId());
         HbResource resource = (HbResource) rs.createResource(uri);
         EObject eObject = loadEObject(resource, dbObject, options);
@@ -593,7 +593,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
         return message.toString();
     }
 
-    public void load(HbResource resource, Map<?, ?> options) {
+    public void load(HbResource resource, Map<String, Object> options) {
         resource.unload();
         Long id = hbServer.getId(resource.getURI());
         if (id != null) {
@@ -613,7 +613,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
         resource.setTimeStamp(new Date().getTime());
     }
 
-    private void loadById(HbResource resource, Long id, Map<?, ?> options) {
+    private void loadById(HbResource resource, Long id, Map<String, Object> options) {
         DBObject dbObject = getOrThrow(id);
         EObject eObject = loadEObject(resource, dbObject, options);
         resource.getContents().add(eObject);
@@ -621,14 +621,14 @@ public class HbTransaction implements AutoCloseable, Serializable {
         hbServer.getEvents().fireAfterLoad(eObject);
     }
 
-    private void loadByQuery(HbResource resource, String query, Map<?, ?> options) {
+    private void loadByQuery(HbResource resource, String query, Map<String, Object> options) {
         Query<DBObject> sql = session.createQuery(query, DBObject.class);
         sql.getParameterMetadata().collectAllParameters().forEach(queryParameter -> {
             sql.setParameter(queryParameter.getName(), options.get(queryParameter.getName()));
         });
         sql.getResultStream()
                 .map(dbObject -> loadEObject(resource, dbObject, options))
-                .filter(HbServer.distinctByKey(this.hbServer::getId))
+                .filter(HbServer.<EObject>distinctByKey(this.hbServer::getId))
                 .forEach(eObject -> {
                     resource.getContents().add(eObject);
                     hbServer.getEvents().fireAfterLoad(eObject);
