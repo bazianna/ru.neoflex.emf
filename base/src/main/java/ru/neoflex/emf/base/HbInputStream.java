@@ -26,6 +26,6 @@ public class HbInputStream extends InputStream implements URIConverter.Loadable 
 
     @Override
     public void loadResource(Resource resource) throws IOException {
-        tx.load((HbResource) resource);
+        tx.load((HbResource) resource, options);
     }
 }

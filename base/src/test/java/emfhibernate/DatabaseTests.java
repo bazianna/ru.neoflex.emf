@@ -116,18 +116,18 @@ public class DatabaseTests extends TestBase {
             Resource userResource = resourceSet.createResource(hbServer.createURI());
             userResource.getContents().add(user);
             userResource.save(null);
-            Assert.assertEquals(3, tx.findAll(resourceSet).count());
-            Assert.assertEquals(2, tx.findByClass(resourceSet, TestPackage.Literals.USER).count());
-            Assert.assertEquals(2, tx.findReferencedTo(group.eResource()).count());
-            Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, TestPackage.Literals.USER, "Simanihin").count());
+            Assert.assertEquals(3, hbServer.findAll(resourceSet).getContents().size());
+            Assert.assertEquals(2, hbServer.findBy(resourceSet, TestPackage.Literals.USER).getContents().size());
+            Assert.assertEquals(2, hbServer.findReferencedTo(resourceSet, group.eResource()).getContents().size());
+            Assert.assertEquals(1, hbServer.findBy(resourceSet, TestPackage.Literals.USER, "Simanihin").getContents().size());
             return null;
         });
         hbServer.inTransaction(true, tx -> {
             ResourceSet resourceSet = tx.getResourceSet();
-            Assert.assertEquals(3, tx.findAll(resourceSet).count());
-            Assert.assertEquals(2, tx.findByClass(resourceSet, TestPackage.Literals.USER).count());
-            Assert.assertEquals(2, tx.findReferencedTo(group.eResource()).count());
-            Assert.assertEquals(1, tx.findByClassAndQName(resourceSet, TestPackage.Literals.USER, "Simanihin").count());
+            Assert.assertEquals(3, hbServer.findAll(resourceSet).getContents().size());
+            Assert.assertEquals(2, hbServer.findBy(resourceSet, TestPackage.Literals.USER).getContents().size());
+            Assert.assertEquals(2, hbServer.findReferencedTo(resourceSet, group.eResource()).getContents().size());
+            Assert.assertEquals(1, hbServer.findBy(resourceSet, TestPackage.Literals.USER, "Simanihin").getContents().size());
             return null;
         });
         hbServer.inTransaction(true, tx -> {
@@ -206,6 +206,7 @@ public class DatabaseTests extends TestBase {
             ResourceSet rs = tx.getResourceSet();
             List<Resource> users = tx.findByClass(rs, TestPackage.eINSTANCE.getDBTable()).filter(r -> ((DBTable) r.getContents().get(0)).getName().equals("USER")).collect(Collectors.toList());
             Assert.assertEquals(1, users.size());
+            EcoreUtil.resolveAll(users.get(0));
             DBTable user = (DBTable) users.get(0).getContents().get(0);
             Assert.assertEquals("GROUP_ID", user.getFKeys().get(0).getColumns().get(0).getName());
             Assert.assertEquals("ID", user.getPKey().getColumns().get(0).getName());

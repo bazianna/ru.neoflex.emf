@@ -7,8 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class HbHandler extends URIHandlerImpl {
+    public static final String OPTION_GET_ROOT_CONTAINER = "__OPTION_GET_ROOT_CONTAINER__";
     private HbServer hbServer;
     private HbTransaction tx;
 
