@@ -49,8 +49,7 @@ public class DatabaseTests extends TestBase {
             return testTable;
         });
         MetaView metaView = hbServer.inTransaction(true, tx -> {
-            Resource metaViewRes = tx.findByClassAndQName(tx.getResourceSet(), TestPackage.eINSTANCE.getMetaView(), "My Meta View")
-                    .findFirst().get();
+            Resource metaViewRes = hbServer.findBy(tx.getResourceSet(), TestPackage.eINSTANCE.getMetaView(), "My Meta View");
             EcoreUtil.resolveAll(metaViewRes);
             return (MetaView) metaViewRes.getContents().get(0);
         });
@@ -67,8 +66,7 @@ public class DatabaseTests extends TestBase {
             return null;
         });
         Resource metaViewRes2 = hbServer.inTransaction(true, tx ->
-                tx.findByClassAndQName(tx.getResourceSet(), TestPackage.eINSTANCE.getMetaView(), "My Meta View")
-                        .findFirst().get()
+                hbServer.findBy(tx.getResourceSet(), TestPackage.eINSTANCE.getMetaView(), "My Meta View")
         );
         MetaView metaView2 = (MetaView) metaViewRes2.getContents().get(0);
         Assert.assertEquals(EcorePackage.eINSTANCE.getEOperation(), metaView2.getAClass());
@@ -224,6 +222,20 @@ public class DatabaseTests extends TestBase {
             Assert.fail("Can't delete referenced Resource");
         } catch (Exception e) {
             Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
+        }
+        try {
+            hbServer.inTransaction(false, tx -> {
+                ResourceSet rs = tx.getResourceSet();
+                Resource resource = rs.createResource(hbServer.createURI());
+                DBTable group = TestFactory.eINSTANCE.createDBTable();
+                group.setName("GROUP");
+                resource.getContents().add(group);
+                resource.save(null);
+                return null;
+            });
+            Assert.fail("Can't insert duplicated EObject Resource");
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().contains("Duplicate"));
         }
         DBView extView = hbServer.inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();

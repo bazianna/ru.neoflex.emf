@@ -436,16 +436,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource, null));
     }
 
-    public Stream<Resource> findByClassAndQName(ResourceSet rs, EClass eClass, String qName) {
-        EStructuralFeature sf = getDbServer().getQNameSF(eClass);
-        if (sf == null) {
-            return Stream.empty();
-        }
-        return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClassAndFeature(EcoreUtil.getURI(eClass).trimQuery().toString(), sf.getName(), qName))
-                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource, null));
-    }
-
     private DBObject getRootContainer(DBObject dbObject, Set<Long> excludes) {
         while (excludes == null || !excludes.contains(dbObject.getId())) {
             DBObject parent = dbObject.getContainer();
@@ -470,14 +460,15 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         List<String> sameResources = contents.stream()
                 .flatMap(eObject -> {
-                    EStructuralFeature sf = getDbServer().getQNameSF(eObject.eClass());
-                    String classUri = EcoreUtil.getURI(eObject.eClass()).trimQuery().toString();
+                    EAttribute sf = (EAttribute) getDbServer().getQNameSF(eObject.eClass());
                     return sf != null ?
-                            findByClassAndFeature(classUri, sf.getName(), eObject.eGet(sf).toString())
-                                    .filter(dbObject -> !dbObject.getId().equals(hbServer.getId(eObject))) :
+                            getDbServer().findBy(resource.getResourceSet(), eObject.eClass(), sf,
+                                    EcoreUtil.convertToString(sf.getEAttributeType(), eObject.eGet(sf)))
+                                    .getContents().stream().map(getDbServer()::getId)
+                                    .filter(id -> id != null && !id.equals(hbServer.getId(eObject))) :
                             Stream.empty();
                 })
-                .map(dbObject -> String.valueOf(dbObject.getId()))
+                .map(String::valueOf)
                 .collect(Collectors.toList());
         if (sameResources.size() > 0) {
             throw new IllegalArgumentException(String.format(
@@ -485,7 +476,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     String.join(", ", sameResources)));
         }
         resource.setTimeStamp(new Date().getTime());
-        Map<Long, EObject> oldECache = new HashMap<>();
         Map<Long, DBObject> oldDbCache = new HashMap<>();
         HbResource oldResource = (HbResource) getResourceSet().createResource(resource.getURI());
         for (EObject eObject : contents) {
@@ -496,7 +486,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 oldDbCache.put(id, dbObject);
                 oldObject = loadEObject(oldResource, dbObject, null);
                 oldResource.getContents().add(oldObject);
-                oldECache.put(id, oldObject);
             }
             hbServer.getEvents().fireBeforeSave(oldObject, eObject);
         }

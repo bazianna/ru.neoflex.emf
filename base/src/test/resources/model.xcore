@@ -41,7 +41,7 @@ class FKey extends DBKey {
 }
 
 abstract class DBEntity {
-	String name
+	id String name
 	contains PKey pKey
 }
 
