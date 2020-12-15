@@ -35,7 +35,7 @@ public class HbHronSupport implements HronSupport {
     @Override
     public EObject lookupEObject(ResourceSet rs, EClass eClass, String qName) {
         Resource resource = hbServer.findBy(rs, eClass, qName);
-        if (resource.getContents().size() == 0) {
+        if (resource == null || resource.getContents().size() == 0) {
             throw new IllegalArgumentException("EObject not found " +
                     eClass.getEPackage().getNsPrefix() + "." + eClass.getName() + "/" +qName);
         }
