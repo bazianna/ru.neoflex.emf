@@ -84,7 +84,7 @@ public class DatabaseTests extends TestBase {
             Resource groupResource = resourceSet.createResource(hbServer.createURI());
             groupResource.getContents().add(group);
             groupResource.save(null);
-            Long groupId = hbServer.getId(groupResource.getURI());
+            Long groupId = hbServer.getId(group);
             User user = TestFactory.eINSTANCE.createUser();
             user.setName("Orlov");
             user.setGroup(group);

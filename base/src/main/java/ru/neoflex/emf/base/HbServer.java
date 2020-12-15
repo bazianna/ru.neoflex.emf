@@ -96,7 +96,7 @@ public class HbServer implements AutoCloseable {
 
     public Map<EObject, Long> getEObjectToIdMap() {
         if (eObjectToIdMap.get() == null) {
-            eObjectToIdMap.set(new WeakHashMap<>());
+            eObjectToIdMap.set(new WeakIdentityHashMap<>());
         }
         return eObjectToIdMap.get();
     }

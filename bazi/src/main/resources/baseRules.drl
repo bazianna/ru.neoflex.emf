@@ -55,9 +55,7 @@ function Year createCalendarYear(HbTransaction tx, Calendar calendar, Integer na
     year.setYear(pillar);
     pillar.setGod(God.DIRECT_OFFICER);
     pillar.setSky(Elements.EARTH_YANG);
-    Resource resource = tx.createResource();
-    resource.getContents().add(calendar);
-    resource.save(null);
+    calendar.eResource().save(null);
     return year;
 }
 

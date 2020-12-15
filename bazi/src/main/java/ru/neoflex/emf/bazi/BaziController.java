@@ -105,10 +105,9 @@ public class BaziController {
                     }
                 }
                 eObjects.save(null);
-                org.eclipse.emf.ecore.resource.Resource natalCharts = tx.createResource();
-                natalCharts.getContents().addAll(eObjects.getContents().stream()
-                        .filter(eObject -> eObject instanceof NatalChart).collect(Collectors.toList()));
-                return DBServerSvc.createJsonHelper().toJson(natalCharts);
+                eObjects.getContents().removeIf(eObject -> !(eObject instanceof NatalChart));
+                eObjects.load(null);
+                return DBServerSvc.createJsonHelper().toJson(eObjects);
             }
             finally {
                 kieSession.dispose();

@@ -227,8 +227,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
             dbObject.setIndex(containingIndex);
         } else {
             Long version = resource.getTimeStamp();
-            if (resource.getTimeStamp() == 0) {
-                throw new IllegalArgumentException(String.format("Version for updated resource %s not defined", resource.getURI().toString()));
+            if (resource.getTimeStamp() <= 0) {
+                throw new IllegalArgumentException(String.format("Version (%d) for updated resource %s not defined or invalid",
+                        resource.getTimeStamp(), resource.getURI().toString()));
             }
             if (version < dbObject.getVersion()) {
                 throw new IllegalArgumentException(String.format(
@@ -483,6 +484,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     "Duplicate object names in resources (%s)",
                     String.join(", ", sameResources)));
         }
+        resource.setTimeStamp(new Date().getTime());
         Map<Long, EObject> oldECache = new HashMap<>();
         Map<Long, DBObject> oldDbCache = new HashMap<>();
         HbResource oldResource = (HbResource) getResourceSet().createResource(resource.getURI());
@@ -506,13 +508,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
         for (EObject eObject : contents) {
             Long id = hbServer.getId(eObject);
             saveEObjectNonContainment(resource, oldDbCache.get(id), eObject);
-            hbServer.getEvents().fireAfterSave(oldECache.get(id), eObject);
+            hbServer.getEvents().fireAfterSave(oldResource.getEObjectByID(String.valueOf(id)), eObject);
         }
         contents.stream()
                 .filter(eObject -> eObject instanceof EPackage)
                 .map(eObject -> (EPackage) eObject)
                 .forEach(ePackage -> getDbServer().getPackageRegistry().put(ePackage.getNsURI(), ePackage));
-        resource.setTimeStamp(new Date().getTime());
+        fixResourceURI(resource);
     }
 
     public static String getDiagnosticMessage(Diagnostic diagnostic) {
@@ -524,10 +526,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     public void load(HbResource resource, Map<String, Object> options) {
+        List<Long> ids = resource.getContents().stream().map(hbServer::getId).filter(Objects::nonNull).collect(Collectors.toList());
         resource.unload();
+        resource.setTimeStamp(new Date().getTime());
         Long id = hbServer.getId(resource.getURI());
         if (id != null) {
             loadById(resource, id, options);
+            fixResourceURI(resource);
         } else {
             String query = resource.getURI().query();
             if (query != null) {
@@ -539,15 +544,27 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     }
                 }
             }
+            else {
+                // reload
+                ids.forEach(oid -> {
+                    loadById(resource, id, options);
+                });
+                fixResourceURI(resource);
+            }
         }
-        resource.setTimeStamp(new Date().getTime());
+    }
+
+    private void fixResourceURI(HbResource resource) {
+        if (resource.getContents().size() == 1) {
+            EObject eObject = resource.getContents().get(0);
+            resource.setURI(getDbServer().createURI(getDbServer().getId(eObject), resource.getTimeStamp()));
+        }
     }
 
     private void loadById(HbResource resource, Long id, Map<String, Object> options) {
         DBObject dbObject = getOrThrow(id);
         EObject eObject = loadEObject(resource, dbObject, options);
         resource.getContents().add(eObject);
-        resource.setURI(getDbServer().createURI(dbObject.getId(), dbObject.getVersion()));
         hbServer.getEvents().fireAfterLoad(eObject);
     }
 
@@ -558,7 +575,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
         });
         sql.getResultStream()
                 .map(dbObject -> loadEObject(resource, dbObject, options))
-                .filter(HbServer.<EObject>distinctByKey(this.hbServer::getId))
+                .filter(HbServer.distinctByKey(this.hbServer::getId))
                 .forEach(eObject -> {
                     resource.getContents().add(eObject);
                     hbServer.getEvents().fireAfterLoad(eObject);
