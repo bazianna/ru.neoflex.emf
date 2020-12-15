@@ -16,12 +16,14 @@ list: '[' (expr (',' expr)*)? ','? ']';
 expr: labelRef |
       eObject |
       extRef |
-      STRING
+      attribute
       ;
 
 labelRef: ':' ID;
 
 extRef: '#' '{' eClass STRING (path)? '}';
+
+attribute: STRING;
 
 path: STRING;
 

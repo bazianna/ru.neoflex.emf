@@ -7,18 +7,18 @@
 )
 package ru.neoflex.emf.stringtemplate
 
-abstract class TemplateElement {
+abstract class AbstractTemplateElement {
     String typeName
-    container TemplateTree parent opposite children
+    container AbstractTemplateTree parent opposite children
 }
 
-abstract class TemplateTree extends TemplateElement {
-    contains TemplateElement[] children opposite parent
+abstract class AbstractTemplateTree extends TemplateElement {
+    contains AbstractTemplateElement[] children opposite parent
 }
 
-class TemplateRule extends TemplateTree {
+class TemplateTree extends AbstractTemplateTree {
 }
 
-class TemplateTerminal extends TemplateElement {
+class TemplateElement extends AbstractTemplateElement {
     String text
 }

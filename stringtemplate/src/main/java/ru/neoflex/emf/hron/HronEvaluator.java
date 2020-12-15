@@ -1,15 +1,13 @@
 package ru.neoflex.emf.hron;
 
-import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -27,30 +25,52 @@ public class HronEvaluator extends HronBaseListener {
     }
 
     void error(String msg, Token token) {
-        throw new IllegalArgumentException(msg + " [" + token.getLine() + ", " + token.getCharPositionInLine() + "]");
+        throw new IllegalArgumentException(msg + " [line:" + token.getLine() + ", pos:" + token.getCharPositionInLine() + "]");
     }
 
     @Override
     public void enterEObject(HronParser.EObjectContext ctx) {
+        EObject eObject;
+        HronParser.EClassContext eClassCtx = ctx.eClass();
         if (objectStack.size() == 0) {
-            HronParser.EClassContext eClassCtx = ctx.eClass();
             if (eClassCtx == null) {
                 error("Class not specified", ctx.start);
             }
             String nsPrefix = ctx.eClass().ID(0).getText();
             String name = ctx.eClass().ID(1).getText();
             EClass eClass = support.lookupEClass(resource.getResourceSet(), nsPrefix, name);
-            EObject eObject = EcoreUtil.create(eClass);
-            objectStack.push(eObject);
-            if (ctx.label() != null) {
-                String label = ctx.label().getText();
-                if (labeledEObjects.containsKey(label)) {
-                    error("Duplicate label " + label, ctx.start);
-                }
-                labeledEObjects.put(label, eObject);
-            }
-            eObjects.put(ctx, eObject);
+            eObject = EcoreUtil.create(eClass);
         }
+        else {
+            EStructuralFeature sf = featureStack.peek();
+            if (!(sf instanceof EReference) || !((EReference)sf).isContainment()) {
+                error(String.format("Feature '%s' has to be containment reference to contains EObject", sf.getName()), ctx.start);
+            }
+            EReference eReference = (EReference) sf;
+            EClass eClass = eReference.getEReferenceType();
+            if (eClassCtx != null) {
+                String nsPrefix = ctx.eClass().ID(0).getText();
+                String name = ctx.eClass().ID(1).getText();
+                eClass = support.lookupEClass(resource.getResourceSet(), nsPrefix, name);
+            }
+            eObject = EcoreUtil.create(eClass);
+            EObject owner = objectStack.peek();
+            if (sf.isMany()) {
+                ((List)owner.eGet(sf)).add(eObject);
+            }
+            else {
+                owner.eSet(sf, eObject);
+            }
+        }
+        objectStack.push(eObject);
+        if (ctx.label() != null) {
+            String label = ctx.label().getText();
+            if (labeledEObjects.containsKey(label)) {
+                error(String.format("Duplicate label '%s'", label), ctx.start);
+            }
+            labeledEObjects.put(label, eObject);
+        }
+        eObjects.put(ctx, eObject);
     }
 
     @Override
@@ -62,7 +82,11 @@ public class HronEvaluator extends HronBaseListener {
     public void enterEFeature(HronParser.EFeatureContext ctx) {
         EObject eObject = objectStack.peek();
         EClass eClass = eObject.eClass();
-        EStructuralFeature sf = eClass.getEStructuralFeature(ctx.ID().getText());
+        String feature = ctx.ID().getText();
+        EStructuralFeature sf = eClass.getEStructuralFeature(feature);
+        if (sf == null) {
+            error(String.format("Feature '%s' not found in '%s'", feature, eClass.getName()), ctx.start);
+        }
         featureStack.push(sf);
     }
 
@@ -77,5 +101,23 @@ public class HronEvaluator extends HronBaseListener {
             EObject eObject = eObjects.get(eObjectContext);
             resource.getContents().add(eObject);
         });
+    }
+
+    @Override
+    public void enterAttribute(HronParser.AttributeContext ctx) {
+        EObject eObject = objectStack.peek();
+        EStructuralFeature sf = featureStack.peek();
+        if (!(sf instanceof EAttribute)) {
+            error(String.format("EReference '%s' can't contains attribute", sf.getName()), ctx.start);
+        }
+        EAttribute eAttribute = (EAttribute) sf;
+        String literal = ctx.STRING().getText().replaceAll("(^\\\"|\\\"$)", "");
+        Object value = EcoreUtil.createFromString(eAttribute.getEAttributeType(), literal);
+        if (eAttribute.isMany()) {
+            ((List)eObject.eGet(eAttribute)).add(value);
+        }
+        else {
+            eObject.eSet(eAttribute, value);
+        }
     }
 }
