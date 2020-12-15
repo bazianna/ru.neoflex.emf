@@ -38,7 +38,7 @@ public class EMFController {
     JsonNode getResource(Long id) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            URI uri = tx.getDbServer().createURI(id);
+            URI uri = tx.getHbServer().createURI(id);
             Resource resource = rs.getResource(uri, true);
             return jsonHelper.toJson(resource);
         });
@@ -48,7 +48,7 @@ public class EMFController {
     JsonNode putResource(Long id, Long version, @RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            URI uri = tx.getDbServer().createURI(id, version);
+            URI uri = tx.getHbServer().createURI(id, version);
             Resource resource = rs.createResource(uri);
             jsonHelper.fromJson(resource, body, uri);
             resource.save(null);
@@ -60,7 +60,7 @@ public class EMFController {
     JsonNode postResource(@RequestBody ObjectNode body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            URI uri = tx.getDbServer().createURI();
+            URI uri = tx.getHbServer().createURI();
             Resource resource = rs.createResource(uri);
             jsonHelper.fromJson(resource, body);
             resource.save(null);
@@ -71,7 +71,7 @@ public class EMFController {
     @DeleteMapping("/resource")
     void deleteResource(Long id, Long version) throws Exception {
         dbServerSvc.getDbServer().inTransaction(false, tx -> {
-            URI uri = tx.getDbServer().createURI(id, version);
+            URI uri = tx.getHbServer().createURI(id, version);
             tx.delete(uri);
             return null;
         });

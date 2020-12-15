@@ -354,8 +354,8 @@ public class HbServer implements AutoCloseable {
         return findBy(rs, eClass, sf, value);
     }
 
-    public EStructuralFeature getQNameSF(EClass eClass) {
-        EStructuralFeature sf;
+    public EAttribute getQNameSF(EClass eClass) {
+        EAttribute sf;
         if (EcorePackage.Literals.EPACKAGE == eClass) {
             sf = EcorePackage.Literals.EPACKAGE__NS_URI;
         } else {

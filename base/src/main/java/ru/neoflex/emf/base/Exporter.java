@@ -91,7 +91,7 @@ public class Exporter {
         EClass eClass = (EClass) rs.getEObject(URI.createURI(classUri), false);
         String qName = element.getAttribute("q-name");
         String fragment = element.getAttribute("fragment");
-        List<EObject> eObjects = tx.getDbServer().findBy(rs, eClass, qName)
+        List<EObject> eObjects = tx.getHbServer().findBy(rs, eClass, qName)
                 .getContents().stream()
                 .map(eObject -> fragment.length() == 0 ? eObject : EcoreUtil.getEObject(eObject, fragment))
                 .filter(eObject -> eObject != null)

@@ -78,7 +78,7 @@ rule "Create Calendar"
 when
     not Calendar()
 then
-    Resource calendars = tx.getDbServer().findBy(CalendarPackage.eINSTANCE.getCalendar());
+    Resource calendars = tx.getHbServer().findBy(CalendarPackage.eINSTANCE.getCalendar());
     Calendar calendar = calendars.getContents().size() > 0 ?
         (Calendar) calendars.getContents().get(0) :
         createCalendar(tx);

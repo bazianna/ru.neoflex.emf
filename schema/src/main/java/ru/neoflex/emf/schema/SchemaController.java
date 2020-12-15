@@ -41,7 +41,7 @@ public class SchemaController {
             group_pk.setName("group_pk");
             group_pk.getColumns().add(group_id);
             group.setPKey(group_pk);
-            Resource group_res = rs.createResource(tx.getDbServer().createURI());
+            Resource group_res = rs.createResource(tx.getHbServer().createURI());
             group_res.getContents().add(group);
             group_res.save(null);
 
@@ -68,7 +68,7 @@ public class SchemaController {
             user_group_fk.getColumns().add(user_group_id);
             user_group_fk.setEntity(group);
             user.getFKeys().add(user_group_fk);
-            Resource user_res = rs.createResource(tx.getDbServer().createURI());
+            Resource user_res = rs.createResource(tx.getHbServer().createURI());
             user_res.getContents().add(user);
             user_res.save(null);
 
@@ -78,7 +78,7 @@ public class SchemaController {
             user_group.getColumns().add(user_name);
             user_group.getColumns().add(group_id);
             user_group.getColumns().add(group_name);
-            Resource user_group_res = rs.createResource(tx.getDbServer().createURI());
+            Resource user_group_res = rs.createResource(tx.getHbServer().createURI());
             user_group_res.getContents().add(user_group);
             user_group_res.save(null);
             return null;

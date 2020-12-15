@@ -18,9 +18,6 @@ import java.util.stream.Stream;
 
 public class HbTransaction implements AutoCloseable, Serializable {
     protected final Session session;
-    protected transient String message = "";
-    protected transient String author;
-    protected transient String email;
     private transient boolean readOnly;
     private final transient HbServer hbServer;
     private transient ResourceSet resourceSet;
@@ -29,7 +26,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     public HbTransaction(boolean readOnly, HbServer hbServer) {
         this.readOnly = readOnly;
         this.hbServer = hbServer;
-        session = getDbServer().createSession();
+        session = getHbServer().createSession();
     }
 
     public ResourceSet getResourceSet() {
@@ -44,51 +41,19 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     public HbResource createResource() {
-        return (HbResource) getResourceSet().createResource(getDbServer().createURI());
+        return (HbResource) getResourceSet().createResource(getHbServer().createURI());
     }
 
     public ResourceSet createResourceSet() {
         return hbServer.createResourceSet(this);
     }
 
-    public HbServer getDbServer() {
+    public HbServer getHbServer() {
         return hbServer;
     }
 
     public boolean isReadOnly() {
         return readOnly;
-    }
-
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-    }
-
-    public String getTenantId() {
-        return getDbServer().getTenantId();
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public void rollback() {
@@ -108,14 +73,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
 
     protected DBObject get(Long id) {
         return session.get(DBObject.class, id);
-    }
-
-    protected Stream<DBObject> findByClassAndFeature(String classUri, String feature, String value) {
-        return session.createQuery("select o from DBObject o join o.attributes a where o.classUri = :classUri and a.feature = :feature and a.value = :value", DBObject.class)
-                .setParameter("classUri", classUri)
-                .setParameter("feature", feature)
-                .setParameter("value", value)
-                .getResultStream();
     }
 
     protected void deleteRecursive(DBObject dbObject) {
@@ -246,9 +203,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .collect(Collectors.toList());
 
         Set<DBAttribute> toDeleteA = dbObject.getAttributes().stream().collect(Collectors.toSet());
-        EStructuralFeature qNameSF = getDbServer().getQNameSF(eObject.eClass());
+        EAttribute qNameSF = getHbServer().getQNameSF(eObject.eClass());
         for (AbstractMap.SimpleEntry<EAttribute, List> attr : attrs) {
-            if (attr.getKey() != qNameSF && !getDbServer().getIndexedAttributeDelegate().apply(attr.getKey())) {
+            if (attr.getKey() != qNameSF && !getHbServer().getIndexedAttributeDelegate().apply(attr.getKey())) {
                 continue;
             }
             EDataType eDataType = attr.getKey().getEAttributeType();
@@ -340,7 +297,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     private URI getProxyURI(DBObject dbObject) {
         DBObject root = getRootContainer(dbObject, null);
 //        DBObject root = dbObject;
-        return getDbServer().createURI(root.getId(), root.getVersion())
+        return getHbServer().createURI(root.getId(), root.getVersion())
                 .appendFragment(String.valueOf(dbObject.getId()));
     }
 
@@ -419,7 +376,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     protected Resource createResource(ResourceSet rs, DBObject dbObject, Map<String, Object> options) {
-        URI uri = getDbServer().createURI(dbObject.getId());
+        URI uri = getHbServer().createURI(dbObject.getId());
         HbResource resource = (HbResource) rs.createResource(uri);
         EObject eObject = loadEObject(resource, dbObject, options);
         resource.getContents().add(eObject);
@@ -460,11 +417,11 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         List<String> sameResources = contents.stream()
                 .flatMap(eObject -> {
-                    EAttribute sf = (EAttribute) getDbServer().getQNameSF(eObject.eClass());
+                    EAttribute sf = hbServer.getQNameSF(eObject.eClass());
                     return sf != null ?
-                            getDbServer().findBy(resource.getResourceSet(), eObject.eClass(), sf,
+                            getHbServer().findBy(resource.getResourceSet(), eObject.eClass(), sf,
                                     EcoreUtil.convertToString(sf.getEAttributeType(), eObject.eGet(sf)))
-                                    .getContents().stream().map(getDbServer()::getId)
+                                    .getContents().stream().map(hbServer::getId)
                                     .filter(id -> id != null && !id.equals(hbServer.getId(eObject))) :
                             Stream.empty();
                 })
@@ -502,7 +459,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
         contents.stream()
                 .filter(eObject -> eObject instanceof EPackage)
                 .map(eObject -> (EPackage) eObject)
-                .forEach(ePackage -> getDbServer().getPackageRegistry().put(ePackage.getNsURI(), ePackage));
+                .forEach(ePackage -> getHbServer().getPackageRegistry().put(ePackage.getNsURI(), ePackage));
         fixResourceURI(resource);
     }
 
@@ -546,7 +503,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     private void fixResourceURI(HbResource resource) {
         if (resource.getContents().size() == 1) {
             EObject eObject = resource.getContents().get(0);
-            resource.setURI(getDbServer().createURI(getDbServer().getId(eObject), resource.getTimeStamp()));
+            resource.setURI(getHbServer().createURI(getHbServer().getId(eObject), resource.getTimeStamp()));
         }
     }
 
@@ -596,6 +553,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
         oldResource.getContents().stream()
                 .filter(o -> o instanceof EPackage)
                 .map(o -> (EPackage) o)
-                .forEach(ePackage -> getDbServer().getPackageRegistry().remove(ePackage.getNsURI()));
+                .forEach(ePackage -> getHbServer().getPackageRegistry().remove(ePackage.getNsURI()));
     }
 }

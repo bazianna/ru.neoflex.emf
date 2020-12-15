@@ -83,7 +83,7 @@ public class PerfTests extends TestBase {
         long start = System.currentTimeMillis();
         Schema schema1 = hbServer.inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            Resource resource = rs.createResource(tx.getDbServer().createURI());
+            Resource resource = rs.createResource(tx.getHbServer().createURI());
             Schema schema = createSchema("emf", nTables, nColumns);
             resource.getContents().add(schema);
             resource.save(null);
@@ -95,7 +95,7 @@ public class PerfTests extends TestBase {
         long count = hbServer.getEObjectToIdMap().size() - count0;
         Schema schema2 = hbServer.inTransaction(true, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            Resource resource = rs.createResource(tx.getDbServer().createURI(id));
+            Resource resource = rs.createResource(tx.getHbServer().createURI(id));
             resource.load(null);
 //            EcoreUtil.resolveAll(rs);
             Assert.assertEquals(1, resource.getContents().size());
@@ -135,7 +135,7 @@ public class PerfTests extends TestBase {
         long start = System.currentTimeMillis();
         ViewBase view1 = hbServer.inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            Resource resource = rs.createResource(tx.getDbServer().createURI());
+            Resource resource = rs.createResource(tx.getHbServer().createURI());
             ViewBase viewBase = createView("", deep, wide);
             resource.getContents().add(viewBase);
             resource.save(null);
@@ -147,7 +147,7 @@ public class PerfTests extends TestBase {
         long count = hbServer.getEObjectToIdMap().size() - count0;
         ViewBase view2 = hbServer.inTransaction(true, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            Resource resource = rs.createResource(tx.getDbServer().createURI(id));
+            Resource resource = rs.createResource(tx.getHbServer().createURI(id));
             resource.load(null);
             Assert.assertEquals(1, resource.getContents().size());
             return (ViewBase) resource.getContents().get(0);
