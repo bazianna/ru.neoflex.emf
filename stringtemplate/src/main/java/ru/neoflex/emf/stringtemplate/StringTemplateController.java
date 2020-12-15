@@ -19,17 +19,18 @@ import java.nio.CharBuffer;
 import java.util.logging.Logger;
 
 @RestController()
-@RequestMapping("/sparksql")
-public class SpringTemplateController {
-    Logger logger = Logger.getLogger(SpringTemplateController.class.getName());
+@RequestMapping("/stringtemplate")
+public class StringTemplateController {
+    Logger logger = Logger.getLogger(StringTemplateController.class.getName());
     final DBServerSvc dbServerSvc;
 
-    public SpringTemplateController(DBServerSvc dbServerSvc) {
+    public StringTemplateController(DBServerSvc dbServerSvc) {
         this.dbServerSvc = dbServerSvc;
     }
 
     @PostConstruct
     void init() {
+        dbServerSvc.getDbServer().registerEPackage(StringtemplatePackage.eINSTANCE);
     }
 
     @PostMapping(value = "/parseHron", consumes = {"text/plain"})
