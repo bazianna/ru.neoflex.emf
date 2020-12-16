@@ -20,6 +20,20 @@ public class HronEvaluator extends HronBaseListener {
     Map<String, EObject> labeledEObjects = new HashMap<>();
     String nsPrefix;
 
+    public Phase getPhase() {
+        return phase;
+    }
+
+    public void setPhase(Phase phase) {
+        this.phase = phase;
+    }
+
+    public enum Phase {
+        CONTAINMENT,
+        NONCONTAINMENT
+    }
+    private Phase phase = Phase.CONTAINMENT;
+
     public HronEvaluator(Resource resource, HronSupport support) {
         this.resource = resource;
         this.support = support;
@@ -31,43 +45,45 @@ public class HronEvaluator extends HronBaseListener {
 
     @Override
     public void enterEObject(HronParser.EObjectContext ctx) {
-        EObject eObject;
-        HronParser.EClassContext eClassCtx = ctx.eClass();
-        if (objectStack.size() == 0) {
-            if (eClassCtx == null) {
-                error("Class not specified", ctx.start);
-            }
-            EClass eClass = getEClass(eClassCtx);
-            eObject = EcoreUtil.create(eClass);
-        }
-        else {
-            EStructuralFeature sf = featureStack.peek();
-            if (!(sf instanceof EReference) || !((EReference)sf).isContainment()) {
-                error(String.format("Feature '%s' has to be containment reference to contains EObject", sf.getName()), ctx.start);
-            }
-            EReference eReference = (EReference) sf;
-            EClass eClass = eReference.getEReferenceType();
-            if (eClassCtx != null) {
-                eClass = getEClass(eClassCtx);
-            }
-            eObject = EcoreUtil.create(eClass);
-            EObject owner = objectStack.peek();
-            if (sf.isMany()) {
-                ((List)owner.eGet(sf)).add(eObject);
+        EObject eObject = eObjects.get(ctx);
+        if (eObject == null) {
+            HronParser.EClassContext eClassCtx = ctx.eClass();
+            if (objectStack.size() == 0) {
+                if (eClassCtx == null) {
+                    error("Class not specified", ctx.start);
+                }
+                EClass eClass = getEClass(eClassCtx);
+                eObject = EcoreUtil.create(eClass);
             }
             else {
-                owner.eSet(sf, eObject);
+                EStructuralFeature sf = featureStack.peek();
+                if (!(sf instanceof EReference) || !((EReference)sf).isContainment()) {
+                    error(String.format("Feature '%s' has to be containment reference to contains EObject", sf.getName()), ctx.start);
+                }
+                EReference eReference = (EReference) sf;
+                EClass eClass = eReference.getEReferenceType();
+                if (eClassCtx != null) {
+                    eClass = getEClass(eClassCtx);
+                }
+                eObject = EcoreUtil.create(eClass);
+                EObject owner = objectStack.peek();
+                if (sf.isMany()) {
+                    ((List)owner.eGet(sf)).add(eObject);
+                }
+                else {
+                    owner.eSet(sf, eObject);
+                }
             }
+            if (ctx.label() != null) {
+                String label = ctx.label().ID().getText();
+                if (labeledEObjects.containsKey(label)) {
+                    error(String.format("Duplicate label '%s'", label), ctx.start);
+                }
+                labeledEObjects.put(label, eObject);
+            }
+            eObjects.put(ctx, eObject);
         }
         objectStack.push(eObject);
-        if (ctx.label() != null) {
-            String label = ctx.label().getText();
-            if (labeledEObjects.containsKey(label)) {
-                error(String.format("Duplicate label '%s'", label), ctx.start);
-            }
-            labeledEObjects.put(label, eObject);
-        }
-        eObjects.put(ctx, eObject);
     }
 
     private EClass getEClass(HronParser.EClassContext eClassCtx) {
@@ -104,34 +120,94 @@ public class HronEvaluator extends HronBaseListener {
 
     @Override
     public void enterResource(HronParser.ResourceContext ctx) {
-        if (ctx.nsPrefix() != null) {
-            nsPrefix = ctx.nsPrefix().getText();
+        if (phase == Phase.CONTAINMENT) {
+            if (ctx.nsPrefix() != null) {
+                nsPrefix = ctx.nsPrefix().getText();
+            }
         }
     }
 
     @Override
     public void exitResource(HronParser.ResourceContext ctx) {
-        ctx.eObject().forEach(eObjectContext -> {
-            EObject eObject = eObjects.get(eObjectContext);
-            resource.getContents().add(eObject);
-        });
+        if (phase == Phase.CONTAINMENT) {
+            ctx.eObject().forEach(eObjectContext -> {
+                EObject eObject = eObjects.get(eObjectContext);
+                resource.getContents().add(eObject);
+            });
+        }
     }
 
     @Override
     public void enterAttribute(HronParser.AttributeContext ctx) {
-        EObject eObject = objectStack.peek();
-        EStructuralFeature sf = featureStack.peek();
-        if (!(sf instanceof EAttribute)) {
-            error(String.format("EReference '%s' can't contains attribute", sf.getName()), ctx.start);
+        if (phase == Phase.CONTAINMENT) {
+            EObject eObject = objectStack.peek();
+            EStructuralFeature sf = featureStack.peek();
+            if (!(sf instanceof EAttribute)) {
+                error(String.format("EReference '%s' can't contains attribute", sf.getName()), ctx.start);
+            }
+            EAttribute eAttribute = (EAttribute) sf;
+            String literal = ctx.STRING().getText().replaceAll("(^\\\"|\\\"$)", "");
+            Object value = EcoreUtil.createFromString(eAttribute.getEAttributeType(), literal);
+            if (eAttribute.isMany()) {
+                ((List)eObject.eGet(eAttribute)).add(value);
+            }
+            else {
+                eObject.eSet(eAttribute, value);
+            }
         }
-        EAttribute eAttribute = (EAttribute) sf;
-        String literal = ctx.STRING().getText().replaceAll("(^\\\"|\\\"$)", "");
-        Object value = EcoreUtil.createFromString(eAttribute.getEAttributeType(), literal);
-        if (eAttribute.isMany()) {
-            ((List)eObject.eGet(eAttribute)).add(value);
+    }
+
+    @Override
+    public void enterLabelRef(HronParser.LabelRefContext ctx) {
+        if (phase == Phase.NONCONTAINMENT) {
+            EObject eObject = objectStack.peek();
+            EStructuralFeature sf = featureStack.peek();
+            if (!(sf instanceof EReference) || ((EReference)sf).isContainment()) {
+                error(String.format("Feature '%s' has to be non-containment reference to refers to labeled EObject", sf.getName()), ctx.start);
+            }
+            EReference eReference = (EReference) sf;
+            String label = ctx.ID().getText();
+            EObject refObject = labeledEObjects.get(label);
+            if (refObject == null) {
+                error(String.format("EObject for label '%s' not found", label), ctx.start);
+            }
+            if (eReference.isMany()) {
+                ((List)eObject.eGet(eReference)).add(refObject);
+            }
+            else {
+                eObject.eSet(eReference, refObject);
+            }
         }
-        else {
-            eObject.eSet(eAttribute, value);
+    }
+
+    @Override
+    public void enterExtRef(HronParser.ExtRefContext ctx) {
+        if (phase == Phase.NONCONTAINMENT) {
+            EObject eObject = objectStack.peek();
+            EStructuralFeature sf = featureStack.peek();
+            if (!(sf instanceof EReference) || ((EReference)sf).isContainment()) {
+                error(String.format("Feature '%s' has to be non-containment reference to refers to external EObject", sf.getName()), ctx.start);
+            }
+            EReference eReference = (EReference) sf;
+            EClass eClass = getEClass(ctx.eClass());
+            String name = ctx.STRING().getText().replaceAll("(^\\\"|\\\"$)", "");
+            EObject refObject = support.lookupEObject(resource.getResourceSet(), eClass, name);
+            if (refObject == null) {
+                error(String.format("EObject for reference to '%s' not found", name), ctx.start);
+            }
+            String path = ctx.path() == null ? null : ctx.path().getText();
+            if (path != null) {
+                refObject = EcoreUtil.getEObject(refObject, path);
+                if (refObject == null) {
+                    error(String.format("EObject for path '%s' not found", path), ctx.start);
+                }
+            }
+            if (eReference.isMany()) {
+                ((List)eObject.eGet(eReference)).add(refObject);
+            }
+            else {
+                eObject.eSet(eReference, refObject);
+            }
         }
     }
 }

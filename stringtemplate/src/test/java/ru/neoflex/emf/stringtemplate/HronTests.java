@@ -52,6 +52,8 @@ public class HronTests {
         HronEvaluator evaluator = new HronEvaluator(resource, new HbHronSupport(dbServerSvc.getDbServer()));
         ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(evaluator, tree);
+        evaluator.setPhase(HronEvaluator.Phase.NONCONTAINMENT);
+        walker.walk(evaluator, tree);
         resource.save(null);
     }
 }

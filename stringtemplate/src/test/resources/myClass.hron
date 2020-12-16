@@ -15,6 +15,6 @@ stringtemplate [
         ]}
         Reference {type="calls" ref=:sum}
     ]}
-  ];
- },
+  ]
+ }
 ]
