@@ -1,17 +1,19 @@
 
 grammar Hron;
 
-resource: '[' (eObject (',' eObject)*)? ','? ']';
+resource: nsPrefix? '[' (eObject (','? eObject)*)? ','? ']';
+
+nsPrefix: ID;
 
 eObject: label? eClass? '{' eFeature*  '}';
 
 label: ID ':';
 
-eClass: ID '.' ID;
+eClass: ID ('.' ID)?;
 
-eFeature: ID '=' (expr|list) ';';
+eFeature: ID '=' (expr|list) (';')?;
 
-list: '[' (expr (',' expr)*)? ','? ']';
+list: '[' (expr (','? expr)*)? ','? ']';
 
 expr: labelRef |
       eObject |

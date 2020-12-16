@@ -24,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest(properties = {
-        "db-type=ru.neoflex.emf.gitdb.GitDBFactory",
         "db-name=resttest"
 })
 class RestserverApplicationTests {

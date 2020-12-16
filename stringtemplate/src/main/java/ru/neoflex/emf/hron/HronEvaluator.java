@@ -18,6 +18,7 @@ public class HronEvaluator extends HronBaseListener {
     Stack<EObject> objectStack = new Stack<>();
     Stack<EStructuralFeature> featureStack = new Stack<>();
     Map<String, EObject> labeledEObjects = new HashMap<>();
+    String nsPrefix;
 
     public HronEvaluator(Resource resource, HronSupport support) {
         this.resource = resource;
@@ -36,9 +37,7 @@ public class HronEvaluator extends HronBaseListener {
             if (eClassCtx == null) {
                 error("Class not specified", ctx.start);
             }
-            String nsPrefix = ctx.eClass().ID(0).getText();
-            String name = ctx.eClass().ID(1).getText();
-            EClass eClass = support.lookupEClass(resource.getResourceSet(), nsPrefix, name);
+            EClass eClass = getEClass(eClassCtx);
             eObject = EcoreUtil.create(eClass);
         }
         else {
@@ -49,9 +48,7 @@ public class HronEvaluator extends HronBaseListener {
             EReference eReference = (EReference) sf;
             EClass eClass = eReference.getEReferenceType();
             if (eClassCtx != null) {
-                String nsPrefix = ctx.eClass().ID(0).getText();
-                String name = ctx.eClass().ID(1).getText();
-                eClass = support.lookupEClass(resource.getResourceSet(), nsPrefix, name);
+                eClass = getEClass(eClassCtx);
             }
             eObject = EcoreUtil.create(eClass);
             EObject owner = objectStack.peek();
@@ -71,6 +68,16 @@ public class HronEvaluator extends HronBaseListener {
             labeledEObjects.put(label, eObject);
         }
         eObjects.put(ctx, eObject);
+    }
+
+    private EClass getEClass(HronParser.EClassContext eClassCtx) {
+        if (eClassCtx.ID().size() == 1) {
+            if (nsPrefix == null) {
+                error(String.format("NsPrefix not defined : %s", eClassCtx.getText()), eClassCtx.start);
+            }
+            return support.lookupEClass(resource.getResourceSet(), nsPrefix, eClassCtx.ID(0).getText());
+        }
+        return support.lookupEClass(resource.getResourceSet(), eClassCtx.ID(0).getText(), eClassCtx.ID(1).getText());
     }
 
     @Override
@@ -93,6 +100,13 @@ public class HronEvaluator extends HronBaseListener {
     @Override
     public void exitEFeature(HronParser.EFeatureContext ctx) {
         featureStack.pop();
+    }
+
+    @Override
+    public void enterResource(HronParser.ResourceContext ctx) {
+        if (ctx.nsPrefix() != null) {
+            nsPrefix = ctx.nsPrefix().getText();
+        }
     }
 
     @Override

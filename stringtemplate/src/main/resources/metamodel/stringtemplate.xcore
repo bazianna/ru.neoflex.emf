@@ -8,23 +8,23 @@
 package ru.neoflex.emf.stringtemplate
 import java.util.List
 
-type ElementList wraps List<TemplateElement>
+type ElementList wraps List<Element>
 
-class TemplateElement {
-    String name
-    container TemplateElement parent opposite children
-    contains TemplateElement[] children opposite parent
+class Element {
+    String ^type
+    container Element parent opposite children
+    contains Element[] children opposite parent
 
-    op ElementList all(String name) {
-        children.filter(ch|ch.name == name).toList()
+    op ElementList all(String ^type) {
+        children.filter(ch|ch.^type == ^type).toList()
     }
 
-    op TemplateElement first(String name) {
-        all(name).get(0)
+    op Element first(String ^type) {
+        all(^type).get(0)
     }
 
-    op boolean exists(String name) {
-        children.exists(ch|ch.name == name)
+    op boolean exists(String ^type) {
+        children.exists(ch|ch.^type == ^type)
     }
 
     op String text() {
@@ -32,14 +32,14 @@ class TemplateElement {
     }
 }
 
-class TextElement extends TemplateElement {
+class Text extends Element {
     String body
 
     op String text() {body}
 }
 
-class ReferenceElement extends TemplateElement {
-    refers TemplateElement ref
+class Reference extends Element {
+    refers Element ref
 
     op String text() {ref.text()}
 }
