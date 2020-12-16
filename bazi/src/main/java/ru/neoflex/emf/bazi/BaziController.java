@@ -16,13 +16,9 @@ import ru.neoflex.emf.drools.DroolsSvc;
 import ru.neoflex.emf.restserver.DBServerSvc;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController()
 @RequestMapping("/bazi")
@@ -31,6 +27,7 @@ public class BaziController {
     DroolsSvc droolsSvc;
     final
     DBServerSvc dbServerSvc;
+
 
     public BaziController(DroolsSvc droolsSvc, DBServerSvc dbServerSvc) {
         this.droolsSvc = droolsSvc;
@@ -53,11 +50,13 @@ public class BaziController {
 //                throw new IllegalArgumentException(e);
 //            }
 
-//            try {
-//                resources.add(BaZiSvc.createCalendar("\\bazi\\src\\main\\resources\\calendar.xls"));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+
+            try {
+                BaZiSvc.createCalendar("\\bazi\\src\\main\\resources\\calendar.xls", dbServerSvc);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e);
+            }
+
             return resources;
         });
         droolsSvc.setDebug(true);
