@@ -7,6 +7,8 @@ import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -26,13 +28,17 @@ import org.hibernate.tool.schema.TargetType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class HbServer implements AutoCloseable {
     public static final String CONFIG_DEFAULT_SCHEMA = "hb.defaultSchema";
@@ -47,6 +53,16 @@ public class HbServer implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(HbServer.class);
     protected static final ThreadLocal<String> tenantId = new InheritableThreadLocal<>();
 
+    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+        Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+        return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+    }
+
+    public Predicate<EObject> distinctById() {
+        Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+        return t -> seen.putIfAbsent(getId(t), Boolean.TRUE) == null;
+    }
+
     public Function<EAttribute, Boolean> getIndexedAttributeDelegate() {
         return indexedAttributeDelegate;
     }
@@ -60,7 +76,6 @@ public class HbServer implements AutoCloseable {
     private final String dbName;
     private final Events events = new Events();
     private final Set<String> updatedSchemas = new HashSet<>();
-    private Function<EClass, EStructuralFeature> qualifiedNameDelegate = eClass -> eClass.getEStructuralFeature("name");
     private Function<EAttribute, Boolean> indexedAttributeDelegate = eAttribute -> eAttribute.getEAttributeType() == EcorePackage.eINSTANCE.getEString();
     private final Properties config;
     private final EPackage.Registry packageRegistry = new EPackageRegistryImpl(EPackage.Registry.INSTANCE);
@@ -81,7 +96,7 @@ public class HbServer implements AutoCloseable {
 
     public Map<EObject, Long> getEObjectToIdMap() {
         if (eObjectToIdMap.get() == null) {
-            eObjectToIdMap.set(new WeakHashMap<>());
+            eObjectToIdMap.set(new WeakIdentityHashMap<>());
         }
         return eObjectToIdMap.get();
     }
@@ -97,10 +112,8 @@ public class HbServer implements AutoCloseable {
     public List<EPackage> loadDynamicPackages() throws Exception {
         return inTransaction(true, tx -> {
             ResourceSet resourceSet = tx.getResourceSet();
-            return tx.findByClass(resourceSet, EcorePackage.Literals.EPACKAGE)
-                    .flatMap(resource -> resource.getContents().stream())
-                    .map(eObject -> (EPackage) eObject)
-                    .collect(Collectors.toList());
+            return findBy(resourceSet, EcorePackage.Literals.EPACKAGE).getContents().stream()
+                    .map(eObject -> (EPackage)eObject).collect(Collectors.toList());
         });
     }
 
@@ -164,19 +177,14 @@ public class HbServer implements AutoCloseable {
         return StringUtils.isEmpty(versionStr) ? null : Long.parseLong(versionStr);
     }
 
-    public Function<EClass, EStructuralFeature> getQualifiedNameDelegate() {
-        return qualifiedNameDelegate;
-    }
-
-    public void setQualifiedNameDelegate(Function<EClass, EStructuralFeature> qualifiedNameDelegate) {
-        this.qualifiedNameDelegate = qualifiedNameDelegate;
-    }
-
     public Events getEvents() {
         return events;
     }
 
     protected Resource createResource(URI uri) {
+        if (uri == null) {
+            uri = createURI();
+        }
         return new HbResource(uri);
     }
 
@@ -253,12 +261,105 @@ public class HbServer implements AutoCloseable {
         return URI.createURI(createURIString(id, version));
     }
 
-    public EStructuralFeature getQNameSF(EClass eClass) {
-        EStructuralFeature sf;
+    public URI createURI(String sql) {
+        return createURI().appendQuery(String.format("query=%s", sql));
+    }
+
+    public Resource findAll() {
+        return findAll(createResourceSet());
+    }
+
+    public Resource findAll(ResourceSet rs) {
+        URI uri = createURI().appendQuery("query=select t from DBObject t where t.proxy is null and t.container is null");
+        Resource resource = rs.createResource(uri);
+        safeLoad(resource, null);
+        return resource;
+    }
+
+    public Resource findBy(EClass eClass) {
+        return findBy(createResourceSet(), eClass);
+    }
+
+    public Resource findReferencedTo(Long id) {
+        return findReferencedTo(createResourceSet(), id);
+    }
+
+    private void safeLoad(Resource resource, Map<String, Object> options) {
+        try {
+            resource.load(options);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Resource findReferencedTo(ResourceSet rs, Long id) {
+        URI uri = createURI("select o from DBObject o join o.references r where r.refObject.id = :id");
+        Resource resource = rs.createResource(uri);
+        Map<String, Object> options = new HashMap<>();
+        options.put("id", id);
+        options.put(HbHandler.OPTION_GET_ROOT_CONTAINER, true);
+        safeLoad(resource, options);
+        return resource;
+    }
+
+    public Resource findReferencedTo(ResourceSet rs, Resource resource) {
+        Set<Long> exclude = resource.getContents().stream()
+                .map(this::getId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Iterable<EObject> iterable = resource::getAllContents;
+        List<EObject> eObjects = StreamSupport.stream(iterable.spliterator(), false)
+                .map(this::getId).filter(Objects::nonNull)
+                .flatMap(id -> findReferencedTo(rs, id).getContents().stream())
+                .collect(Collectors.toList()).stream()
+                .filter(eObject -> !exclude.contains(getId(eObject)))
+                .filter(distinctById())
+                .collect(Collectors.toList());
+        Resource result = rs.createResource(createURI());
+        result.getContents().addAll(eObjects);
+        return result;
+    }
+
+    public Resource findBy(ResourceSet rs, EClass eClass) {
+        URI uri = createURI("select t from DBObject t where classUri=:classUri");
+        Resource resource = rs.createResource(uri);
+        Map<String, Object> options = new HashMap<>();
+        options.put("classUri", EcoreUtil.getURI(eClass).toString());
+        safeLoad(resource, options);
+        return resource;
+    }
+
+    public Resource findBy(EClass eClass, EStructuralFeature sf, String value) {
+        return findBy(createResourceSet(), eClass, sf, value);
+    }
+
+    public Resource findBy(ResourceSet rs, EClass eClass, EStructuralFeature sf, String value) {
+        URI uri = createURI("select o from DBObject o join o.attributes a where o.classUri = :classUri and a.feature = :feature and a.value = :value");
+        Resource resource = rs.createResource(uri);
+        Map<String, Object> options = new HashMap<>();
+        options.put("classUri", EcoreUtil.getURI(eClass).toString());
+        options.put("feature", sf.getName());
+        options.put("value", value);
+        safeLoad(resource, options);
+        return resource;
+    }
+
+    public Resource findBy(EClass eClass, String value) {
+        return findBy(createResourceSet(), eClass, value);
+    }
+
+    public Resource findBy(ResourceSet rs, EClass eClass, String value) {
+        EStructuralFeature sf = getQNameSF(eClass);
+        if (sf == null) {
+            throw new IllegalArgumentException(String.format("Can't find id feature for %s", EcoreUtil.getURI(eClass).toString()));
+        }
+        return findBy(rs, eClass, sf, value);
+    }
+
+    public EAttribute getQNameSF(EClass eClass) {
+        EAttribute sf;
         if (EcorePackage.Literals.EPACKAGE == eClass) {
             sf = EcorePackage.Literals.EPACKAGE__NS_URI;
         } else {
-            sf = getQualifiedNameDelegate().apply(eClass);
+            sf = eClass.getEIDAttribute();
         }
         return sf;
     }
@@ -289,59 +390,46 @@ public class HbServer implements AutoCloseable {
         R call(HbTransaction tx) throws Exception;
     }
 
-    protected <R> R callWithTransaction(HbTransaction tx, TxFunction<R> f) throws Exception {
-        return f.call(tx);
-    }
-
     public <R> R inTransaction(boolean readOnly, TxFunction<R> f) throws Exception {
         return inTransaction(() -> createDBTransaction(readOnly), f);
     }
 
-    public static class TxRetryStrategy {
-        public int delay = 1;
-        public int maxDelay = 1000;
-        public int maxAttempts = 10;
-        public List<Class<?>> retryClasses = new ArrayList<>();
+    public ResourceSet createResourceSet() {
+        return createResourceSet(null);
     }
 
-    protected TxRetryStrategy createTxRetryStrategy() {
-        return new TxRetryStrategy();
+    public HbResource createResource() {
+        return (HbResource) createResourceSet().createResource(createURI());
+    }
+
+    public ResourceSet createResourceSet(HbTransaction tx) {
+        ResourceSetImpl result = new ResourceSetImpl();
+        result.setPackageRegistry(getPackageRegistry());
+        result.setURIResourceMap(new HashMap<>());
+        result.getResourceFactoryRegistry()
+                .getProtocolToFactoryMap()
+                .put(getScheme(), new ResourceFactoryImpl() {
+                    @Override
+                    public Resource createResource(URI uri) {
+                        return HbServer.this.createResource(uri);
+                    }
+                });
+        result.getURIConverter()
+                .getURIHandlers()
+                .add(0, new HbHandler(this, tx));
+        return result;
     }
 
     public <R> R inTransaction(Supplier<HbTransaction> txSupplier, TxFunction<R> f) throws Exception {
-        TxRetryStrategy retryStrategy = createTxRetryStrategy();
-        int attempt = 1;
-        int delay = retryStrategy.delay;
-        while (true) {
+        try (HbTransaction tx = txSupplier.get()) {
+            tx.begin();
             try {
-                try (HbTransaction tx = txSupplier.get()) {
-                    tx.begin();
-                    try {
-                        R result = callWithTransaction(tx, f);
-                        tx.commit();
-                        return result;
-                    } catch (Throwable e) {
-                        tx.rollback();
-                        throw e;
-                    }
-                }
+                R result = f.call(tx);
+                tx.commit();
+                return result;
             } catch (Throwable e) {
-                boolean retry = retryStrategy.retryClasses.stream().anyMatch(aClass -> aClass.isAssignableFrom(e.getClass()));
-                if (!retry) {
-                    throw e;
-                }
-                if (++attempt > retryStrategy.maxAttempts) {
-                    throw e;
-                }
-                String message = e.getClass().getSimpleName() + ": " + e.getMessage() + " attempt no " + attempt + " after " + delay + "ms";
-                logger.warn(message);
-                try {
-                    Thread.sleep(delay);
-                } catch (InterruptedException ex) {
-                }
-                if (delay < retryStrategy.maxDelay) {
-                    delay *= 2;
-                }
+                tx.rollback();
+                throw e;
             }
         }
     }

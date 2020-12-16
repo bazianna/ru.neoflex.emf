@@ -41,7 +41,6 @@ public class BaziController {
     void init() {
         dbServerSvc.getDbServer().registerEPackage(NatalChartPackage.eINSTANCE);
         droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<>("dbServerSvc", dbServerSvc));
-
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();
             resources.add(DroolsSvc.createClassPathResource("baseRules.drl", null));
@@ -112,10 +111,9 @@ public class BaziController {
                     }
                 }
                 eObjects.save(null);
-                org.eclipse.emf.ecore.resource.Resource natalCharts = tx.createResource();
-                natalCharts.getContents().addAll(eObjects.getContents().stream()
-                        .filter(eObject -> eObject instanceof NatalChart).collect(Collectors.toList()));
-                return DBServerSvc.createJsonHelper().toJson(natalCharts);
+                eObjects.getContents().removeIf(eObject -> !(eObject instanceof NatalChart));
+                eObjects.load(null);
+                return DBServerSvc.createJsonHelper().toJson(eObjects);
             }
             finally {
                 kieSession.dispose();

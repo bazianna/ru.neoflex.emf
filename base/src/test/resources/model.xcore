@@ -12,11 +12,11 @@ import java.util.Date
 import java.math.BigDecimal
 
 class Group {
-    String name
+    id String name
 }
 
 class User {
-    String name
+    id String name
     refers Group group
 }
 
@@ -41,7 +41,7 @@ class FKey extends DBKey {
 }
 
 abstract class DBEntity {
-	String name
+	id String name
 	contains PKey pKey
 }
 
@@ -57,7 +57,7 @@ class DBView extends DBEntity {
 }
 
 class Schema {
-	String name
+	id String name
     contains DBEntity[] entities
 }
 

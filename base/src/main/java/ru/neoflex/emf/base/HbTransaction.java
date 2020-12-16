@@ -5,24 +5,19 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class HbTransaction implements AutoCloseable, Serializable {
     protected final Session session;
-    protected transient String message = "";
-    protected transient String author;
-    protected transient String email;
     private transient boolean readOnly;
     private final transient HbServer hbServer;
     private transient ResourceSet resourceSet;
@@ -31,7 +26,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     public HbTransaction(boolean readOnly, HbServer hbServer) {
         this.readOnly = readOnly;
         this.hbServer = hbServer;
-        session = getDbServer().createSession();
+        session = getHbServer().createSession();
     }
 
     public ResourceSet getResourceSet() {
@@ -46,65 +41,19 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     public HbResource createResource() {
-        return (HbResource) getResourceSet().createResource(getDbServer().createURI());
+        return (HbResource) getResourceSet().createResource(getHbServer().createURI());
     }
 
     public ResourceSet createResourceSet() {
-        ResourceSetImpl result = new ResourceSetImpl();
-        result.setPackageRegistry(getDbServer().getPackageRegistry());
-        result.setURIResourceMap(new HashMap<>());
-        result.getResourceFactoryRegistry()
-                .getProtocolToFactoryMap()
-                .put(hbServer.getScheme(), new ResourceFactoryImpl() {
-                    @Override
-                    public Resource createResource(URI uri) {
-                        return hbServer.createResource(uri);
-                    }
-                });
-        result.getURIConverter()
-                .getURIHandlers()
-                .add(0, new HbHandler(this));
-        return result;
+        return hbServer.createResourceSet(this);
     }
 
-    public HbServer getDbServer() {
+    public HbServer getHbServer() {
         return hbServer;
     }
 
     public boolean isReadOnly() {
         return readOnly;
-    }
-
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-    }
-
-    public String getTenantId() {
-        return getDbServer().getTenantId();
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public void rollback() {
@@ -126,33 +75,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
         return session.get(DBObject.class, id);
     }
 
-    protected Stream<DBObject> findAll() {
-        return session.createQuery(
-                "select o from DBObject o " +
-                        "where o.proxy is null and o.container is null"
-                , DBObject.class).getResultStream();
-    }
-
-    protected Stream<DBObject> findByClass(String classUri) {
-        return session.createQuery("select o from DBObject o where o.classUri = :classUri", DBObject.class)
-                .setParameter("classUri", classUri)
-                .getResultStream();
-    }
-
-    protected Stream<DBObject> findByClassAndFeature(String classUri, String feature, String value) {
-        return session.createQuery("select o from DBObject o join o.attributes a where o.classUri = :classUri and a.feature = :feature and a.value = :value", DBObject.class)
-                .setParameter("classUri", classUri)
-                .setParameter("feature", feature)
-                .setParameter("value", value)
-                .getResultStream();
-    }
-
-    protected Stream<DBObject> findReferencedTo(Long id) {
-        return session.createQuery("select o from DBObject o join o.references r where r.refObject.id = :id", DBObject.class)
-                .setParameter("id", id)
-                .getResultStream();
-    }
-
     protected void deleteRecursive(DBObject dbObject) {
         unlinkRecursive(dbObject);
         session.delete(dbObject);
@@ -163,24 +85,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .map(DBReference::getRefObject).filter(DBObject::isProxy).collect(Collectors.toList());
         if (dbObject.getReferences().size() > 0) {
             dbObject.getReferences().clear();
-//            session.save(dbObject);
         }
         proxies.forEach(session::delete);
         dbObject.getContent().forEach(this::unlinkRecursive);
-    }
-
-    protected void deleteUnlinked(DBObject dbObject) {
-        dbObject.getContent().forEach(this::deleteUnlinked);
-        Set<String> deps = session.createQuery(
-                "select o from DBObject o join o.references r " +
-                        "where r.refObject.id = :refdb_id"
-                , DBObject.class).setParameter("refdb_id", dbObject.getId()).getResultStream()
-                .map(o -> String.valueOf(o.getId())).collect(Collectors.toSet());
-        if (deps.size() > 0) {
-            throw new IllegalArgumentException(String.format(
-                    "Can not delete Resource %d, referenced by [%s]", dbObject.getId(), String.join(", ", deps)));
-        }
-        session.delete(dbObject);
     }
 
     public boolean truncate() {
@@ -275,11 +182,11 @@ public class HbTransaction implements AutoCloseable, Serializable {
             dbObject.setContainer(container);
             dbObject.setFeature(containingFeature);
             dbObject.setIndex(containingIndex);
-        }
-        else {
+        } else {
             Long version = resource.getTimeStamp();
-            if (resource.getTimeStamp() == 0) {
-                throw new IllegalArgumentException(String.format("Version for updated resource %s not defined", resource.getURI().toString()));
+            if (resource.getTimeStamp() <= 0) {
+                throw new IllegalArgumentException(String.format("Version (%d) for updated resource %s not defined or invalid",
+                        resource.getTimeStamp(), resource.getURI().toString()));
             }
             if (version < dbObject.getVersion()) {
                 throw new IllegalArgumentException(String.format(
@@ -296,9 +203,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .collect(Collectors.toList());
 
         Set<DBAttribute> toDeleteA = dbObject.getAttributes().stream().collect(Collectors.toSet());
-        EStructuralFeature qNameSF = getDbServer().getQualifiedNameDelegate().apply(eObject.eClass());
+        EAttribute qNameSF = getHbServer().getQNameSF(eObject.eClass());
         for (AbstractMap.SimpleEntry<EAttribute, List> attr : attrs) {
-            if (attr.getKey() != qNameSF && !getDbServer().getIndexedAttributeDelegate().apply(attr.getKey())) {
+            if (attr.getKey() != qNameSF && !getHbServer().getIndexedAttributeDelegate().apply(attr.getKey())) {
                 continue;
             }
             EDataType eDataType = attr.getKey().getEAttributeType();
@@ -372,14 +279,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     } else {
                         if (dbObject2.getContainer() != null && !Objects.equals(dbObject2.getContainer().getId(), dbObject.getId())) {
                             throw new RuntimeException("Can not change container for EObject id=" + dbObject2.getId() +
-                                    ", old container=" + dbObject2.getContainer().getId()+", new container="+dbObject.getId());
+                                    ", old container=" + dbObject2.getContainer().getId() + ", new container=" + dbObject.getId());
                         }
                         dbObject2.setContainer(dbObject);
                         dbObject2.setFeature(feature);
                         dbObject2.setIndex(index);
                     }
-                }
-                else {
+                } else {
                     dbObject2 = saveEObjectContainment(resource, null, eObject2, dbObject, feature, index);
                 }
             }
@@ -391,14 +297,17 @@ public class HbTransaction implements AutoCloseable, Serializable {
     private URI getProxyURI(DBObject dbObject) {
         DBObject root = getRootContainer(dbObject, null);
 //        DBObject root = dbObject;
-        return getDbServer().createURI(root.getId(), root.getVersion())
+        return getHbServer().createURI(root.getId(), root.getVersion())
                 .appendFragment(String.valueOf(dbObject.getId()));
     }
 
-    private EObject loadEObject(HbResource resource, DBObject dbObject) {
+    private EObject loadEObject(HbResource resource, DBObject dbObject, Map<String, Object> options) {
+        if (options != null && (Boolean) options.getOrDefault(HbHandler.OPTION_GET_ROOT_CONTAINER, Boolean.FALSE)) {
+            dbObject = getRootContainer(dbObject, null);
+        }
         String classUri = dbObject.getClassUri();
         EClass eClass = (EClass) getResourceSet().getEObject(URI.createURI(classUri), false);
-        Objects.requireNonNull(eClass, ()->String.format("Class not found %s", classUri));
+        Objects.requireNonNull(eClass, () -> String.format("Class not found %s", classUri));
         EObject eObject = EcoreUtil.create(eClass);
         if (dbObject.getImage() != null) {
             try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dbObject.getImage()))) {
@@ -448,12 +357,12 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         List<DBObject> content = new ArrayList<>(dbObject.getContent());
         content.sort(Comparator.comparingInt(DBObject::getIndex));
-        for (DBObject containedDBObject: content) {
+        for (DBObject containedDBObject : content) {
             EStructuralFeature sf = eClass.getEStructuralFeature(containedDBObject.getFeature());
             if (sf instanceof EReference) {
                 EReference eReference = (EReference) sf;
                 if (eReference.isContainment()) {
-                    EObject refObject = loadEObject(resource, containedDBObject);
+                    EObject refObject = loadEObject(resource, containedDBObject, null);
                     if (sf.isMany()) {
                         ((List) eObject.eGet(sf)).add(refObject);
                     } else {
@@ -466,28 +375,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
         return eObject;
     }
 
-    protected Resource createResource(ResourceSet rs, DBObject dbObject) {
-        URI uri = getDbServer().createURI(dbObject.getId());
+    protected Resource createResource(ResourceSet rs, DBObject dbObject, Map<String, Object> options) {
+        URI uri = getHbServer().createURI(dbObject.getId());
         HbResource resource = (HbResource) rs.createResource(uri);
-        EObject eObject = loadEObject(resource, dbObject);
+        EObject eObject = loadEObject(resource, dbObject, options);
         resource.getContents().add(eObject);
         resource.setTimeStamp(new Date().getTime());
         return resource;
-    }
-
-    public Stream<Resource> findAll(ResourceSet rs) {
-        return findAll().collect(Collectors.toList()).stream()
-                .map(dbResource -> createResource(rs, dbResource));
-    }
-
-    public List<Resource> findByClass(EClass eClass) {
-        return findByClass(getResourceSet(), eClass).collect(Collectors.toList());
-    }
-
-    public Stream<Resource> findByClass(ResourceSet rs, EClass eClass) {
-        return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClass(EcoreUtil.getURI(eClassDesc).trimQuery().toString()))
-                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource));
     }
 
     public Stream<Resource> queryObjects(String sql) {
@@ -496,24 +390,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
 
     public Stream<Resource> queryObjects(ResourceSet rs, String sql) {
         return session.createQuery(sql, DBObject.class).getResultStream()
-                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource));
-    }
-
-    public Stream<Resource> findByClassAndFeature(EClass eClass, String feature, String value) {
-        ResourceSet rs = getResourceSet();
-        return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClassAndFeature(EcoreUtil.getURI(eClass).trimQuery().toString(), feature, value))
-                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource));
-    }
-
-    public Stream<Resource> findByClassAndQName(ResourceSet rs, EClass eClass, String qName) {
-        EStructuralFeature sf = getDbServer().getQNameSF(eClass);
-        if (sf == null) {
-            return Stream.empty();
-        }
-        return getDbServer().getConcreteDescendants(eClass).stream()
-                .flatMap(eClassDesc -> findByClassAndFeature(EcoreUtil.getURI(eClass).trimQuery().toString(), sf.getName(), qName))
-                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource));
+                .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource, null));
     }
 
     private DBObject getRootContainer(DBObject dbObject, Set<Long> excludes) {
@@ -525,19 +402,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
             dbObject = parent;
         }
         return null;
-    }
-
-    public Stream<Resource> findReferencedTo(Resource resource) {
-        Set<Long> exclude = resource.getContents().stream().map(eObject -> getDbServer().getId(eObject))
-                .filter(Objects::nonNull).collect(Collectors.toSet());
-        Iterable<EObject> iterable = resource::getAllContents;
-        Set<DBObject> topRefs = StreamSupport.stream(iterable.spliterator(), false)
-                .map(eObject -> getDbServer().getId(eObject)).filter(Objects::nonNull)
-                .flatMap(this::findReferencedTo)
-                .collect(Collectors.toList()).stream()
-                .map(dbObject -> getRootContainer(dbObject, exclude)).filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        return topRefs.stream().map(dbObject -> createResource(resource.getResourceSet(), dbObject));
     }
 
     public void save(HbResource resource) {
@@ -553,21 +417,22 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         List<String> sameResources = contents.stream()
                 .flatMap(eObject -> {
-                    EStructuralFeature sf = getDbServer().getQNameSF(eObject.eClass());
-                    String classUri = EcoreUtil.getURI(eObject.eClass()).trimQuery().toString();
+                    EAttribute sf = hbServer.getQNameSF(eObject.eClass());
                     return sf != null ?
-                            findByClassAndFeature(classUri, sf.getName(), eObject.eGet(sf).toString())
-                                    .filter(dbObject -> !dbObject.getId().equals(hbServer.getId(eObject))) :
+                            getHbServer().findBy(resource.getResourceSet(), eObject.eClass(), sf,
+                                    EcoreUtil.convertToString(sf.getEAttributeType(), eObject.eGet(sf)))
+                                    .getContents().stream().map(hbServer::getId)
+                                    .filter(id -> id != null && !id.equals(hbServer.getId(eObject))) :
                             Stream.empty();
                 })
-                .map(dbObject -> String.valueOf(dbObject.getId()))
+                .map(String::valueOf)
                 .collect(Collectors.toList());
         if (sameResources.size() > 0) {
             throw new IllegalArgumentException(String.format(
                     "Duplicate object names in resources (%s)",
                     String.join(", ", sameResources)));
         }
-        Map<Long, EObject> oldECache = new HashMap<>();
+        resource.setTimeStamp(new Date().getTime());
         Map<Long, DBObject> oldDbCache = new HashMap<>();
         HbResource oldResource = (HbResource) getResourceSet().createResource(resource.getURI());
         for (EObject eObject : contents) {
@@ -576,9 +441,8 @@ public class HbTransaction implements AutoCloseable, Serializable {
             if (id != null) {
                 DBObject dbObject = getOrThrow(id);
                 oldDbCache.put(id, dbObject);
-                oldObject = loadEObject(oldResource, dbObject);
+                oldObject = loadEObject(oldResource, dbObject, null);
                 oldResource.getContents().add(oldObject);
-                oldECache.put(id, oldObject);
             }
             hbServer.getEvents().fireBeforeSave(oldObject, eObject);
         }
@@ -590,12 +454,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
         for (EObject eObject : contents) {
             Long id = hbServer.getId(eObject);
             saveEObjectNonContainment(resource, oldDbCache.get(id), eObject);
-            hbServer.getEvents().fireAfterSave(oldECache.get(id), eObject);
+            hbServer.getEvents().fireAfterSave(oldResource.getEObjectByID(String.valueOf(id)), eObject);
         }
         contents.stream()
                 .filter(eObject -> eObject instanceof EPackage)
                 .map(eObject -> (EPackage) eObject)
-                .forEach(ePackage -> getDbServer().getPackageRegistry().put(ePackage.getNsURI(), ePackage));
+                .forEach(ePackage -> getHbServer().getPackageRegistry().put(ePackage.getNsURI(), ePackage));
+        fixResourceURI(resource);
     }
 
     public static String getDiagnosticMessage(Diagnostic diagnostic) {
@@ -606,15 +471,61 @@ public class HbTransaction implements AutoCloseable, Serializable {
         return message.toString();
     }
 
-    public void load(HbResource resource) {
+    public void load(HbResource resource, Map<String, Object> options) {
+        List<Long> ids = resource.getContents().stream().map(hbServer::getId).filter(Objects::nonNull).collect(Collectors.toList());
         resource.unload();
-        Long id = hbServer.getId(resource.getURI());
-        DBObject dbObject = getOrThrow(id);
-        EObject eObject = loadEObject(resource, dbObject);
-        resource.getContents().add(eObject);
-        resource.setURI(getDbServer().createURI(dbObject.getId(), dbObject.getVersion()));
-        hbServer.getEvents().fireAfterLoad(eObject);
         resource.setTimeStamp(new Date().getTime());
+        Long id = hbServer.getId(resource.getURI());
+        if (id != null) {
+            loadById(resource, id, options);
+            fixResourceURI(resource);
+        } else {
+            String query = resource.getURI().query();
+            if (query != null) {
+                for (String s : query.split("[&]")) {
+                    String[] parts = s.split("[=]", 2);
+                    if (parts.length == 2 && parts[0].startsWith("query")) {
+                        String sql = parts[1];
+                        loadByQuery(resource, sql, options);
+                    }
+                }
+            }
+            else {
+                // reload
+                ids.forEach(oid -> {
+                    loadById(resource, id, options);
+                });
+                fixResourceURI(resource);
+            }
+        }
+    }
+
+    private void fixResourceURI(HbResource resource) {
+        if (resource.getContents().size() == 1) {
+            EObject eObject = resource.getContents().get(0);
+            resource.setURI(getHbServer().createURI(getHbServer().getId(eObject), resource.getTimeStamp()));
+        }
+    }
+
+    private void loadById(HbResource resource, Long id, Map<String, Object> options) {
+        DBObject dbObject = getOrThrow(id);
+        EObject eObject = loadEObject(resource, dbObject, options);
+        resource.getContents().add(eObject);
+        hbServer.getEvents().fireAfterLoad(eObject);
+    }
+
+    private void loadByQuery(HbResource resource, String query, Map<String, Object> options) {
+        Query<DBObject> sql = session.createQuery(query, DBObject.class);
+        sql.getParameterMetadata().collectAllParameters().forEach(queryParameter -> {
+            sql.setParameter(queryParameter.getName(), options.get(queryParameter.getName()));
+        });
+        sql.getResultStream()
+                .map(dbObject -> loadEObject(resource, dbObject, options))
+                .filter(HbServer.distinctByKey(this.hbServer::getId))
+                .forEach(eObject -> {
+                    resource.getContents().add(eObject);
+                    hbServer.getEvents().fireAfterLoad(eObject);
+                });
     }
 
     public void delete(URI uri) {
@@ -635,13 +546,13 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         ResourceSet rs = getResourceSet();
         HbResource oldResource = (HbResource) rs.createResource(uri);
-        EObject eObject = loadEObject(oldResource, dbObject);
+        EObject eObject = loadEObject(oldResource, dbObject, null);
         oldResource.getContents().add(eObject);
         hbServer.getEvents().fireBeforeDelete(eObject);
         deleteRecursive(dbObject);
         oldResource.getContents().stream()
                 .filter(o -> o instanceof EPackage)
                 .map(o -> (EPackage) o)
-                .forEach(ePackage -> getDbServer().getPackageRegistry().remove(ePackage.getNsURI()));
+                .forEach(ePackage -> getHbServer().getPackageRegistry().remove(ePackage.getNsURI()));
     }
 }

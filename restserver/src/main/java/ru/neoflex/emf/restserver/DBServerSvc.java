@@ -27,9 +27,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -72,13 +73,9 @@ public class DBServerSvc {
     private Resource saveEPackage(EPackage ePackage) throws Exception {
         Resource result = getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
-            List<Resource> resources = tx.findByClassAndQName(rs, EcorePackage.Literals.EPACKAGE, ePackage.getNsURI())
-                    .collect(Collectors.toList());
-            Resource resource;
-            if (resources.size() == 0) {
-                resource = rs.createResource(getDbServer().createURI());
-            } else {
-                resource = resources.get(0);
+            Resource resource = getDbServer().findBy(rs, EcorePackage.Literals.EPACKAGE, ePackage.getNsURI());
+            if (resource.getContents().size() > 0) {
+                getDbServer().setId(ePackage, getDbServer().getId(resource.getContents().get(0)));
                 resource.unload();
             }
             resource.getContents().add(ePackage);
@@ -161,11 +158,11 @@ public class DBServerSvc {
         try {
             return getDbServer().inTransaction(true, tx -> {
                 ResourceSet rs = tx.getResourceSet();
-                List<EPackage> ePackages = tx.findByClassAndQName(rs, EcorePackage.Literals.EPACKAGE, nsUri)
-                        .flatMap(resource -> resource.getContents().stream())
+                List<EPackage> ePackages = getDbServer().findBy(rs, EcorePackage.Literals.EPACKAGE, nsUri)
+                        .getContents().stream()
                         .map(eObject -> (EPackage) eObject)
                         .collect(Collectors.toList());
-                ePackages.forEach(ePackage -> EcoreUtil.resolveAll(ePackage));
+                ePackages.forEach(EcoreUtil::resolveAll);
                 return ePackages2Ecore(ePackages);
             });
         } catch (Exception e) {
@@ -180,7 +177,7 @@ public class DBServerSvc {
                 if (resource instanceof HbResource) {
                     HbResource hbResource = (HbResource) resource;
                     if (id != null) {
-                        hbResource.getTx().getDbServer().setId(eObject, Long.parseLong(id));
+                        hbResource.getDbServer().setId(eObject, Long.parseLong(id));
                     }
                 }
             }

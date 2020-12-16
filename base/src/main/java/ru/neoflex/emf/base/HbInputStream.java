@@ -11,9 +11,9 @@ import java.util.Map;
 public class HbInputStream extends InputStream implements URIConverter.Loadable {
     private HbTransaction tx;
     private URI uri;
-    private Map<?, ?> options;
+    private Map<String, Object> options;
 
-    public HbInputStream(HbTransaction tx, URI uri, Map<?, ?> options) {
+    public HbInputStream(HbTransaction tx, URI uri, Map<String, Object> options) {
         this.tx = tx;
         this.uri = uri;
         this.options = options;
@@ -26,6 +26,6 @@ public class HbInputStream extends InputStream implements URIConverter.Loadable 
 
     @Override
     public void loadResource(Resource resource) throws IOException {
-        tx.load((HbResource) resource);
+        tx.load((HbResource) resource, options);
     }
 }

@@ -18,8 +18,6 @@ import ru.neoflex.emf.bazi.natalChart.God
 import ru.neoflex.emf.bazi.natalChart.Elements
 import ru.neoflex.emf.bazi.calendar.impl.YearImpl
 import java.util.Arrays
-//import ru.neoflex.nfcore.bazi.natalChart.CalendarPillar
-//import ru.neoflex.nfcore.bazi.natalChart.Zoo
 
 global DBServerSvc dbServerSvc;
 global HbTransaction tx;
