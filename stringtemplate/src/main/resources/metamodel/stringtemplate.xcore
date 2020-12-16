@@ -6,19 +6,40 @@
     rootExtendsInterface="org.eclipse.emf.ecore.EObject"
 )
 package ru.neoflex.emf.stringtemplate
+import java.util.List
 
-abstract class AbstractTemplateElement {
-    String typeName
-    container AbstractTemplateTree parent opposite children
+type ElementList wraps List<TemplateElement>
+
+class TemplateElement {
+    String name
+    container TemplateElement parent opposite children
+    contains TemplateElement[] children opposite parent
+
+    op ElementList all(String name) {
+        children.filter(ch|ch.name == name).toList()
+    }
+
+    op TemplateElement first(String name) {
+        all(name).get(0)
+    }
+
+    op boolean exists(String name) {
+        children.exists(ch|ch.name == name)
+    }
+
+    op String text() {
+        if (children.size() == 0) {""} else {children.get(0).text()}
+    }
 }
 
-abstract class AbstractTemplateTree extends TemplateElement {
-    contains AbstractTemplateElement[] children opposite parent
+class TextElement extends TemplateElement {
+    String body
+
+    op String text() {body}
 }
 
-class TemplateTree extends AbstractTemplateTree {
-}
+class ReferenceElement extends TemplateElement {
+    refers TemplateElement ref
 
-class TemplateElement extends AbstractTemplateElement {
-    String text
+    op String text() {ref.text()}
 }
