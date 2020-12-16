@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.neoflex.emf.bazi.natalChart.*;
 import ru.neoflex.emf.drools.DroolsSvc;
-import ru.neoflex.emf.restserver.JsonHelper;
 import ru.neoflex.emf.restserver.DBServerSvc;
 
 import javax.annotation.PostConstruct;
@@ -42,16 +41,24 @@ public class BaziController {
     void init() {
         dbServerSvc.getDbServer().registerEPackage(NatalChartPackage.eINSTANCE);
         droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<>("dbServerSvc", dbServerSvc));
+
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();
             resources.add(DroolsSvc.createClassPathResource("baseRules.drl", null));
-            try {
-                byte[] bazi = Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "bazi", "rules", "bazi.drl"));
-                resources.add(DroolsSvc.createByteArrayResource("bazi.drl", null, bazi));
-            }
-            catch (IOException e) {
-                throw new IllegalArgumentException(e);
-            }
+
+//            try {
+//                byte[] bazi = Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "bazi", "rules", "bazi.drl"));
+//                resources.add(DroolsSvc.createByteArrayResource("bazi.drl", null, bazi));
+//            }
+//            catch (IOException e) {
+//                throw new IllegalArgumentException(e);
+//            }
+
+//            try {
+//                resources.add(BaZiSvc.createCalendar("\\bazi\\src\\main\\resources\\calendar.xls"));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
             return resources;
         });
         droolsSvc.setDebug(true);

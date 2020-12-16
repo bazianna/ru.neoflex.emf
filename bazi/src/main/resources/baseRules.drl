@@ -18,106 +18,106 @@ import ru.neoflex.emf.bazi.natalChart.God
 import ru.neoflex.emf.bazi.natalChart.Elements
 import ru.neoflex.emf.bazi.calendar.impl.YearImpl
 import java.util.Arrays
-import ru.neoflex.nfcore.bazi.natalChart.CalendarPillar
-import ru.neoflex.nfcore.bazi.natalChart.Zoo
+//import ru.neoflex.nfcore.bazi.natalChart.CalendarPillar
+//import ru.neoflex.nfcore.bazi.natalChart.Zoo
 
 global DBServerSvc dbServerSvc;
 global HbTransaction tx;
 
-function void createCalendarPillars(HbTransaction tx) {
-    List<Elements> elements = Arrays.asList(Elements.values());
-    List<Zoo> zoo = Arrays.asList(Zoo.values());
-
-    Integer skyIndex = 1;
-    Integer zooIndex = 1;
-
-    for(int i = 0; i < 60; i++) {
-        CalendarPillar pillar = NatalChartFactory.eINSTANCE.createCalendarPillar();
-        pillar.setSky(elements.get(skyIndex));
-        skyIndex = skyIndex < 10 ? skyIndex + 1 : 1;
-        pillar.setEarth(zoo.get(zooIndex));
-        zooIndex = zooIndex < 12 ? zooIndex + 1 : 1;
-
-        Resource resource = tx.createResource();
-        resource.getContents().add(pillar);
-        resource.save(null);
-    }
-}
-
-function Calendar createCalendar(HbTransaction tx) {
-    Calendar calendar = CalendarFactory.eINSTANCE.createCalendar();
-
-    List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyIndex = elements.indexOf(Elements.WATER_YIN);
-
-
-    for(int i = 1993; i <= 2021; i++) {
-        Year year = CalendarFactory.eINSTANCE.createYear();
-        year.setName(i);
-        CalendarPillar pillar = NatalChartFactory.eINSTANCE.createCalendarPillar();
-        pillar.setSky(elements.get(skyIndex));
-        skyIndex = skyIndex < 10 ? skyIndex + 1 : 1;
-
-        year.setYear(pillar);
-        calendar.getYear().add(year);
-    }
-
-    Resource resource = tx.createResource();
-    resource.getContents().add(calendar);
-    resource.save(null);
-    return calendar;
-}
-
-function Year createCalendarYear(HbTransaction tx, Calendar calendar, Integer name) {
-    Year year = CalendarFactory.eINSTANCE.createYear();
-    calendar.getYear().add(year);
-    year.setName(name);
-    Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
-    year.setYear(pillar);
-    pillar.setGod(God.DIRECT_OFFICER);
-    pillar.setSky(Elements.EARTH_YANG);
-    Resource resource = tx.createResource();
-    resource.getContents().add(calendar);
-    resource.save(null);
-    return year;
-}
+//function void createCalendarPillars(HbTransaction tx) {
+//    List<Elements> elements = Arrays.asList(Elements.values());
+//    List<Zoo> zoo = Arrays.asList(Zoo.values());
+//
+//    Integer skyIndex = 1;
+//    Integer zooIndex = 1;
+//
+//    for(int i = 0; i < 60; i++) {
+//        CalendarPillar pillar = NatalChartFactory.eINSTANCE.createCalendarPillar();
+//        pillar.setSky(elements.get(skyIndex));
+//        skyIndex = skyIndex < 10 ? skyIndex + 1 : 1;
+//        pillar.setEarth(zoo.get(zooIndex));
+//        zooIndex = zooIndex < 12 ? zooIndex + 1 : 1;
+//
+//        Resource resource = tx.createResource();
+//        resource.getContents().add(pillar);
+//        resource.save(null);
+//    }
+//}
+//
+//function Calendar createCalendar(HbTransaction tx) {
+//    Calendar calendar = CalendarFactory.eINSTANCE.createCalendar();
+//
+//    List<Elements> elements = Arrays.asList(Elements.values());
+//    Integer skyIndex = elements.indexOf(Elements.WATER_YIN);
+//
+//
+//    for(int i = 1993; i <= 2021; i++) {
+//        Year year = CalendarFactory.eINSTANCE.createYear();
+//        year.setName(i);
+//        CalendarPillar pillar = NatalChartFactory.eINSTANCE.createCalendarPillar();
+//        pillar.setSky(elements.get(skyIndex));
+//        skyIndex = skyIndex < 10 ? skyIndex + 1 : 1;
+//
+//        year.setYear(pillar);
+//        calendar.getYear().add(year);
+//    }
+//
+//    Resource resource = tx.createResource();
+//    resource.getContents().add(calendar);
+//    resource.save(null);
+//    return calendar;
+//}
+//
+//function Year createCalendarYear(HbTransaction tx, Calendar calendar, Integer name) {
+//    Year year = CalendarFactory.eINSTANCE.createYear();
+//    calendar.getYear().add(year);
+//    year.setName(name);
+//    Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
+//    year.setYear(pillar);
+//    pillar.setGod(God.DIRECT_OFFICER);
+//    pillar.setSky(Elements.EARTH_YANG);
+//    Resource resource = tx.createResource();
+//    resource.getContents().add(calendar);
+//    resource.save(null);
+//    return year;
+//}
 
 query "EObjects"
     $eObject : NatalChart()
 end
-
-rule "Create Calendar Year"
-when
-    $parameters: Parameters()
-    $calendar: Calendar($year: year)
-    not Year(name == $parameters.year) from $year
-then
-    createCalendarYear(tx, $calendar, $parameters.getYear());
-    update($calendar);
-end;
-
-rule "Create CalendarPillars"
-when
-    not CalendarPillar()
-then
-    createCalendarPillars(tx);
-end;
-
-rule "Create Calendar"
-when
-    not Calendar()
-then
-    Calendar calendar;
-    List<Resource> calendars = tx.findByClass(CalendarPackage.eINSTANCE.getCalendar());
-    if (calendars.size() > 0) {
-        calendar = (Calendar) calendars.get(0).getContents().get(0);
-    }
-    else {
-        calendar = createCalendar(tx);
-    }
-    insert(calendar);
-end;
-
+//
+//rule "Create Calendar Year"
+//when
+//    $parameters: Parameters()
+//    $calendar: Calendar($year: year)
+//    not Year(name == $parameters.year) from $year
+//then
+//    createCalendarYear(tx, $calendar, $parameters.getYear());
+//    update($calendar);
+//end;
+//
+//rule "Create CalendarPillars"
+//when
+//    not CalendarPillar()
+//then
+//    createCalendarPillars(tx);
+//end;
+//
+//rule "Create Calendar"
+//when
+//    not Calendar()
+//then
+//    Calendar calendar;
+//    List<Resource> calendars = tx.findByClass(CalendarPackage.eINSTANCE.getCalendar());
+//    if (calendars.size() > 0) {
+//        calendar = (Calendar) calendars.get(0).getContents().get(0);
+//    }
+//    else {
+//        calendar = createCalendar(tx);
+//    }
+//    insert(calendar);
+//end;
+//
 rule "Create NatalChart"
 when
     $parameters: Parameters()
