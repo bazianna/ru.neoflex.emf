@@ -36,19 +36,13 @@ public class HbHronSupport implements HronSupport {
     public EObject lookupEObject(ResourceSet rs, EClass eClass, String qName) {
         Resource resource = hbServer.findBy(rs, eClass, qName);
         if (resource == null || resource.getContents().size() == 0) {
-            throw new IllegalArgumentException("EObject not found " +
-                    eClass.getEPackage().getNsPrefix() + "." + eClass.getName() + "/" +qName);
+            return null;
         }
         return resource.getContents().get(0);
     }
 
     @Override
     public EClass lookupEClass(ResourceSet rs, String nsPrefix, String name) {
-        EClass eClass = nameToEClassMap.get(nsPrefix + "." + name);
-        if (eClass == null) {
-            throw new IllegalArgumentException("EClass not found " +
-                    nsPrefix + "." + name);
-        }
-        return eClass;
+        return nameToEClassMap.get(nsPrefix + "." + name);
     }
 }

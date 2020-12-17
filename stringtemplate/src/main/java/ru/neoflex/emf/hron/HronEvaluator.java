@@ -18,7 +18,7 @@ public class HronEvaluator extends HronBaseListener {
     Stack<EObject> objectStack = new Stack<>();
     Stack<EStructuralFeature> featureStack = new Stack<>();
     Map<String, EObject> labeledEObjects = new HashMap<>();
-    String nsPrefix;
+    Stack<String> nsPrefixes = new Stack<>();
 
     public Phase getPhase() {
         return phase;
@@ -39,15 +39,33 @@ public class HronEvaluator extends HronBaseListener {
         this.support = support;
     }
 
-    void error(String msg, Token token) {
+    private void error(String msg, Token token) {
         throw new IllegalArgumentException(msg + " [line:" + token.getLine() + ", pos:" + token.getCharPositionInLine() + "]");
+    }
+
+    private EClass getEClass(HronParser.EClassContext eClassCtx) {
+        EClass eClass;
+        if (eClassCtx.ID().size() == 1) {
+            if (nsPrefixes.isEmpty()) {
+                error(String.format("NsPrefix not defined : %s", eClassCtx.getText()), eClassCtx.start);
+            }
+            eClass = support.lookupEClass(resource.getResourceSet(), nsPrefixes.peek(), eClassCtx.ID(0).getText());
+        }
+        else {
+            eClass = support.lookupEClass(resource.getResourceSet(), eClassCtx.ID(0).getText(), eClassCtx.ID(1).getText());
+        }
+        if (eClass == null) {
+            error("EClass not found " + eClassCtx.getText(), eClassCtx.start);
+        }
+
+        return eClass;
     }
 
     @Override
     public void enterEObject(HronParser.EObjectContext ctx) {
+        HronParser.EClassContext eClassCtx = ctx.eClass();
         EObject eObject = eObjects.get(ctx);
         if (eObject == null) {
-            HronParser.EClassContext eClassCtx = ctx.eClass();
             if (objectStack.size() == 0) {
                 if (eClassCtx == null) {
                     error("Class not specified", ctx.start);
@@ -84,20 +102,17 @@ public class HronEvaluator extends HronBaseListener {
             eObjects.put(ctx, eObject);
         }
         objectStack.push(eObject);
-    }
-
-    private EClass getEClass(HronParser.EClassContext eClassCtx) {
-        if (eClassCtx.ID().size() == 1) {
-            if (nsPrefix == null) {
-                error(String.format("NsPrefix not defined : %s", eClassCtx.getText()), eClassCtx.start);
-            }
-            return support.lookupEClass(resource.getResourceSet(), nsPrefix, eClassCtx.ID(0).getText());
+        if (eClassCtx != null && eClassCtx.ID().size() > 1) {
+            nsPrefixes.push(eClassCtx.ID(0).getText());
         }
-        return support.lookupEClass(resource.getResourceSet(), eClassCtx.ID(0).getText(), eClassCtx.ID(1).getText());
     }
 
     @Override
     public void exitEObject(HronParser.EObjectContext ctx) {
+        HronParser.EClassContext eClassCtx = ctx.eClass();
+        if (eClassCtx != null && eClassCtx.ID().size() > 1) {
+            nsPrefixes.pop();
+        }
         objectStack.pop();
     }
 
@@ -122,7 +137,7 @@ public class HronEvaluator extends HronBaseListener {
     public void enterResource(HronParser.ResourceContext ctx) {
         if (phase == Phase.CONTAINMENT) {
             if (ctx.nsPrefix() != null) {
-                nsPrefix = ctx.nsPrefix().getText();
+                nsPrefixes.push(ctx.nsPrefix().getText());
             }
         }
     }
@@ -134,6 +149,7 @@ public class HronEvaluator extends HronBaseListener {
                 EObject eObject = eObjects.get(eObjectContext);
                 resource.getContents().add(eObject);
             });
+            nsPrefixes.pop();
         }
     }
 

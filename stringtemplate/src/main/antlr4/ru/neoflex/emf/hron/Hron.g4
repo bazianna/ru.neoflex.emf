@@ -11,7 +11,7 @@ label: ID ':';
 
 eClass: ID ('.' ID)?;
 
-eFeature: ID '=' (expr|list) (';')?;
+eFeature: ID '=' (expr|list) ';'?;
 
 list: '[' (expr (','? expr)*)? ','? ']';
 

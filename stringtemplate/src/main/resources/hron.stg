@@ -1,0 +1,20 @@
+
+resource(resource) ::= <<[
+    <resource.eObjects:eObject()>
+]>>
+
+eObject(eObject) ::= <<<eObject.eClass> {
+    <eObject.eFeatures:eFeature()>
+}>>
+
+eFeature(eFeature) ::= <<<eFeature.name>=<
+if(eFeature.attribute)><eFeature.attribute:eAttribute()><
+elseif(eFeature.attributes)><eFeature.attributes:eAttributes()><
+endif><\n>
+>>
+
+eAttribute(eAttribute) ::= "\"<eAttribute>\""
+
+eAttributes(eAttributes) ::= <<[
+    <eAttributes:eAttribute; separator="\\n">
+]>>
