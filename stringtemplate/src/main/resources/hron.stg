@@ -1,20 +1,33 @@
 
 resource(resource) ::= <<[
-    <resource.eObjects:eObject()>
+  <resource.eObjects:eObject(); separator="\n">
 ]>>
 
-eObject(eObject) ::= <<<eObject.eClass> {
-    <eObject.eFeatures:eFeature()>
+eObject(eObject) ::= <<<if(eObject.label)><eObject.label>: <endif><eObject.eClass> {
+  <eObject.eFeatures:eFeature(); separator="\n">
 }>>
 
 eFeature(eFeature) ::= <<<eFeature.name>=<
 if(eFeature.attribute)><eFeature.attribute:eAttribute()><
-elseif(eFeature.attributes)><eFeature.attributes:eAttributes()><
-endif><\n>
+elseif(eFeature.attributes)>[
+  <eFeature.attributes:eAttribute(); separator="\n">
+]<
+elseif(eFeature.eObject)><eFeature.eObject:eObject()><
+elseif(eFeature.eObjects)>[
+  <eFeature.eObjects:eObject(); separator="\n">
+]<
+elseif(eFeature.refObject)><eFeature.refObject:refObject()><
+elseif(eFeature.refObjects)>[
+  <eFeature.refObjects:refObject(); separator="\n">
+]<
+endif>
 >>
 
 eAttribute(eAttribute) ::= "\"<eAttribute>\""
 
-eAttributes(eAttributes) ::= <<[
-    <eAttributes:eAttribute; separator="\\n">
-]>>
+refObject(refObject) ::= <<<
+if(refObject.label)>:<refObject.label><
+elseif(refObject.id)>#{<refObject.eClass> "<refObject.id>"<if(refObject.path)> "<refObject.path>"<endif>}<
+else>?<refObject.type; separator=";"><
+endif>
+>>

@@ -162,7 +162,10 @@ public class HronEvaluator extends HronBaseListener {
                 error(String.format("EReference '%s' can't contains attribute", sf.getName()), ctx.start);
             }
             EAttribute eAttribute = (EAttribute) sf;
-            String literal = ctx.STRING().getText().replaceAll("(^\\\"|\\\"$)", "");
+            String literal = ctx.STRING().getText()
+                    .replaceAll("(^\\\"|\\\"$)", "")
+                    .replaceAll("\\\\\"", "\"")
+                    .replaceAll("\\\\\\\\", "\\");
             Object value = EcoreUtil.createFromString(eAttribute.getEAttributeType(), literal);
             if (eAttribute.isMany()) {
                 ((List)eObject.eGet(eAttribute)).add(value);
