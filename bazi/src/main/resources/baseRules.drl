@@ -6,6 +6,7 @@ import ru.neoflex.emf.bazi.natalChart.Parameters
 import ru.neoflex.emf.bazi.calendar.Calendar
 import ru.neoflex.emf.bazi.calendar.CalendarFactory
 import ru.neoflex.emf.bazi.calendar.CalendarPackage
+import ru.neoflex.emf.bazi.calendar.BaZiDate
 import ru.neoflex.emf.restserver.DBServerSvc
 import ru.neoflex.emf.base.HbTransaction
 import java.util.stream.Collectors
@@ -18,6 +19,10 @@ import ru.neoflex.emf.bazi.natalChart.God
 import ru.neoflex.emf.bazi.natalChart.Elements
 import ru.neoflex.emf.bazi.calendar.impl.YearImpl
 import java.util.Arrays
+import ru.neoflex.emf.bazi.calendar.Month
+import ru.neoflex.emf.bazi.calendar.Months
+import ru.neoflex.emf.bazi.calendar.Day
+import ru.neoflex.emf.bazi.calendar.Hour
 
 global DBServerSvc dbServerSvc;
 global HbTransaction tx;
@@ -116,13 +121,45 @@ end
 //    insert(calendar);
 //end;
 //
+
+function BaZiDate createBaZiDate(HbTransaction tx, Parameters parameters) {
+    BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
+    Year year = CalendarFactory.eINSTANCE.createYear();
+    year.setName(2020);
+    baZiDate.setYear(year);
+
+    Month month = CalendarFactory.eINSTANCE.createMonth();
+    month.setName(Months.NOVEMBER);
+    baZiDate.setMonth(month);
+
+    Day day = CalendarFactory.eINSTANCE.createDay();
+    day.setName(5);
+    baZiDate.setDay(day);
+
+    Hour hour = CalendarFactory.eINSTANCE.createHour();
+    day.setName(5);
+    baZiDate.setHour(hour);
+    return baZiDate;
+}
+
 rule "Create NatalChart"
 when
+    $baZiDate: BaZiDate()
     $parameters: Parameters()
     not NatalChart(parameters == $parameters)
 then
     NatalChart natalChart = NatalChartFactory.eINSTANCE.createNatalChart();
     natalChart.setParameters($parameters);
+
     insert(natalChart);
+end;
+
+rule "Create BaZiDate"
+when
+    $parameters: Parameters()
+    not BaZiDate()
+then
+    BaZiDate baZiDate = createBaZiDate(tx, $parameters);
+    insert(baZiDate);
 end;
 

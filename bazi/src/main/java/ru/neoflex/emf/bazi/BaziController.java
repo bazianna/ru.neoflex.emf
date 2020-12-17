@@ -51,11 +51,11 @@ public class BaziController {
 //            }
 
 
-            try {
-                BaZiSvc.createCalendar("\\bazi\\src\\main\\resources\\calendar.xls", dbServerSvc);
-            } catch (Exception e) {
-                throw new IllegalArgumentException(e);
-            }
+//            try {
+//                BaZiSvc.createCalendar("\\bazi\\src\\main\\resources\\calendar.xls", dbServerSvc);
+//            } catch (Exception e) {
+//                throw new IllegalArgumentException(e);
+//            }
 
             return resources;
         });
