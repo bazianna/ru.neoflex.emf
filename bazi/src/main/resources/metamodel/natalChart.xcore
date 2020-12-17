@@ -52,14 +52,18 @@ class NatalChart {
     contains BabyTact[] babyTact
 }
 
-@BaZi(documentation="Столп в карте. Применяется к дате рождения(час, день, месяц, год), к тактам, и к обычному календарю")
-class Pillar {
-    God god
+@BaZi(documentation="Столп во встроенном календаре. Всего 60. Создаются при старте приложения")
+class CalendarPillar {
     Elements sky
-    Elements earth
+    Zoo earth
+    contains HiddenPillar[] hiddenPillar
+}
+
+@BaZi(documentation="Столп в карте. Применяется к дате рождения(час, день, месяц, год), к тактам, и к обычному календарю")
+class Pillar extends CalendarPillar {
+    God god
     QiPhase qiPhaseFirstDegree
     QiPhase qiPhaseSecondDegree
-    contains HiddenPillar[] hiddenPillar
     refers Spirit[] Spirit
 }
 
@@ -97,7 +101,7 @@ enum God {
     DirectResource
 }
 
-@BaZi(documentation="Элементы в карте Ба Цзы. Всего 10. Из них состоит вся карта")
+@BaZi(documentation="Небесные стволы в карте Ба Цзы. Всего 10. Из них состоит вся карта")
 enum Elements {
     _UNDEFINED_
     TreeYang
@@ -110,6 +114,23 @@ enum Elements {
     MetalYin
     WaterYang
     WaterYin
+}
+
+@BaZi(documentation="Земные ветви в карте Ба Цзы. Всего 12")
+enum Zoo {
+    _UNDEFINED_
+    Rat
+    Beef
+    Tiger
+    Rabbit
+    Dragon
+    Snake
+    Horse
+    Goat
+    Monkey
+    Chicken
+    Dog
+    Pig
 }
 
 @BaZi(documentation="Фаза Ци. У каждого столпа есть фаза ци 1-ой и 2-ой степени")
