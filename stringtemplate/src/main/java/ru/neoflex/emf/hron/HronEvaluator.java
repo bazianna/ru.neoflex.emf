@@ -149,7 +149,9 @@ public class HronEvaluator extends HronBaseListener {
                 EObject eObject = eObjects.get(eObjectContext);
                 resource.getContents().add(eObject);
             });
-            nsPrefixes.pop();
+            if (ctx.nsPrefix() != null) {
+                nsPrefixes.pop();
+            }
         }
     }
 

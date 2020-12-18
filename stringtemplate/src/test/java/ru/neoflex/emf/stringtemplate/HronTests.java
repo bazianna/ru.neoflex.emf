@@ -135,17 +135,14 @@ public class HronTests {
                     EAttribute eAttribute = (EAttribute) sf;
                     EDataType eDataType = eAttribute.getEAttributeType();
                     if (!sf.isMany()) {
-                        String attribute = EcoreUtil.convertToString(eDataType, eObject.eGet(sf))
-                                .replaceAll("\"", "\\\"")
-                                .replaceAll("\\\\", "\\\\");
+                        Object value = eObject.eGet(sf);
+                        String attribute = getAttributeString(eDataType, value);
                         eFeature.put("attribute", attribute);
                     } else {
                         List<String> attributes = new ArrayList<>();
                         eFeature.put("attributes", attributes);
                         for (Object attributeObj : (List) eObject.eGet(sf)) {
-                            String attribute = EcoreUtil.convertToString(eDataType, attributeObj)
-                                    .replaceAll("\"", "\\\"")
-                                    .replaceAll("\\\\", "\\\\");
+                            String attribute = getAttributeString(eDataType, attributeObj);
                             attributes.add(attribute);
                         }
                     }
@@ -157,9 +154,9 @@ public class HronTests {
                     if (!sf.isMany()) {
                         EObject refObject = (EObject) eObject.eGet(sf);
                         if (eReference.isContainment()) {
-                            eFeature.put("eObject", eObjectToMap(refObject));
+                            eFeature.put("eObject", Collections.singletonList(eObjectToMap(refObject)));
                         } else {
-                            eFeature.put("refObject", refObjectToMap(eObject, refObject));
+                            eFeature.put("refObject", Collections.singletonList(refObjectToMap(eObject, refObject)));
                         }
                     } else {
                         List<EObject> refObjects = (List<EObject>) eObject.eGet(sf);
@@ -174,5 +171,11 @@ public class HronTests {
             }
         }
         return eObjectMap;
+    }
+
+    private String getAttributeString(EDataType eDataType, Object value) {
+        return EcoreUtil.convertToString(eDataType, value)
+                .replaceAll("\"", "\\\"")
+                .replaceAll("\\\\", "\\\\");
     }
 }

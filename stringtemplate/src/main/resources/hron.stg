@@ -7,7 +7,7 @@ eObject(eObject) ::= <<<if(eObject.label)><eObject.label>: <endif><eObject.eClas
   <eObject.eFeatures:eFeature(); separator="\n">
 }>>
 
-eFeature(eFeature) ::= <<<eFeature.name>=<
+eFeature(eFeature) ::= <<<eFeature.name> = <
 if(eFeature.attribute)><eFeature.attribute:eAttribute()><
 elseif(eFeature.attributes)>[
   <eFeature.attributes:eAttribute(); separator="\n">

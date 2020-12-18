@@ -48,6 +48,9 @@ public class StringTemplateController {
         ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(evaluator, tree);
         resource.save(null);
+        evaluator.setPhase(HronEvaluator.Phase.NONCONTAINMENT);
+        walker.walk(evaluator, tree);
+        resource.save(null);
         return DBServerSvc.createJsonHelper().toJson(resource);
     }
 }
