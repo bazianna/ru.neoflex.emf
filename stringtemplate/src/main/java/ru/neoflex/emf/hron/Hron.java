@@ -1,0 +1,188 @@
+package ru.neoflex.emf.hron;
+
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.eclipse.emf.ecore.*;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.STGroupFile;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+
+public class Hron {
+
+    public static String export(Resource resource) {
+        return new Exporter().exportResource(resource);
+    }
+
+    private static class ParseErrorListener extends BaseErrorListener {
+        @Override
+        public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
+            throw new RuntimeException(String.format("[%s %d, %d]", msg, line, charPositionInLine));
+        }
+    }
+
+    public static void parse(Resource resource, String from, HronSupport support, boolean saveContainment) throws IOException {
+        Importer importer = new Importer(resource, from, support);
+        importer.parseContainment();
+        if (saveContainment) {
+            resource.save(null);
+        }
+        importer.parseNonContainment();
+    }
+
+    public static class Importer {
+        ParseTree tree;
+        HronEvaluator evaluator;
+
+        public Importer(Resource resource, String from, HronSupport support) {
+            CharStream input = CharStreams.fromString(from);
+            HronLexer lexer = new HronLexer(input);
+            ((List<ANTLRErrorListener>) lexer.getErrorListeners()).add(new ParseErrorListener());
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            HronParser parser = new HronParser(tokens);
+            ((List<ANTLRErrorListener>) parser.getErrorListeners()).add(new ParseErrorListener());
+            tree = parser.resource();
+            evaluator = new HronEvaluator(resource, support);
+        }
+
+        public void parseContainment() {
+            ParseTreeWalker walker = new ParseTreeWalker();
+            evaluator.setPhase(HronEvaluator.Phase.CONTAINMENT);
+            walker.walk(evaluator, tree);
+        }
+
+        public void parseNonContainment() {
+            ParseTreeWalker walker = new ParseTreeWalker();
+            evaluator.setPhase(HronEvaluator.Phase.NONCONTAINMENT);
+            walker.walk(evaluator, tree);
+        }
+    }
+
+    private static class Exporter {
+        private final Map<EObject, Map<String, Object>> eObjectToMapMap = new IdentityHashMap<>();
+
+        private String exportResource(Resource resource) {
+            URL patternURL = this.getClass().getClassLoader().getResource("hron.stg");
+            Objects.requireNonNull(patternURL, "hron.stg not found");
+            STGroup hronStg = new STGroupFile(patternURL);
+            ST hronSt = hronStg.getInstanceOf("resource");
+            Map<String, Object> resourceMap = resourceToMap(resource);
+            hronSt.add("resource", resourceMap);
+            return hronSt.render();
+        }
+
+        Map<String, Object> resourceToMap(Resource resource) {
+            Map<String, Object> resourceElement = new HashMap<>();
+            List<EObject> eObjects = resource.getContents();
+            List<Map<String, Object>> eObjectList = eObjectsToList(eObjects);
+            resourceElement.put("eObjects", eObjectList);
+            return resourceElement;
+        }
+
+        private List<Map<String, Object>> eObjectsToList(List<EObject> eObjects) {
+            List<Map<String, Object>> eObjectList = new ArrayList<>();
+            for (EObject eObject : eObjects) {
+                Map<String, Object> eObjectElement = eObjectToMap(eObject);
+                eObjectList.add(eObjectElement);
+            }
+            return eObjectList;
+        }
+
+        private Map<String, Object> refObjectToMap(EObject eObject, EObject refObject) {
+            Map<String, Object> result = new HashMap<>();
+            if (EcoreUtil.isAncestor(eObject.eResource(), refObject)) {
+                Map<String, Object> refObjectMap = eObjectToMapMap.computeIfAbsent(refObject, k -> new HashMap<>());
+                String label = eObject.eResource().getURIFragment(refObject).replaceAll("[^_0-9a-zA-Z]", "_");
+                refObjectMap.put("label", label);
+                result.put("label", label);
+            } else {
+                EObject rootObject = EcoreUtil.getRootContainer(refObject);
+                EClass eClass = rootObject.eClass();
+                String nsPrefix = eClass.getEPackage().getNsPrefix();
+                String className = nsPrefix + "." + eClass.getName();
+                result.put("eClass", className);
+                String id = EcoreUtil.getID(rootObject);
+                result.put("id", id);
+                if (rootObject != eObject) {
+                    result.put("path", EcoreUtil.getRelativeURIFragmentPath(rootObject, refObject));
+                }
+            }
+            return result;
+        }
+
+        private List<Map<String, Object>> refObjectsToList(EObject eObject, List<EObject> refObjects) {
+            List<Map<String, Object>> eObjectList = new ArrayList<>();
+            for (EObject refObject : refObjects) {
+                Map<String, Object> refObjectMap = refObjectToMap(eObject, refObject);
+                eObjectList.add(refObjectMap);
+            }
+            return eObjectList;
+        }
+
+        private Map<String, Object> eObjectToMap(EObject eObject) {
+            Map<String, Object> eObjectMap = eObjectToMapMap.computeIfAbsent(eObject, k -> new HashMap<>());
+            EClass eClass = eObject.eClass();
+            String nsPrefix = eClass.getEPackage().getNsPrefix();
+            String className = nsPrefix + "." + eClass.getName();
+            eObjectMap.put("eClass", className);
+            List<Map<String, Object>> eFeatures = new ArrayList<>();
+            eObjectMap.put("eFeatures", eFeatures);
+            for (EStructuralFeature sf : eClass.getEAllStructuralFeatures()) {
+                if (!sf.isTransient() && !sf.isDerived() && eObject.eIsSet(sf)) {
+                    Map<String, Object> eFeature = new HashMap<>();
+                    eFeature.put("name", sf.getName());
+                    if (sf instanceof EAttribute) {
+                        EAttribute eAttribute = (EAttribute) sf;
+                        EDataType eDataType = eAttribute.getEAttributeType();
+                        if (!sf.isMany()) {
+                            Object value = eObject.eGet(sf);
+                            String attribute = getAttributeString(eDataType, value);
+                            eFeature.put("attribute", attribute);
+                        } else {
+                            List<String> attributes = new ArrayList<>();
+                            eFeature.put("attributes", attributes);
+                            for (Object attributeObj : (List) eObject.eGet(sf)) {
+                                String attribute = getAttributeString(eDataType, attributeObj);
+                                attributes.add(attribute);
+                            }
+                        }
+                    } else {
+                        EReference eReference = (EReference) sf;
+                        if (eReference.isContainer()) {
+                            continue;
+                        }
+                        if (!sf.isMany()) {
+                            EObject refObject = (EObject) eObject.eGet(sf);
+                            if (eReference.isContainment()) {
+                                eFeature.put("eObject", Collections.singletonList(eObjectToMap(refObject)));
+                            } else {
+                                eFeature.put("refObject", Collections.singletonList(refObjectToMap(eObject, refObject)));
+                            }
+                        } else {
+                            List<EObject> refObjects = (List<EObject>) eObject.eGet(sf);
+                            if (eReference.isContainment()) {
+                                eFeature.put("eObjects", eObjectsToList(refObjects));
+                            } else {
+                                eFeature.put("refObjects", refObjectsToList(eObject, refObjects));
+                            }
+                        }
+                    }
+                    eFeatures.add(eFeature);
+                }
+            }
+            return eObjectMap;
+        }
+
+        private String getAttributeString(EDataType eDataType, Object value) {
+            return EcoreUtil.convertToString(eDataType, value)
+                    .replaceAll("\"", "\\\"")
+                    .replaceAll("\\\\", "\\\\");
+        }
+    }
+}
