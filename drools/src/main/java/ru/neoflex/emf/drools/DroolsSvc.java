@@ -122,8 +122,8 @@ public class DroolsSvc {
         return setResourceType(path, resourceType, resource);
     }
 
-    public static Resource createDecisionTableResource(String path, InputStream is, DecisionTableInputType tableInputType) {
-        Resource resource = getKieResources().newInputStreamResource(is);
+    public static Resource createDecisionTableResource(String path, DecisionTableInputType tableInputType) {
+        Resource resource = getKieResources().newClassPathResource(path);
         resource.setResourceType(ResourceType.DTABLE);
         DecisionTableConfiguration resourceConfiguration = KnowledgeBuilderFactory.newDecisionTableConfiguration();
         resourceConfiguration.setInputType(tableInputType);

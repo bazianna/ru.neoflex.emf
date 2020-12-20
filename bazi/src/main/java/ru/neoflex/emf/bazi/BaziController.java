@@ -7,6 +7,7 @@ import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
+import org.kie.internal.builder.DecisionTableInputType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +41,7 @@ public class BaziController {
         droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<>("dbServerSvc", dbServerSvc));
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();
-//            resources.add(DroolsSvc.createClassPathResource("calendar.xls", null));
+            resources.add(DroolsSvc.createDecisionTableResource("calendar.xls", DecisionTableInputType.XLS));
             resources.add(DroolsSvc.createClassPathResource("baseRules.drl", null));
 
 //            try {
