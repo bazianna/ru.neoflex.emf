@@ -13,7 +13,6 @@ import java.util.Stack;
 
 public class HronEvaluator extends HronBaseListener {
     Resource resource;
-    HronSupport support;
     ParseTreeProperty<EObject> eObjects = new ParseTreeProperty<>();
     Stack<EObject> objectStack = new Stack<>();
     Stack<EStructuralFeature> featureStack = new Stack<>();
@@ -34,9 +33,8 @@ public class HronEvaluator extends HronBaseListener {
     }
     private Phase phase = Phase.CONTAINMENT;
 
-    public HronEvaluator(Resource resource, HronSupport support) {
+    public HronEvaluator(Resource resource) {
         this.resource = resource;
-        this.support = support;
     }
 
     private void error(String msg, Token token) {
@@ -44,15 +42,16 @@ public class HronEvaluator extends HronBaseListener {
     }
 
     private EClass getEClass(HronParser.EClassContext eClassCtx) {
+        HronResourceSet rs = (HronResourceSet) resource.getResourceSet();
         EClass eClass;
         if (eClassCtx.ID().size() == 1) {
             if (nsPrefixes.isEmpty()) {
                 error(String.format("NsPrefix not defined : %s", eClassCtx.getText()), eClassCtx.start);
             }
-            eClass = support.lookupEClass(resource.getResourceSet(), nsPrefixes.peek(), eClassCtx.ID(0).getText());
+            eClass = rs.lookupEClass(nsPrefixes.peek(), eClassCtx.ID(0).getText());
         }
         else {
-            eClass = support.lookupEClass(resource.getResourceSet(), eClassCtx.ID(0).getText(), eClassCtx.ID(1).getText());
+            eClass = rs.lookupEClass(eClassCtx.ID(0).getText(), eClassCtx.ID(1).getText());
         }
         if (eClass == null) {
             error("EClass not found " + eClassCtx.getText(), eClassCtx.start);
@@ -212,7 +211,8 @@ public class HronEvaluator extends HronBaseListener {
             EReference eReference = (EReference) sf;
             EClass eClass = getEClass(ctx.eClass());
             String name = ctx.STRING().getText().replaceAll("(^\\\"|\\\"$)", "");
-            EObject refObject = support.lookupEObject(resource.getResourceSet(), eClass, name);
+            HronResourceSet rs = (HronResourceSet) resource.getResourceSet();
+            EObject refObject = rs.lookupEObject(eClass, name);
             if (refObject == null) {
                 error(String.format("EObject for reference to '%s' not found", name), ctx.start);
             }
