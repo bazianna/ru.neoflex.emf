@@ -36,6 +36,11 @@
             <artifactId>poi</artifactId>
             <version>4.1.2</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.kie</groupId>-->
+<!--            <artifactId>kie-ci</artifactId>-->
+<!--            <version>7.47.0.Final</version>-->
+<!--        </dependency>-->
 
     </dependencies>
 
