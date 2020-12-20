@@ -7,13 +7,20 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class HronResourceSet extends ResourceSetImpl {
     protected Map<String, EClass> nameToEClassMap = new HashMap<>();
@@ -84,6 +91,46 @@ public class HronResourceSet extends ResourceSetImpl {
             }
         }
     }
+
+    public void parseJar(Path zipFile) {
+        Map<String, Object> env = new HashMap<>();
+        env.put("useTempFile", Boolean.TRUE);
+        java.net.URI uri = java.net.URI.create("jar:" + zipFile.toUri());
+        try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env);) {
+            for (Path root: fileSystem.getRootDirectories()) {
+                parseDir(root);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int parseZip(InputStream inputStream) throws Exception {
+        int entityCount = 0;
+        try (ZipInputStream zipInputStream = new ZipInputStream(inputStream);) {
+            ZipEntry zipEntry = zipInputStream.getNextEntry();
+            while (zipEntry != null) {
+                if (!zipEntry.isDirectory()) {
+                    String entryName = zipEntry.getName();
+                    if (entryName.toLowerCase().endsWith(".hron")) {
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                        byte[] buffer = new byte[4096];
+                        int length;
+                        while ((length = zipInputStream.read(buffer)) > 0) {
+                            outputStream.write(buffer, 0, length);
+                        }
+                        ByteArrayInputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+                        Resource resource = createResource(URI.createURI(entryName));
+                        resource.load(is, null);
+                    }
+                }
+                zipEntry = zipInputStream.getNextEntry();
+            }
+        }
+        resolveAllReferences();
+        return entityCount;
+    }
+
     public void parseDir(Path dir) {
         try {
             Stream<Path> paths = Files.walk(dir).filter(path -> Files.isRegularFile(path) && path.endsWith(".hron"));
