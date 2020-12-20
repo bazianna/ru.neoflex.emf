@@ -190,6 +190,12 @@
                 <artifactId>drools-mvel</artifactId>
                 <version>${drools.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.drools</groupId>
+                <artifactId>drools-decisiontables</artifactId>
+                <version>7.47.0.Final</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

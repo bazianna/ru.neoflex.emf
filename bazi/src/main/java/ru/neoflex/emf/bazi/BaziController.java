@@ -40,6 +40,7 @@ public class BaziController {
         droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<>("dbServerSvc", dbServerSvc));
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();
+//            resources.add(DroolsSvc.createClassPathResource("calendar.xls", null));
             resources.add(DroolsSvc.createClassPathResource("baseRules.drl", null));
 
 //            try {

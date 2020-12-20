@@ -124,21 +124,10 @@ end
 
 function BaZiDate createBaZiDate(HbTransaction tx, Parameters parameters) {
     BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
-    Year year = CalendarFactory.eINSTANCE.createYear();
-    year.setName(2020);
-    baZiDate.setYear(year);
+    baZiDate.setGregorianYear("1111");
+    baZiDate.setGregorianMonth("1");
+    baZiDate.setDay("1");
 
-    Month month = CalendarFactory.eINSTANCE.createMonth();
-    month.setName(Months.NOVEMBER);
-    baZiDate.setMonth(month);
-
-    Day day = CalendarFactory.eINSTANCE.createDay();
-    day.setName(5);
-    baZiDate.setDay(day);
-
-    Hour hour = CalendarFactory.eINSTANCE.createHour();
-    day.setName(5);
-    baZiDate.setHour(hour);
     return baZiDate;
 }
 

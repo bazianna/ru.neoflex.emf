@@ -8,7 +8,6 @@
 package ru.neoflex.emf.bazi.calendar
 
 import ru.neoflex.emf.bazi.natalChart.CalendarPillar
-import ru.neoflex.emf.bazi.natalChart.Parameters
 
 annotation "ru.neoflex.emf.bazi" as BaZi
 
@@ -27,23 +26,23 @@ class Year {
 @BaZi(documentation="Месяц начинается не с 1 числа. Тигр 4,5/02-5,6/03. Кролик5,6/03-4,5/04. Дракон 4,5/04-5,6/05. Змея 5,6/05-5,6/06. Лошадь 5,6/06-7,8/07. Коза 7,8/07-7,8/08. Обезьяна 7,8/08-7,8/09. Петух 7,8/09-8,9/10. Собака 8,9/10-8,9/11. Свинья 8,9/11-7,8/12. Крыса 7,8/12-5,6/01. Бык 5,6/01-4,5/02")
 class Month {
     Months name
-    refers Year GrigorianYear
-    refers Year ChaneesYear
+    refers Year gregorianYear
+    refers Year chineseYear
     refers CalendarPillar month
 }
 
 class Day {
     Integer name
-    refers Month GrigorianMonth
-    refers Month ChaneesMonth
+    refers Month gregorianMonth
+    refers Month chineseMonth
     refers CalendarPillar day
     contains Hour[] hours
 }
 
 @BaZi(documentation="Час рассчитывается отдельно. Крыса 23:00–01:00. Бык 01:00–03:00. Тигр 03:00–05:00. Кролик 05:00–07:00. Дракон 07:00–09:00. Змея 09:00–11:00. Лошадь 11:00–13:00. Коза 13:00–15:00. Обезьяна 15:00–17:00. Петух 17:00–19:00. Собака 19:00–21:00. Свинья 21:00–23:00")
 class Hour {
-    refers Day GrigorianDay
-    refers Day ChaneesDay
+    refers Day gregorianDay
+    refers Day chineseDay
     Date timeFrom
     Date timeTo
     refers CalendarPillar day
@@ -51,11 +50,11 @@ class Hour {
 
 @BaZi(documentation="Объект для отработки Drools и создания NatalChart")
 class BaZiDate {
-    refers Parameters inputParams
-    refers Year year
-    refers Month month
-    refers Day day
-    refers Hour hour
+    String gregorianYear
+    String chineseYear
+    String gregorianMonth
+    String chineseMonth
+    String day
 }
 
 enum Months {
