@@ -38,6 +38,8 @@
         <org.eclipse.text.version>3.5.101</org.eclipse.text.version>
         <org.eclipse.core.resources.version>3.7.100</org.eclipse.core.resources.version>
         <commons-lang3.version>3.10</commons-lang3.version>
+        <antlr4-maven-plugin.version>4.3</antlr4-maven-plugin.version>
+        <antlr4.version>4.9</antlr4.version>
     </properties>
 
     <parent>
@@ -189,6 +191,12 @@
                 <groupId>org.drools</groupId>
                 <artifactId>drools-mvel</artifactId>
                 <version>${drools.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4</artifactId>
+                <version>${antlr4.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -468,6 +476,33 @@
                         </filesets>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr4-maven-plugin</artifactId>
+                    <version>${antlr4-maven-plugin.version}</version>
+                    <configuration>
+                        <options>
+                            <contextSuperClass>org.antlr.v4.runtime.RuleContextWithAltNum</contextSuperClass>
+                        </options>
+                        <listener>true</listener>
+                        <visitor>false</visitor>
+                        <outputDirectory>src/main/java-gen</outputDirectory>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>antlr4</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.antlr</groupId>
+                            <artifactId>antlr4</artifactId>
+                            <version>${antlr4.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -480,6 +515,7 @@
         <module>drools</module>
         <module>schema</module>
         <module>stringtemplate</module>
+        <module>hron</module>
     </modules>
 
 </project>

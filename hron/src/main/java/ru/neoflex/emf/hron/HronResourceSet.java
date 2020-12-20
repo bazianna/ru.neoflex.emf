@@ -7,10 +7,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -19,8 +16,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class HronResourceSet extends ResourceSetImpl {
     protected Map<String, EClass> nameToEClassMap = new HashMap<>();
@@ -97,16 +96,23 @@ public class HronResourceSet extends ResourceSetImpl {
         env.put("useTempFile", Boolean.TRUE);
         java.net.URI uri = java.net.URI.create("jar:" + zipFile.toUri());
         try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env);) {
-            for (Path root: fileSystem.getRootDirectories()) {
-                parseDir(root);
-            }
+            Stream<Path> paths = StreamSupport.stream(fileSystem.getRootDirectories().spliterator(), false)
+                    .flatMap(path -> {
+                        try {
+                            return Files.walk(path)
+                                    .filter(p -> Files.isRegularFile(p) &&
+                                            p.endsWith(".hron"));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+            parsePaths(paths);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public int parseZip(InputStream inputStream) throws Exception {
-        int entityCount = 0;
+    public void parseZip(InputStream inputStream) {
         try (ZipInputStream zipInputStream = new ZipInputStream(inputStream);) {
             ZipEntry zipEntry = zipInputStream.getNextEntry();
             while (zipEntry != null) {
@@ -126,9 +132,10 @@ public class HronResourceSet extends ResourceSetImpl {
                 }
                 zipEntry = zipInputStream.getNextEntry();
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         resolveAllReferences();
-        return entityCount;
     }
 
     public void parseDir(Path dir) {
@@ -144,13 +151,74 @@ public class HronResourceSet extends ResourceSetImpl {
         paths.forEach(path -> {
             try {
                 URI uri = URI.createURI(path.toUri().toString());
-                HronResource resource = (HronResource) createResource(uri);
+                Resource resource = createResource(uri);
                 resource.load(null);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
         resolveAllReferences();
+    }
+
+    public void parseZipFile(Path zipFile) {
+        try {
+            try (InputStream is = Files.newInputStream(zipFile)) {
+                parseZip(is);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public void exportDir(Path dir) {
+        try {
+            Files.createDirectories(dir);
+            for (Resource resource: getResources()) {
+                if (resource.getContents().size() == 0) continue;
+                String fileName = getFileName(resource);
+                Path path = dir.resolve(fileName);
+                URI uri = URI.createURI(path.toUri().toString());
+                resource.setURI(uri);
+                resource.save(null);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void exportZip(OutputStream os) {
+        try (ZipOutputStream zos = new ZipOutputStream(os);) {
+            for (Resource resource : getResources()) {
+                if (resource.getContents().size() == 0) continue;
+                String fileName = getFileName(resource);
+                ZipEntry zipEntry = new ZipEntry(fileName);
+                zos.putNextEntry(zipEntry);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                resource.save(bos, null);
+                zos.write(bos.toByteArray());
+                zos.closeEntry();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void exportZipFile(Path zipFile) throws IOException {
+        Files.createDirectories(zipFile.getParent());
+        try (OutputStream os = Files.newOutputStream(zipFile)) {
+            exportZip(os);
+        }
+    }
+
+    private static String getFileName(Resource resource) {
+        EObject eObject = resource.getContents().get(0);
+        EClass eClass = eObject.eClass();
+        String name = EcoreUtil.getID(eObject);
+        return String.format("%s_%s%s.hron",
+                eClass.getEPackage().getNsPrefix(),
+                eClass.getName(),
+                name != null ? "_" + name : EcoreUtil.generateUUID());
     }
 
     public static Map<String, EClass> createNameToEClassMap(EPackage.Registry registry) {
@@ -170,5 +238,4 @@ public class HronResourceSet extends ResourceSetImpl {
         }
         return nameToEClassMap;
     }
-
 }

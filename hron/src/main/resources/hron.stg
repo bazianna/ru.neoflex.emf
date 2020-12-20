@@ -28,6 +28,5 @@ eAttribute(eAttribute) ::= "\"<eAttribute>\""
 refObject(refObject) ::= <<<
 if(refObject.label)>:<refObject.label><
 elseif(refObject.id)>#{<refObject.eClass> "<refObject.id>"<if(refObject.path)> "<refObject.path>"<endif>}<
-else>?<refObject.type; separator=";"><
 endif>
 >>
