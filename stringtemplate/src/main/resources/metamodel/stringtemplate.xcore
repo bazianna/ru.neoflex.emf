@@ -10,6 +10,11 @@ import java.util.List
 
 type ElementList wraps List<Element>
 
+class Module {
+    id String name
+    contains Element root
+}
+
 class Element {
     String ^type
     container Element parent opposite children
