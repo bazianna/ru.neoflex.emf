@@ -191,7 +191,7 @@ public class EMFController {
         });
     }
 
-    @PostMapping(value = "/resource", consumes = {"text/plain"})
+    @PostMapping(value = "/hron", consumes = {"text/plain"})
     JsonNode postHron(@RequestBody byte[] body) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
