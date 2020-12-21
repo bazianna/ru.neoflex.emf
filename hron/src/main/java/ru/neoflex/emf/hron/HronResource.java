@@ -95,6 +95,9 @@ public class HronResource extends ResourceImpl {
             result.put("eClass", className);
             String id = EcoreUtil.getID(rootObject);
             result.put("id", id);
+            if (id == null) {
+                throw new IllegalArgumentException(String.format("Id value for %s not found or not set", className));
+            }
             if (rootObject != eObject) {
                 result.put("path", EcoreUtil.getRelativeURIFragmentPath(rootObject, refObject));
             }

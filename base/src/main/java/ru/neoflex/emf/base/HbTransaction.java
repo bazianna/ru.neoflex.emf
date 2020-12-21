@@ -478,7 +478,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
         Long id = hbServer.getId(resource.getURI());
         if (id != null) {
             loadById(resource, id, options);
-            fixResourceURI(resource);
         } else {
             String query = resource.getURI().query();
             if (query != null) {
@@ -495,9 +494,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 ids.forEach(oid -> {
                     loadById(resource, id, options);
                 });
-                fixResourceURI(resource);
             }
         }
+        fixResourceURI(resource);
     }
 
     private void fixResourceURI(HbResource resource) {

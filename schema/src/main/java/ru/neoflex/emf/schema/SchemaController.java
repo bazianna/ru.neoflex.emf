@@ -20,6 +20,17 @@ public class SchemaController {
     @PostConstruct
     public void init() throws Exception {
         dbServerSvc.getDbServer().registerEPackage(SchemaPackage.eINSTANCE);
+        dbServerSvc.getDbServer().getEvents().registerBeforeSave((eObject, eObject2) -> {
+            if (SchemaPackage.eINSTANCE.getDBEntity().isSuperTypeOf(eObject2.eClass())) {
+                DBEntity dbEntity = (DBEntity) eObject2;
+                if (dbEntity.getSchema() != null) {
+                    dbEntity.setFullName(dbEntity.getSchema().getName() + "." + dbEntity.getName());
+                }
+                else {
+                    dbEntity.setFullName(dbEntity.getName());
+                }
+            }
+        });
         dbServerSvc.getDbServer().inTransaction(false, tx -> {
             ResourceSet rs = tx.getResourceSet();
             Resource views = dbServerSvc.getDbServer().findBy(rs, SchemaPackage.eINSTANCE.getDBView());

@@ -28,6 +28,8 @@ class FKey extends DBKey {
 }
 
 abstract class DBEntity {
+    container Schema schema opposite entities
+    id String fullName
 	String name
 	contains PKey pKey
 }
@@ -44,6 +46,6 @@ class DBView extends DBEntity {
 }
 
 class Schema {
-	String name
-    contains DBEntity[] entities
+	id String name
+    contains DBEntity[] entities opposite schema
 }
