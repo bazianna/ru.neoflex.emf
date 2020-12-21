@@ -22,7 +22,7 @@ public class HronTests {
     private final EPackage.Registry packageRegistry = new EPackageRegistryImpl(EPackage.Registry.INSTANCE);
 
     {
-        packageRegistry.put(HronPackage.eINSTANCE.getNsPrefix(), HronPackage.eINSTANCE);
+        packageRegistry.put(HronPackage.eINSTANCE.getNsURI(), HronPackage.eINSTANCE);
     }
 
     @Test
