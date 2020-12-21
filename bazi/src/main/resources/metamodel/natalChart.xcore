@@ -12,7 +12,7 @@ import ru.neoflex.emf.bazi.spirit.Spirit
 annotation "ru.neoflex.emf.bazi" as BaZi
 
 @BaZi(documentation="Входные данные для расчета Натальной карты")
-class Parameters {
+class InputParams {
     String name
     Integer minutes
     Integer hour
@@ -43,7 +43,7 @@ enum Sex {
 
 @BaZi(documentation="Нательная карта")
 class NatalChart {
-    contains Parameters parameters
+    contains InputParams inputParams
     contains Pillar hour
     contains Pillar day
     contains Pillar month

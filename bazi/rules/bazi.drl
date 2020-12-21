@@ -1,7 +1,7 @@
 package ru.neoflex.emf.bazi
 
 import ru.neoflex.emf.bazi.natalChart.NatalChart
-import ru.neoflex.emf.bazi.natalChart.Parameters
+import ru.neoflex.emf.bazi.natalChart.InputParams
 import ru.neoflex.emf.bazi.calendar.Calendar
 import ru.neoflex.emf.bazi.calendar.Year
 import ru.neoflex.emf.bazi.calendar.CalendarFactory
@@ -10,9 +10,9 @@ import ru.neoflex.emf.bazi.natalChart.Pillar
 
 rule "TEST Set Year Pillar"
 when
-    $natalChart: NatalChart($parameters: parameters, parameters != null, year == null)
+    $natalChart: NatalChart($inputParams: inputParams, inputParams != null, year == null)
     $calendar: Calendar($year: year)
-    $currentYear: Year(name == $parameters.year, year != null) from $year
+    $currentYear: Year(name == $inputParams.year, year != null) from $year
 then
     Pillar year = NatalChartFactory.eINSTANCE.createPillar();
     year.setSky($currentYear.getYear().getSky());
