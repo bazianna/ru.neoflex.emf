@@ -1,4 +1,4 @@
-package ru.neoflex.emf.hron;
+package ru.neoflex.emf.restserver;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -6,6 +6,8 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import ru.neoflex.emf.base.HbServer;
+import ru.neoflex.emf.hron.HronResourceSet;
+import ru.neoflex.emf.hron.HronSupport;
 
 import java.util.Map;
 

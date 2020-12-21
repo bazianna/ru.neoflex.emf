@@ -9,8 +9,10 @@ import groovy.lang.Script;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.hibernate.query.Query;
 import org.hibernate.query.QueryParameter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +22,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ru.neoflex.emf.hron.HronResourceSet;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -165,6 +171,55 @@ public class EMFController {
             ResourceSet rs = tx.createResourceSet();
             Resource resource = rs.createResource(dbServerSvc.getDbServer().createURI(sql));
             resource.load(null);
+            return jsonHelper.toJson(resource);
+        });
+    }
+
+    @GetMapping(value = "/hron", produces = {"text/plain"})
+    byte[] getHron(Long id) throws Exception {
+        return dbServerSvc.getDbServer().inTransaction(true, tx -> {
+            ResourceSet rs = tx.getResourceSet();
+            URI uri = tx.getHbServer().createURI(id);
+            Resource resource = rs.getResource(uri, true);
+            HronResourceSet hrs = new HronResourceSet(new HbHronSupport(dbServerSvc.getDbServer(), rs));
+            URI huri = URI.createURI(String.format("%d.hron", id));
+            Resource hResource = hrs.createResource(huri);
+            hResource.getContents().addAll(EcoreUtil.copyAll(resource.getContents()));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            hResource.save(bos, null);
+            return bos.toByteArray();
+        });
+    }
+
+    @PostMapping(value = "/resource", consumes = {"text/plain"})
+    JsonNode postHron(@RequestBody byte[] body) throws Exception {
+        return dbServerSvc.getDbServer().inTransaction(false, tx -> {
+            ResourceSet rs = tx.getResourceSet();
+            HronResourceSet hrs = new HronResourceSet(new HbHronSupport(dbServerSvc.getDbServer(), rs));
+            URI huri = URI.createURI("body.hron");
+            Resource hResource = hrs.createResource(huri);
+            ByteArrayInputStream bis = new ByteArrayInputStream(body);
+            hResource.load(bis, null);
+            hrs.resolveAllReferences();
+            List<Long> ids = hResource.getContents().stream().map(eObject -> {
+                String name = dbServerSvc.getDbServer().getQName(eObject);
+                if (name == null) return null;
+                Resource r = dbServerSvc.getDbServer().findBy(eObject.eClass(), name);
+                if (r.getContents().size() == 0) return null;
+                Long id = dbServerSvc.getDbServer().getId(r.getContents().get(0));
+                return id;
+            }).collect(Collectors.toList());
+            URI uri = tx.getHbServer().createURI();
+            Resource resource = rs.createResource(uri);
+            List<EObject> newContent = new ArrayList<>(EcoreUtil.copyAll(hResource.getContents()));
+            for (int i = 0; i < newContent.size(); ++i) {
+                Long id = ids.get(i);
+                if (id != null) {
+                    dbServerSvc.getDbServer().setId(newContent.get(i), id);
+                }
+            }
+            resource.getContents().addAll(newContent);
+            resource.save(null);
             return jsonHelper.toJson(resource);
         });
     }

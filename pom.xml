@@ -520,7 +520,6 @@
         <module>sparksql</module>
         <module>drools</module>
         <module>schema</module>
-        <module>stringtemplate</module>
         <module>hron</module>
     </modules>
 
