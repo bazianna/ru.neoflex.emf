@@ -7,13 +7,12 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.stringtemplate.v4.ST;
-import org.stringtemplate.v4.STGroup;
-import org.stringtemplate.v4.STGroupFile;
+import org.stringtemplate.v4.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -36,7 +35,11 @@ public class HronResource extends ResourceImpl {
         ST hronSt = hronStg.getInstanceOf("resource");
         Map<String, Object> resourceMap = resourceToMap();
         hronSt.add("resource", resourceMap);
-        String code = hronSt.render();
+        StringWriter out = new StringWriter();
+        STWriter wr = new AutoIndentWriter(out, "\n");
+        wr.setLineWidth(STWriter.NO_WRAP);
+        hronSt.write(wr, Locale.getDefault());
+        String code = out.toString();
         byte[] data = code.getBytes(StandardCharsets.UTF_8);
         outputStream.write(data);
     }

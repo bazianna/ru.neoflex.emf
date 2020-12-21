@@ -1,0 +1,7 @@
+hron [
+ Module {
+  name = "module2";
+  root = Text {type="name" body="my nodule 2"}
+ }
+
+]

@@ -1,0 +1,50 @@
+@GenModel(
+    bundleManifest="false",
+    modelDirectory="src/java/java-gen",
+    complianceLevel="7.0",
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl",
+    rootExtendsInterface="org.eclipse.emf.ecore.EObject"
+)
+package ru.neoflex.emf.hron
+import java.util.List
+
+type ElementList wraps List<Element>
+
+class Module {
+    id String name
+    contains Element root
+}
+
+class Element {
+    String ^type
+    container Element parent opposite children
+    contains Element[] children opposite parent
+
+    op ElementList all(String ^type) {
+        children.filter(ch|ch.^type == ^type).toList()
+    }
+
+    op Element first(String ^type) {
+        all(^type).get(0)
+    }
+
+    op boolean exists(String ^type) {
+        children.exists(ch|ch.^type == ^type)
+    }
+
+    op String text() {
+        if (children.size() == 0) {""} else {children.get(0).text()}
+    }
+}
+
+class Text extends Element {
+    String body
+
+    op String text() {body}
+}
+
+class Reference extends Element {
+    refers Element ref
+
+    op String text() {ref.text()}
+}

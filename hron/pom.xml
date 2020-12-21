@@ -29,6 +29,14 @@
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.xtext</groupId>
+                <artifactId>xtext-maven-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 </project>

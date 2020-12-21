@@ -216,7 +216,7 @@ public class HronEvaluator extends HronBaseListener {
             if (refObject == null) {
                 error(String.format("EObject for reference to '%s' not found", name), ctx.start);
             }
-            String path = ctx.path() == null ? null : ctx.path().getText();
+            String path = ctx.path() == null ? null : ctx.path().getText().replaceAll("(^\\\"|\\\"$)", "");
             if (path != null) {
                 refObject = EcoreUtil.getEObject(refObject, path);
                 if (refObject == null) {

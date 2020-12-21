@@ -1,0 +1,61 @@
+[
+  hron.Module {
+    name = "module1"
+    root = hron.Element {
+      type = "class"
+      children = [
+        hron.Text {
+          type = "name"
+          body = "myClass"
+        }
+        ___root__children_1: hron.Element {
+          type = "function"
+          children = [
+            hron.Text {
+              type = "name"
+              body = "sum"
+            }
+            hron.Text {
+              type = "returns"
+              body = "int"
+            }
+            hron.Element {
+              type = "arg"
+              children = [
+                hron.Text {
+                  type = "name"
+                  body = "arg1"
+                }
+                hron.Text {
+                  type = "type"
+                  body = "int"
+                }
+              ]
+            }
+            hron.Element {
+              type = "arg"
+              children = [
+                hron.Text {
+                  type = "name"
+                  body = "arg2"
+                }
+                hron.Text {
+                  type = "type"
+                  body = "int"
+                }
+              ]
+            }
+            hron.Reference {
+              type = "calls"
+              ref = :___root__children_1
+            }
+            hron.Reference {
+              type = "module"
+              ref = #{hron.Module "module2" "@root"}
+            }
+          ]
+        }
+      ]
+    }
+  }
+]
