@@ -220,6 +220,7 @@ public class EMFController {
             }
             resource.getContents().addAll(newContent);
             resource.save(null);
+            resource.load(null);
             return jsonHelper.toJson(resource);
         });
     }

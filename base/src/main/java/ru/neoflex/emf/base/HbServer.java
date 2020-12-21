@@ -365,8 +365,8 @@ public class HbServer implements AutoCloseable {
     }
 
     public String getQName(EObject eObject) {
-        EStructuralFeature sf = getQNameSF(eObject.eClass());
-        return sf != null ? eObject.eGet(sf).toString() : null;
+        EAttribute sf = getQNameSF(eObject.eClass());
+        return sf != null ? EcoreUtil.convertToString(sf.getEAttributeType(), eObject.eGet(sf)) : null;
     }
 
     public String getScheme() {

@@ -407,6 +407,20 @@ public class HbTransaction implements AutoCloseable, Serializable {
     public void save(HbResource resource) {
         List<EObject> contents = new ArrayList<>(resource.getContents());
         EcoreUtil.resolveAll(resource);
+        resource.setTimeStamp(new Date().getTime());
+        Map<Long, DBObject> oldDbCache = new HashMap<>();
+        HbResource oldResource = (HbResource) getResourceSet().createResource(resource.getURI());
+        for (EObject eObject : contents) {
+            Long id = hbServer.getId(eObject);
+            EObject oldObject = null;
+            if (id != null) {
+                DBObject dbObject = getOrThrow(id);
+                oldDbCache.put(id, dbObject);
+                oldObject = loadEObject(oldResource, dbObject, null);
+                oldResource.getContents().add(oldObject);
+            }
+            hbServer.getEvents().fireBeforeSave(oldObject, eObject);
+        }
         for (EObject eObject : resource.getContents()) {
             Diagnostic diagnostic = Diagnostician.INSTANCE.validate(eObject);
             if (diagnostic.getSeverity() == Diagnostic.ERROR ||
@@ -431,20 +445,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
             throw new IllegalArgumentException(String.format(
                     "Duplicate object names in resources (%s)",
                     String.join(", ", sameResources)));
-        }
-        resource.setTimeStamp(new Date().getTime());
-        Map<Long, DBObject> oldDbCache = new HashMap<>();
-        HbResource oldResource = (HbResource) getResourceSet().createResource(resource.getURI());
-        for (EObject eObject : contents) {
-            Long id = hbServer.getId(eObject);
-            EObject oldObject = null;
-            if (id != null) {
-                DBObject dbObject = getOrThrow(id);
-                oldDbCache.put(id, dbObject);
-                oldObject = loadEObject(oldResource, dbObject, null);
-                oldResource.getContents().add(oldObject);
-            }
-            hbServer.getEvents().fireBeforeSave(oldObject, eObject);
         }
         for (EObject eObject : contents) {
             Long id = hbServer.getId(eObject);
