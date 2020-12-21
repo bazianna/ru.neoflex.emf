@@ -83,7 +83,7 @@ public class BaziController {
                            TimeCategory timeCategory
     ) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
-            Parameters parameters = NatalChartFactory.eINSTANCE.createParameters();
+            InputParams parameters = NatalChartFactory.eINSTANCE.createInputParams();
             parameters.setName(name);
             parameters.setMinutes(minutes);
             parameters.setHour(hour);

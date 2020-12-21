@@ -2,7 +2,7 @@ package ru.neoflex.emf.bazi
 
 import ru.neoflex.emf.bazi.natalChart.NatalChartFactory
 import ru.neoflex.emf.bazi.natalChart.NatalChart
-import ru.neoflex.emf.bazi.natalChart.Parameters
+import ru.neoflex.emf.bazi.natalChart.InputParams
 import ru.neoflex.emf.bazi.calendar.Calendar
 import ru.neoflex.emf.bazi.calendar.CalendarFactory
 import ru.neoflex.emf.bazi.calendar.CalendarPackage
@@ -91,11 +91,11 @@ end
 //
 //rule "Create Calendar Year"
 //when
-//    $parameters: Parameters()
+//    $inputParams: InputParams()
 //    $calendar: Calendar($year: year)
-//    not Year(name == $parameters.year) from $year
+//    not Year(name == $inputParams.year) from $year
 //then
-//    createCalendarYear(tx, $calendar, $parameters.getYear());
+//    createCalendarYear(tx, $calendar, $inputParams.getYear());
 //    update($calendar);
 //end;
 //
@@ -122,11 +122,11 @@ end
 //end;
 //
 
-function BaZiDate createBaZiDate(HbTransaction tx, Parameters parameters) {
+function BaZiDate createBaZiDate(HbTransaction tx, InputParams inputParams) {
     BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
-    baZiDate.setGregorianYear("1111");
-    baZiDate.setGregorianMonth("1");
-    baZiDate.setDay("1");
+    baZiDate.setGregorianYear(inputParams.getYear());
+    baZiDate.setGregorianMonth(inputParams.getMonth());
+    baZiDate.setDay(inputParams.getMonth());
 
     return baZiDate;
 }
@@ -134,21 +134,21 @@ function BaZiDate createBaZiDate(HbTransaction tx, Parameters parameters) {
 rule "Create NatalChart"
 when
     $baZiDate: BaZiDate()
-    $parameters: Parameters()
-    not NatalChart(parameters == $parameters)
+    $inputParams: InputParams()
+    not NatalChart(inputParams == $inputParams)
 then
     NatalChart natalChart = NatalChartFactory.eINSTANCE.createNatalChart();
-    natalChart.setParameters($parameters);
+    natalChart.setInputParams($inputParams);
 
     insert(natalChart);
 end;
 
 rule "Create BaZiDate"
 when
-    $parameters: Parameters()
+    $inputParams: InputParams()
     not BaZiDate()
 then
-    BaZiDate baZiDate = createBaZiDate(tx, $parameters);
+    BaZiDate baZiDate = createBaZiDate(tx, $inputParams);
     insert(baZiDate);
 end;
 

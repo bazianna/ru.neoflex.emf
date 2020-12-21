@@ -50,11 +50,11 @@ class Hour {
 
 @BaZi(documentation="Объект для отработки Drools и создания NatalChart")
 class BaZiDate {
-    String gregorianYear
-    String chineseYear
-    String gregorianMonth
-    String chineseMonth
-    String day
+    Integer gregorianYear
+    Integer chineseYear
+    Integer gregorianMonth
+    Integer chineseMonth
+    Integer day
 }
 
 enum Months {
