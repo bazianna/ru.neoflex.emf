@@ -2,8 +2,10 @@ package ru.neoflex.emf.hron.tests;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import ru.neoflex.emf.hron.HronPackage;
@@ -27,7 +29,7 @@ public class HronTests {
 
     @Test
     public void simpleTest() throws IOException, URISyntaxException {
-        HronResourceSet rs = new HronResourceSet(null);
+        HronResourceSet rs = new HronResourceSet();
         rs.setPackageRegistry(packageRegistry);
         URI uri1 = URI.createURI(this.getClass().getClassLoader().getResource("module1.hron").toString());
         Resource resource1 = rs.createResource(uri1);
@@ -44,5 +46,17 @@ public class HronTests {
                 Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("module1.hron").toURI())
                 ), StandardCharsets.UTF_8);
         Assert.assertEquals(old, s);
+    }
+
+    @Test
+    public void ecoreTest() throws IOException {
+        HronResourceSet rs = new HronResourceSet();
+        URI uri = URI.createURI("ecore.hron");
+        Resource resource = rs.createResource(uri);
+        resource.getContents().add(EcoreUtil.copy(EcorePackage.eINSTANCE));
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        resource.save(os, null);
+        String s = os.toString("utf-8");
+        logger.info(s);
     }
 }

@@ -26,6 +26,10 @@ public class HronResourceSet extends ResourceSetImpl {
     protected Map<String, EObject> nameToEObjectMap = new HashMap<>();
     protected HronSupport delegate;
 
+    public HronResourceSet() {
+        this(null);
+    }
+
     public HronResourceSet(HronSupport delegate) {
         super();
         this.delegate = delegate;
