@@ -178,10 +178,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
         boolean needPersist = dbObject == null;
         if (dbObject == null) {
             dbObject = new DBObject();
-            dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
-            dbObject.setContainer(container);
-            dbObject.setFeature(containingFeature);
-            dbObject.setIndex(containingIndex);
         } else {
             Long version = resource.getTimeStamp();
             if (resource.getTimeStamp() <= 0) {
@@ -195,17 +191,21 @@ public class HbTransaction implements AutoCloseable, Serializable {
             }
         }
         dbObject.setVersion(resource.getTimeStamp());
+        dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
+        dbObject.setContainer(container);
+        dbObject.setFeature(containingFeature);
+        dbObject.setIndex(containingIndex);
 
         List<AbstractMap.SimpleEntry<EAttribute, List>> attrs = eObject.eClass().getEAllAttributes().stream()
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf))
                 .map(sf -> new AbstractMap.SimpleEntry<>(sf,
-                        sf.isMany() ? (List) eObject.eGet(sf) : Arrays.asList(eObject.eGet(sf))))
+                        sf.isMany() ? (List) eObject.eGet(sf) : Collections.singletonList(eObject.eGet(sf))))
                 .collect(Collectors.toList());
 
-        Set<DBAttribute> toDeleteA = dbObject.getAttributes().stream().collect(Collectors.toSet());
+        Set<DBAttribute> toDeleteA = new HashSet<>(dbObject.getAttributes());
         EAttribute qNameSF = getHbServer().getQNameSF(eObject.eClass());
         for (AbstractMap.SimpleEntry<EAttribute, List> attr : attrs) {
-            if (attr.getKey() != qNameSF && !getHbServer().getIndexedAttributeDelegate().apply(attr.getKey())) {
+            if (attr.getKey() != qNameSF && !getHbServer().isIndexed(attr.getKey())) {
                 continue;
             }
             EDataType eDataType = attr.getKey().getEAttributeType();
@@ -259,36 +259,51 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .collect(Collectors.toList());
         Set<DBObject> toDeleteC = new HashSet<>(dbObject.getContent());
         for (AbstractMap.SimpleEntry<EReference, List<EObject>> ref : refsC) {
-            String feature = ref.getKey().getName();
-            for (int index = 0; index < ref.getValue().size(); ++index) {
-                EObject eObject2 = ref.getValue().get(index);
-                EcoreUtil.resolveAll(eObject2);
-                if (eObject2.eIsProxy()) {
-                    throw new RuntimeException("Can't resolve " + ((InternalEObject) eObject2).eProxyURI().toString());
+            EReference eReference = ref.getKey();
+            List<EObject> eObjects = ref.getValue();
+            String feature = eReference.getName();
+            for (int index = 0; index < eObjects.size(); ++index) {
+                EObject containedEObject = eObjects.get(index);
+                if (containedEObject.eIsProxy()) {
+                    throw new RuntimeException("Can't resolve " + ((InternalEObject) containedEObject).eProxyURI().toString());
                 }
-                Long id2 = hbServer.getId(eObject2);
-                DBObject dbObject2;
-                if (id2 != null) {
-                    dbObject2 = getOrThrow(id2);
-                    DBObject containedDBObject = dbObject.getContent().stream()
-                            .filter(o -> o.getFeature().equals(feature) && o.getId().equals(id2))
-                            .findFirst().orElse(null);
-                    if (containedDBObject != null) {
-                        toDeleteC.remove(containedDBObject);
-                        containedDBObject.setIndex(index);
-                    } else {
-                        if (dbObject2.getContainer() != null && !Objects.equals(dbObject2.getContainer().getId(), dbObject.getId())) {
-                            throw new RuntimeException("Can not change container for EObject id=" + dbObject2.getId() +
-                                    ", old container=" + dbObject2.getContainer().getId() + ", new container=" + dbObject.getId());
-                        }
-                        dbObject2.setContainer(dbObject);
-                        dbObject2.setFeature(feature);
-                        dbObject2.setIndex(index);
-                    }
+                DBObject containedDBObject = null;
+                Long containedId = hbServer.getId(containedEObject);
+                if (containedId != null) {
+                    containedDBObject = getOrThrow(containedId);
                 } else {
-                    dbObject2 = saveEObjectContainment(resource, null, eObject2, dbObject, feature, index);
-                    dbObject.getContent().add(dbObject2);
+                    if (!eReference.getEKeys().isEmpty()) {
+                        containedDBObject = toDeleteC.stream().filter(o -> {
+                            for (EAttribute a : eReference.getEKeys()) {
+                                if (!containedEObject.eIsSet(a)) return false;
+                                List<String> dbKeys = o.getAttributes().stream()
+                                        .filter(dba -> dba.getFeature().equals(a.getName()))
+                                        .sorted(Comparator.comparingInt(DBAttribute::getIndex))
+                                        .map(DBAttribute::getValue)
+                                        .collect(Collectors.toList());
+                                List<String> eKeys = (a.isMany() ?
+                                        (List<Object>) containedEObject.eGet(a) :
+                                        Collections.singletonList(containedEObject.eGet(a))).stream()
+                                        .map(v -> EcoreUtil.convertToString(a.getEAttributeType(), v))
+                                        .collect(Collectors.toList());
+                                if (dbKeys.size() != eKeys.size()) {
+                                    return false;
+                                }
+                                for (int i = 0; i < dbKeys.size(); ++i) {
+                                    if (!Objects.equals(dbKeys.get(i), eKeys.get(i))) return false;
+                                }
+                            }
+                            return true;
+                        }).findFirst().orElse(null);
+                    }
                 }
+                if (containedDBObject != null) {
+                    if (!toDeleteC.remove(containedDBObject)) {
+                        dbObject.getContent().add(containedDBObject);
+                    }
+                    hbServer.setId(containedEObject, containedDBObject.getId());
+                }
+                saveEObjectContainment(resource, containedDBObject, containedEObject, dbObject, feature, index);
             }
         }
         dbObject.getContent().removeAll(toDeleteC);
@@ -490,8 +505,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                         loadByQuery(resource, sql, options);
                     }
                 }
-            }
-            else {
+            } else {
                 // reload
                 ids.forEach(oid -> {
                     loadById(resource, id, options);

@@ -52,6 +52,17 @@ public class HbServer implements AutoCloseable {
     public static final String CONFIG_MAX_POOL_SIZE = "hb.max_pool_size";
     private static final Logger logger = LoggerFactory.getLogger(HbServer.class);
     protected static final ThreadLocal<String> tenantId = new InheritableThreadLocal<>();
+    private static final ThreadLocal<Map<EObject, Long>> eObjectToIdMap = new ThreadLocal<>();
+    protected final SessionFactory sessionFactory;
+    private final String dbName;
+    private final Events events = new Events();
+    private final Set<String> updatedSchemas = new HashSet<>();
+    private Set<EAttribute> eKeys;
+    private Function<EAttribute, Boolean> indexedAttributeDelegate = eAttribute -> eAttribute.getEAttributeType() == EcorePackage.eINSTANCE.getEString();
+    private final Properties config;
+    private final EPackage.Registry packageRegistry = new EPackageRegistryImpl(EPackage.Registry.INSTANCE);
+    private final Map<EClass, List<EClass>> descendants = new HashMap<>();
+
 
     public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
         Map<Object, Boolean> seen = new ConcurrentHashMap<>();
@@ -67,19 +78,13 @@ public class HbServer implements AutoCloseable {
         return indexedAttributeDelegate;
     }
 
+    public boolean isIndexed(EAttribute eAttribute) {
+        return getEKeys().contains(eAttribute) || getIndexedAttributeDelegate().apply(eAttribute);
+    }
+
     public void setIndexedAttributeDelegate(Function<EAttribute, Boolean> indexedAttributeDelegate) {
         this.indexedAttributeDelegate = indexedAttributeDelegate;
     }
-
-    private static final ThreadLocal<Map<EObject, Long>> eObjectToIdMap = new ThreadLocal<>();
-    protected final SessionFactory sessionFactory;
-    private final String dbName;
-    private final Events events = new Events();
-    private final Set<String> updatedSchemas = new HashSet<>();
-    private Function<EAttribute, Boolean> indexedAttributeDelegate = eAttribute -> eAttribute.getEAttributeType() == EcorePackage.eINSTANCE.getEString();
-    private final Properties config;
-    private final EPackage.Registry packageRegistry = new EPackageRegistryImpl(EPackage.Registry.INSTANCE);
-    private Map<EClass, List<EClass>> descendants = new HashMap<>();
 
     public HbServer(String dbName, Properties config) {
         this.dbName = dbName;
@@ -137,6 +142,7 @@ public class HbServer implements AutoCloseable {
                 }
             }
         }
+        eKeys = null;
     }
 
     public List<EClass> getConcreteDescendants(EClass eClass) {
@@ -305,6 +311,7 @@ public class HbServer implements AutoCloseable {
     public Resource findReferencedTo(ResourceSet rs, Resource resource) {
         Set<Long> exclude = resource.getContents().stream()
                 .map(this::getId).filter(Objects::nonNull).collect(Collectors.toSet());
+        //noinspection NullableProblems
         Iterable<EObject> iterable = resource::getAllContents;
         List<EObject> eObjects = StreamSupport.stream(iterable.spliterator(), false)
                 .map(this::getId).filter(Objects::nonNull)
@@ -384,6 +391,19 @@ public class HbServer implements AutoCloseable {
     @Override
     public void close() {
         sessionFactory.close();
+    }
+
+    public Set<EAttribute> getEKeys() {
+        if (eKeys == null) {
+            eKeys = new HashSet<>();
+            packageRegistry.values().stream().flatMap(o -> {
+                //noinspection NullableProblems
+                Iterable<EObject> iterable = ((EPackage) o)::eAllContents;
+                    return StreamSupport.stream(iterable.spliterator(), false)
+                            .filter(eObject -> eObject instanceof EReference && !((EReference) eObject).getEKeys().isEmpty());
+            }).forEach(eObject -> eKeys.addAll(((EReference) eObject).getEKeys()));
+        }
+        return eKeys;
     }
 
     public interface TxFunction<R> extends Serializable {
