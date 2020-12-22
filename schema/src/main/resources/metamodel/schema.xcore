@@ -35,7 +35,7 @@ abstract class DBEntity {
 }
 
 class DBTable extends DBEntity {
-	contains Column[] columns
+	contains Column[] columns keys name
 	contains IEKey[] indexes
 	contains FKey[] fKeys
 }
@@ -47,5 +47,5 @@ class DBView extends DBEntity {
 
 class Schema {
 	id String name
-    contains DBEntity[] entities opposite schema
+    contains DBEntity[] entities opposite schema keys name
 }
