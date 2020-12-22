@@ -8,6 +8,7 @@
 package ru.neoflex.emf.schema
 
 class Column {
+    container DBTable dbTable opposite columns
 	String name
 	String dbType
 }
@@ -35,7 +36,7 @@ abstract class DBEntity {
 }
 
 class DBTable extends DBEntity {
-	contains Column[] columns keys name
+	contains Column[] columns opposite dbTable keys name
 	contains IEKey[] indexes
 	contains FKey[] fKeys
 }

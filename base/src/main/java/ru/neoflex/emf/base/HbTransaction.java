@@ -297,7 +297,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     private URI getProxyURI(DBObject dbObject) {
         DBObject root = getRootContainer(dbObject, null);
 //        DBObject root = dbObject;
-        return getHbServer().createURI(root.getId(), root.getVersion())
+        return getHbServer().createURI(root.getId())
                 .appendFragment(String.valueOf(dbObject.getId()));
     }
 
@@ -502,7 +502,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     private void fixResourceURI(HbResource resource) {
         if (resource.getContents().size() == 1) {
             EObject eObject = resource.getContents().get(0);
-            resource.setURI(getHbServer().createURI(getHbServer().getId(eObject), resource.getTimeStamp()));
+            resource.setURI(getHbServer().createURI(getHbServer().getId(eObject)));
         }
     }
 

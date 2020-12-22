@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -28,6 +29,19 @@ public class HronResource extends ResourceImpl {
     }
 
     protected void doSave(OutputStream outputStream, Map<?, ?> options) throws IOException {
+        byte[] data = getBytes();
+        outputStream.write(data);
+    }
+
+    public byte[] getBytes(Charset charset) {
+        return toString().getBytes(charset);
+    }
+
+    public byte[] getBytes() {
+        return getBytes(StandardCharsets.UTF_8);
+    }
+
+    public String toString() {
         eObjectToMapMap.clear();
         URL patternURL = this.getClass().getClassLoader().getResource("hron.stg");
         Objects.requireNonNull(patternURL, "hron.stg not found");
@@ -39,9 +53,7 @@ public class HronResource extends ResourceImpl {
         STWriter wr = new AutoIndentWriter(out, "\n");
         wr.setLineWidth(STWriter.NO_WRAP);
         hronSt.write(wr, Locale.getDefault());
-        String code = out.toString();
-        byte[] data = code.getBytes(StandardCharsets.UTF_8);
-        outputStream.write(data);
+        return out.toString();
     }
 
     protected void doLoad(InputStream inputStream, Map<?, ?> options) throws IOException {

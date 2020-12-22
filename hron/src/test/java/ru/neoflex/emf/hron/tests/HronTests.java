@@ -11,7 +11,6 @@ import org.junit.Test;
 import ru.neoflex.emf.hron.HronPackage;
 import ru.neoflex.emf.hron.HronResourceSet;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -38,9 +37,7 @@ public class HronTests {
         Resource resource2 = rs.createResource(uri2);
         resource2.load(null);
         rs.resolveAllReferences();
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        resource1.save(os, null);
-        String s = os.toString("utf-8");
+        String s = resource1.toString();
         logger.info(s);
         String old = new String(
                 Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("module1.hron").toURI())
@@ -54,9 +51,7 @@ public class HronTests {
         URI uri = URI.createURI("ecore.hron");
         Resource resource = rs.createResource(uri);
         resource.getContents().add(EcoreUtil.copy(EcorePackage.eINSTANCE));
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        resource.save(os, null);
-        String s = os.toString("utf-8");
+        String s = resource.toString();
         logger.info(s);
     }
 }
