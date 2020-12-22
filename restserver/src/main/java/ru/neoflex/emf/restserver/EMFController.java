@@ -58,6 +58,7 @@ public class EMFController {
             Resource resource = rs.createResource(uri);
             jsonHelper.fromJson(resource, body, uri);
             resource.save(null);
+            resource.load(null);
             return jsonHelper.toJson(resource);
         });
     }
@@ -70,6 +71,7 @@ public class EMFController {
             Resource resource = rs.createResource(uri);
             jsonHelper.fromJson(resource, body);
             resource.save(null);
+            resource.load(null);
             return jsonHelper.toJson(resource);
         });
     }

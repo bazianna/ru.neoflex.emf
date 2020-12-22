@@ -287,9 +287,11 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     }
                 } else {
                     dbObject2 = saveEObjectContainment(resource, null, eObject2, dbObject, feature, index);
+                    dbObject.getContent().add(dbObject2);
                 }
             }
         }
+        dbObject.getContent().removeAll(toDeleteC);
         toDeleteC.forEach(this::deleteRecursive);
         return dbObject;
     }
