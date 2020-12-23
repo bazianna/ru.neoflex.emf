@@ -96,7 +96,9 @@ public class HronResource extends ResourceImpl {
         Map<String, Object> result = new HashMap<>();
         if (EcoreUtil.isAncestor(eObject.eResource(), refObject)) {
             Map<String, Object> refObjectMap = eObjectToMapMap.computeIfAbsent(refObject, k -> new HashMap<>());
-            String label = eObject.eResource().getURIFragment(refObject).replaceAll("[^_0-9a-zA-Z]", "_");
+            String label = eObject.eResource().getURIFragment(refObject)
+                    .replaceAll("[^_0-9a-zA-Z]+", "_")
+                    .replaceAll("(^_|_$)", "");
             refObjectMap.put("label", label);
             result.put("label", label);
         } else {

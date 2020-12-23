@@ -8,7 +8,7 @@
           type = "name"
           body = "myClass"
         }
-        ___root__children_1: hron.Element {
+        root_children_1: hron.Element {
           type = "function"
           children = [
             hron.Text {
@@ -47,7 +47,7 @@
             }
             hron.Reference {
               type = "calls"
-              ref = :___root__children_1
+              ref = :root_children_1
             }
             hron.Reference {
               type = "module"
