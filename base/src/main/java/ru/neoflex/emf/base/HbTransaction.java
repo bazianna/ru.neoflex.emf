@@ -275,7 +275,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     if (!eReference.getEKeys().isEmpty()) {
                         containedDBObject = toDeleteC.stream().filter(o -> {
                             for (EAttribute a : eReference.getEKeys()) {
-                                if (!containedEObject.eIsSet(a)) return false;
                                 List<String> dbKeys = o.getAttributes().stream()
                                         .filter(dba -> dba.getFeature().equals(a.getName()))
                                         .sorted(Comparator.comparingInt(DBAttribute::getIndex))
@@ -284,7 +283,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                                 List<String> eKeys = (a.isMany() ?
                                         (List<Object>) containedEObject.eGet(a) :
                                         Collections.singletonList(containedEObject.eGet(a))).stream()
-                                        .map(v -> EcoreUtil.convertToString(a.getEAttributeType(), v))
+                                        .map(v -> v == null ? null : EcoreUtil.convertToString(a.getEAttributeType(), v))
                                         .collect(Collectors.toList());
                                 if (dbKeys.size() != eKeys.size()) {
                                     return false;
