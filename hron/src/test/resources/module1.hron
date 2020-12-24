@@ -47,7 +47,7 @@
             }
             hron.Reference {
               type = "calls"
-              ref = :root_children_1
+              ref = #root_children_1
             }
             hron.Reference {
               type = "module"

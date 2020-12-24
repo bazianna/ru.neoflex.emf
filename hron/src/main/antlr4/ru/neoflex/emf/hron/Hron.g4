@@ -21,7 +21,7 @@ expr: labelRef |
       attribute
       ;
 
-labelRef: ':' ID;
+labelRef: '#' ID;
 
 extRef: '#' '{' eClass STRING (path)? '}';
 
