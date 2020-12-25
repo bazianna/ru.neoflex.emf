@@ -230,6 +230,12 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         dbObject.getAttributes().removeAll(toDeleteA);
 
+//        List<AbstractMap.SimpleEntry<String, String>> entries = attrs.stream().flatMap(entry -> {
+//            EDataType eDataType = entry.getKey().getEAttributeType();
+//            String feature = entry.getKey().getName();
+//            return entry.getValue().stream().map(value ->
+//                    new AbstractMap.SimpleEntry<>(feature, EcoreUtil.convertToString(eDataType, value)));
+//        }).collect(Collectors.toList());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
             int count = attrs.stream().map(entry -> entry.getValue().size()).reduce(0, Integer::sum);
