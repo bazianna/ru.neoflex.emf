@@ -266,10 +266,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     if (!eReference.getEKeys().isEmpty()) {
                         containedDBObject = toDeleteC.stream().filter(o -> {
                             for (EAttribute a : eReference.getEKeys()) {
-                                List<String> dbKeys = o.getAttributes().stream()
-                                        .filter(dba -> dba.getFeature().equals(a.getName()))
-                                        .sorted(Comparator.comparingInt(DBAttribute::getIndex))
-                                        .map(DBAttribute::getValue)
+                                List<String> dbKeys = o.readImage().stream()
+                                        .filter(entry -> Objects.equals(entry.getKey(), a.getName()))
+                                        .map(AbstractMap.SimpleEntry::getValue)
                                         .collect(Collectors.toList());
                                 List<String> eKeys = (a.isMany() ?
                                         (List<Object>) containedEObject.eGet(a) :

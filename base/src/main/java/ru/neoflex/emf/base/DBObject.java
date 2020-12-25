@@ -54,6 +54,8 @@ public class DBObject {
     @Column(name = "feature")
     private String feature;
 
+    private transient List<AbstractMap.SimpleEntry<String, String>> imageContent;
+
     public Long getId() {
         return id;
     }
@@ -84,6 +86,7 @@ public class DBObject {
 
     public void setImage(byte[] image) {
         this.image = image;
+        imageContent = null;
     }
 
     public List<DBReference> getReferences() {
@@ -148,35 +151,38 @@ public class DBObject {
     }
 
     public List<AbstractMap.SimpleEntry<String, String>> readImage() {
-        List<AbstractMap.SimpleEntry<String, String>> result = new ArrayList<>();
-        if (getImage() != null) {
-            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(getImage()))) {
-                int count = ois.readInt();
-                for (int i = 0; i < count; ++i) {
-                    String feature = ois.readUTF();
-                    String image = ois.readUTF();
-                    AbstractMap.SimpleEntry<String, String> entry = new AbstractMap.SimpleEntry<>(feature, image);
-                    result.add(entry);
+        if (imageContent == null) {
+            imageContent = new ArrayList<>();
+            if (getImage() != null) {
+                try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(getImage()))) {
+                    int count = ois.readInt();
+                    for (int i = 0; i < count; ++i) {
+                        String feature = ois.readUTF();
+                        String image = ois.readUTF();
+                        AbstractMap.SimpleEntry<String, String> entry = new AbstractMap.SimpleEntry<>(feature, image);
+                        imageContent.add(entry);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
         }
-        return result;
+        return imageContent;
     }
 
     public void writeImage(List<AbstractMap.SimpleEntry<String, String>> entries) {
+        imageContent = entries;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-            int count = entries.size();
+            int count = imageContent.size();
             oos.writeInt(count);
-            for (AbstractMap.SimpleEntry<String, String> entry : entries) {
+            for (AbstractMap.SimpleEntry<String, String> entry : imageContent) {
                 oos.writeUTF(entry.getKey());
                 oos.writeUTF(entry.getValue());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        setImage(baos.toByteArray());
+        image = baos.toByteArray();
     }
 }
