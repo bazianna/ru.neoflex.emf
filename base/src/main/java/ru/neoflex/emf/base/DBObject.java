@@ -1,6 +1,8 @@
 package ru.neoflex.emf.base;
 
 import javax.persistence.*;
+import java.io.*;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -143,5 +145,38 @@ public class DBObject {
 
     public void setContainer(DBObject container) {
         this.container = container;
+    }
+
+    public List<AbstractMap.SimpleEntry<String, String>> readImage() {
+        List<AbstractMap.SimpleEntry<String, String>> result = new ArrayList<>();
+        if (getImage() != null) {
+            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(getImage()))) {
+                int count = ois.readInt();
+                for (int i = 0; i < count; ++i) {
+                    String feature = ois.readUTF();
+                    String image = ois.readUTF();
+                    AbstractMap.SimpleEntry<String, String> entry = new AbstractMap.SimpleEntry<>(feature, image);
+                    result.add(entry);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
+    }
+
+    public void writeImage(List<AbstractMap.SimpleEntry<String, String>> entries) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+            int count = entries.size();
+            oos.writeInt(count);
+            for (AbstractMap.SimpleEntry<String, String> entry : entries) {
+                oos.writeUTF(entry.getKey());
+                oos.writeUTF(entry.getValue());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        setImage(baos.toByteArray());
     }
 }
