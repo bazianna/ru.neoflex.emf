@@ -11,10 +11,12 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static ru.neoflex.emf.base.HbServer.safeDecode;
 
 public class HbTransaction implements AutoCloseable, Serializable {
     protected final Session session;
@@ -230,13 +232,14 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
         dbObject.getAttributes().removeAll(toDeleteA);
 
-        List<AbstractMap.SimpleEntry<String, String>> entries = attrs.stream().flatMap(entry -> {
+        LinkedHashMap<String, List<String>> entriesMap = new LinkedHashMap<>();
+        attrs.forEach(entry -> {
             EDataType eDataType = entry.getKey().getEAttributeType();
             String feature = entry.getKey().getName();
-            return entry.getValue().stream().map(value ->
-                    new AbstractMap.SimpleEntry<>(feature, EcoreUtil.convertToString(eDataType, value)));
-        }).collect(Collectors.toList());
-        dbObject.writeImage(entries);
+            entry.getValue().forEach(value ->
+                    entriesMap.computeIfAbsent(feature, s -> new ArrayList<>()).add(EcoreUtil.convertToString(eDataType, value)));
+        });
+        dbObject.setAttributesMap(entriesMap);
 
         if (needPersist) {
             getSession().persist(dbObject);
@@ -266,9 +269,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     if (!eReference.getEKeys().isEmpty()) {
                         containedDBObject = toDeleteC.stream().filter(o -> {
                             for (EAttribute a : eReference.getEKeys()) {
-                                List<String> dbKeys = o.readImage().stream()
+                                List<String> dbKeys = o.getAttributesMap().entrySet().stream()
                                         .filter(entry -> Objects.equals(entry.getKey(), a.getName()))
-                                        .map(AbstractMap.SimpleEntry::getValue)
+                                        .flatMap(entry -> entry.getValue().stream())
                                         .collect(Collectors.toList());
                                 List<String> eKeys = (a.isMany() ?
                                         (List<Object>) containedEObject.eGet(a) :
@@ -315,18 +318,20 @@ public class HbTransaction implements AutoCloseable, Serializable {
         EClass eClass = (EClass) getResourceSet().getEObject(URI.createURI(classUri), false);
         Objects.requireNonNull(eClass, () -> String.format("Class not found %s", classUri));
         EObject eObject = EcoreUtil.create(eClass);
-        for (AbstractMap.SimpleEntry<String, String> entry: dbObject.readImage()) {
+
+        for (Map.Entry<String, List<String>> entry: dbObject.getAttributesMap().entrySet()) {
             String feature = entry.getKey();
-            String image = entry.getValue();
             EStructuralFeature sf = eClass.getEStructuralFeature(feature);
             if (sf instanceof EAttribute) {
                 EAttribute eAttribute = (EAttribute) sf;
                 EDataType eDataType = eAttribute.getEAttributeType();
-                Object value = EcoreUtil.createFromString(eDataType, image);
-                if (sf.isMany()) {
-                    ((List<Object>) eObject.eGet(sf)).add(value);
-                } else {
-                    eObject.eSet(sf, value);
+                for (String image: entry.getValue()) {
+                    Object value = EcoreUtil.createFromString(eDataType, image);
+                    if (sf.isMany()) {
+                        ((List<Object>) eObject.eGet(sf)).add(value);
+                    } else {
+                        eObject.eSet(sf, value);
+                    }
                 }
             }
         }
@@ -355,6 +360,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 }
             }
         }
+
         List<DBObject> content = new ArrayList<>(dbObject.getContent());
         content.sort(Comparator.comparingInt(DBObject::getIndex));
         for (DBObject containedDBObject : content) {
@@ -484,7 +490,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 for (String s : query.split("[&]")) {
                     String[] parts = s.split("[=]", 2);
                     if (parts.length == 2 && parts[0].startsWith("query")) {
-                        String sql = parts[1];
+                        String sql = safeDecode(parts[1]);
                         loadByQuery(resource, sql, options);
                     }
                 }

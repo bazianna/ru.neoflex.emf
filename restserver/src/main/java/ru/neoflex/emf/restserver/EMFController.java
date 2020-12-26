@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -105,18 +106,25 @@ public class EMFController {
                     resource = dbServerSvc.getDbServer().findBy(rs, eClass, qName);
                 }
             }
-            if (StringUtils.isNoneEmpty(filter)) {
-                GroovyShell shell = new GroovyShell();
-                Script script = shell.parse(filter);
-                resource.getContents().removeIf(eObject -> {
-                    Binding binding = new Binding();
-                    binding.setProperty("eObject", eObject);
-                    script.setBinding(binding);
-                    return !Boolean.TRUE.equals(script.run());
-                });
-            }
+            filterResource(filter, resource);
             return jsonHelper.toJson(resource);
         });
+    }
+
+    private void filterResource(String filter, Resource resource) {
+        if (StringUtils.isNoneEmpty(filter)) {
+            GroovyShell shell = new GroovyShell();
+            Script script = shell.parse(filter);
+            resource.getContents().removeIf(eObject -> {
+                Binding binding = new Binding();
+                binding.setProperty("eObject", eObject);
+                for (EStructuralFeature sf: eObject.eClass().getEAllStructuralFeatures()) {
+                    binding.setProperty(sf.getName(), eObject.eGet(sf));
+                }
+                script.setBinding(binding);
+                return !Boolean.TRUE.equals(script.run());
+            });
+        }
     }
 
     @PostMapping("/xcore")
@@ -168,11 +176,12 @@ public class EMFController {
     }
 
     @PostMapping(value = "/queryObjects", consumes = {"text/plain"})
-    public JsonNode queryObjects(@RequestBody String sql) throws Exception {
+    public JsonNode queryObjects(@RequestBody String sql, @RequestParam String filter) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(true, tx -> {
             ResourceSet rs = tx.createResourceSet();
             Resource resource = rs.createResource(dbServerSvc.getDbServer().createURI(sql));
             resource.load(null);
+            filterResource(filter, resource);
             return jsonHelper.toJson(resource);
         });
     }

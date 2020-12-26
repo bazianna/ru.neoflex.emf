@@ -2,9 +2,7 @@ package ru.neoflex.emf.base;
 
 import javax.persistence.*;
 import java.io.*;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(indexes = {
@@ -54,7 +52,7 @@ public class DBObject {
     @Column(name = "feature")
     private String feature;
 
-    private transient List<AbstractMap.SimpleEntry<String, String>> imageContent;
+    private transient LinkedHashMap<String, List<String>> attributesMap;
 
     public Long getId() {
         return id;
@@ -86,7 +84,7 @@ public class DBObject {
 
     public void setImage(byte[] image) {
         this.image = image;
-        imageContent = null;
+        attributesMap = null;
     }
 
     public List<DBReference> getReferences() {
@@ -150,35 +148,36 @@ public class DBObject {
         this.container = container;
     }
 
-    public List<AbstractMap.SimpleEntry<String, String>> readImage() {
-        if (imageContent == null) {
-            imageContent = new ArrayList<>();
-            if (getImage() != null) {
+    public LinkedHashMap<String, List<String>> getAttributesMap() {
+        if (attributesMap == null) {
+            attributesMap = new LinkedHashMap<>();
+            if (image != null) {
                 try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(getImage()))) {
                     int count = ois.readInt();
                     for (int i = 0; i < count; ++i) {
                         String feature = ois.readUTF();
                         String image = ois.readUTF();
-                        AbstractMap.SimpleEntry<String, String> entry = new AbstractMap.SimpleEntry<>(feature, image);
-                        imageContent.add(entry);
+                        attributesMap.computeIfAbsent(feature, s -> new ArrayList<>()).add(image);
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
         }
-        return imageContent;
+        return attributesMap;
     }
 
-    public void writeImage(List<AbstractMap.SimpleEntry<String, String>> entries) {
-        imageContent = entries;
+    public void setAttributesMap(LinkedHashMap<String, List<String>> map) {
+        attributesMap = map;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-            int count = imageContent.size();
+            int count = attributesMap.size();
             oos.writeInt(count);
-            for (AbstractMap.SimpleEntry<String, String> entry : imageContent) {
-                oos.writeUTF(entry.getKey());
-                oos.writeUTF(entry.getValue());
+            for (Map.Entry<String, List<String>> entry : attributesMap.entrySet()) {
+                for (String image: entry.getValue()) {
+                    oos.writeUTF(entry.getKey());
+                    oos.writeUTF(image);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

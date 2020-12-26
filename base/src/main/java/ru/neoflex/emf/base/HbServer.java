@@ -30,6 +30,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -268,7 +271,11 @@ public class HbServer implements AutoCloseable {
     }
 
     public URI createURI(String sql) {
-        return createURI().appendQuery(String.format("query=%s", sql));
+        try {
+            return createURI().appendQuery(String.format("query=%s", URLEncoder.encode(sql, "utf-8")));
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public Resource findAll() {
@@ -325,11 +332,27 @@ public class HbServer implements AutoCloseable {
         return result;
     }
 
+    public static String safeEncode(String s) {
+        try {
+            return URLEncoder.encode(s, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public static String safeDecode(String s) {
+        try {
+            return URLDecoder.decode(s, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     public Resource findBy(ResourceSet rs, EClass eClass) {
-        URI uri = createURI("select t from DBObject t where classUri=:classUri");
-        Resource resource = rs.createResource(uri);
         Map<String, Object> options = new HashMap<>();
-        options.put("classUri", EcoreUtil.getURI(eClass).toString());
+        URI uri = getQueryUri(eClass, options,
+                "select o from DBObject o where o.classUri=:classUri%d");
+        Resource resource = rs.createResource(uri);
         safeLoad(resource, options);
         return resource;
     }
@@ -339,14 +362,30 @@ public class HbServer implements AutoCloseable {
     }
 
     public Resource findBy(ResourceSet rs, EClass eClass, EStructuralFeature sf, String value) {
-        URI uri = createURI("select o from DBObject o join o.attributes a where o.classUri = :classUri and a.feature = :feature and a.value = :value");
-        Resource resource = rs.createResource(uri);
         Map<String, Object> options = new HashMap<>();
-        options.put("classUri", EcoreUtil.getURI(eClass).toString());
+        URI uri = getQueryUri(eClass, options,
+                "select o from DBObject o join o.attributes a " +
+                        "on a.feature = :feature and a.value = :value " +
+                        "where o.classUri = :classUri%d"
+                        );
+        Resource resource = rs.createResource(uri);
         options.put("feature", sf.getName());
         options.put("value", value);
         safeLoad(resource, options);
         return resource;
+    }
+
+    private URI getQueryUri(EClass eClass, Map<String, Object> options, String pattern) {
+        List<EClass> eClasses = getConcreteDescendants(eClass);
+        List<String> qParts = new ArrayList<>();
+        for (int i = 0; i < eClasses.size(); ++i) {
+            EClass theClass = eClasses.get(i);
+            String sql = safeEncode(String.format(pattern, i));
+            qParts.add(String.format("query%d=%s", i, sql));
+            options.put(String.format("classUri%d", i), EcoreUtil.getURI(theClass).toString());
+        }
+        URI uri = createURI().appendQuery(String.join("&", qParts));
+        return uri;
     }
 
     public Resource findBy(EClass eClass, String value) {
