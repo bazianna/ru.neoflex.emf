@@ -141,7 +141,7 @@ public class HronResource extends ResourceImpl {
         for (EStructuralFeature sf : eClass.getEAllStructuralFeatures()) {
             if (!sf.isTransient() && !sf.isDerived() && eObject.eIsSet(sf)) {
                 Map<String, Object> eFeature = new HashMap<>();
-                eFeature.put("name", sf.getName());
+                eFeature.put("name", Collections.singletonList(sf.getName()));
                 if (sf instanceof EAttribute) {
                     EAttribute eAttribute = (EAttribute) sf;
                     EDataType eDataType = eAttribute.getEAttributeType();
