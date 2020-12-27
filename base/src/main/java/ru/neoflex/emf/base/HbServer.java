@@ -400,6 +400,30 @@ public class HbServer implements AutoCloseable {
         return findBy(rs, eClass, sf, value);
     }
 
+    public void importResourceSet(ResourceSet rs, ResourceSet extRS) throws IOException {
+        for (Resource extR: extRS.getResources()) {
+            List<Long> ids = extR.getContents().stream().map(eObject -> {
+                String name = getQName(eObject);
+                if (name == null) return null;
+                Resource r = findBy(eObject.eClass(), name);
+                if (r.getContents().size() == 0) return null;
+                Long id = getId(r.getContents().get(0));
+                return id;
+            }).collect(Collectors.toList());
+            URI uri = createURI();
+            Resource resource = rs.createResource(uri);
+            List<EObject> newContent = new ArrayList<>(EcoreUtil.copyAll(extR.getContents()));
+            for (int i = 0; i < newContent.size(); ++i) {
+                Long id = ids.get(i);
+                if (id != null) {
+                    setId(newContent.get(i), id);
+                }
+            }
+            resource.getContents().addAll(newContent);
+            resource.save(null);
+        }
+    }
+
     public EAttribute getQNameSF(EClass eClass) {
         EAttribute sf;
         if (EcorePackage.Literals.EPACKAGE == eClass) {

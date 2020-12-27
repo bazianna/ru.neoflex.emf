@@ -9,7 +9,6 @@ import groovy.lang.Script;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -28,7 +27,6 @@ import ru.neoflex.emf.hron.HronResourceSet;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -212,25 +210,8 @@ public class EMFController {
             ByteArrayInputStream bis = new ByteArrayInputStream(body);
             hResource.load(bis, null);
             hrs.resolveAllReferences();
-            List<Long> ids = hResource.getContents().stream().map(eObject -> {
-                String name = dbServerSvc.getDbServer().getQName(eObject);
-                if (name == null) return null;
-                Resource r = dbServerSvc.getDbServer().findBy(eObject.eClass(), name);
-                if (r.getContents().size() == 0) return null;
-                Long id = dbServerSvc.getDbServer().getId(r.getContents().get(0));
-                return id;
-            }).collect(Collectors.toList());
-            URI uri = tx.getHbServer().createURI();
-            Resource resource = rs.createResource(uri);
-            List<EObject> newContent = new ArrayList<>(EcoreUtil.copyAll(hResource.getContents()));
-            for (int i = 0; i < newContent.size(); ++i) {
-                Long id = ids.get(i);
-                if (id != null) {
-                    dbServerSvc.getDbServer().setId(newContent.get(i), id);
-                }
-            }
-            resource.getContents().addAll(newContent);
-            resource.save(null);
+            dbServerSvc.getDbServer().importResourceSet(rs, hrs);
+            Resource resource = rs.getResources().get(0);
             resource.load(null);
             return jsonHelper.toJson(resource);
         });
