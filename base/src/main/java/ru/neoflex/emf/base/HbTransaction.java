@@ -266,24 +266,15 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 if (containedId != null) {
                     containedDBObject = getOrThrow(containedId);
                 } else {
-                    if (!eReference.getEKeys().isEmpty()) {
+                    EAttribute qSF = getHbServer().getQNameSF(eReference.getEReferenceType());
+                    if (qSF != null) {
+                        containedDBObject = toDeleteC.stream().filter(o ->
+                                equalsBy(o, containedEObject, qSF)).findFirst().orElse(null);
+                    }
+                    if (containedDBObject == null && !eReference.getEKeys().isEmpty()) {
                         containedDBObject = toDeleteC.stream().filter(o -> {
                             for (EAttribute a : eReference.getEKeys()) {
-                                List<String> dbKeys = o.getAttributesMap().entrySet().stream()
-                                        .filter(entry -> Objects.equals(entry.getKey(), a.getName()))
-                                        .flatMap(entry -> entry.getValue().stream())
-                                        .collect(Collectors.toList());
-                                List<String> eKeys = (a.isMany() ?
-                                        (List<Object>) containedEObject.eGet(a) :
-                                        Collections.singletonList(containedEObject.eGet(a))).stream()
-                                        .map(v -> v == null ? null : EcoreUtil.convertToString(a.getEAttributeType(), v))
-                                        .collect(Collectors.toList());
-                                if (dbKeys.size() != eKeys.size()) {
-                                    return false;
-                                }
-                                for (int i = 0; i < dbKeys.size(); ++i) {
-                                    if (!Objects.equals(dbKeys.get(i), eKeys.get(i))) return false;
-                                }
+                                if (!equalsBy(o, containedEObject, a)) return false;
                             }
                             return true;
                         }).findFirst().orElse(null);
@@ -301,6 +292,25 @@ public class HbTransaction implements AutoCloseable, Serializable {
         dbObject.getContent().removeAll(toDeleteC);
         toDeleteC.forEach(this::deleteRecursive);
         return dbObject;
+    }
+
+    private boolean equalsBy(DBObject dbObject, EObject eObject, EAttribute eAttribute) {
+        List<String> dbKeys = dbObject.getAttributesMap().entrySet().stream()
+                .filter(entry -> Objects.equals(entry.getKey(), eAttribute.getName()))
+                .flatMap(entry -> entry.getValue().stream())
+                .collect(Collectors.toList());
+        List<String> eKeys = (eAttribute.isMany() ?
+                (List<Object>) eObject.eGet(eAttribute) :
+                Collections.singletonList(eObject.eGet(eAttribute))).stream()
+                .map(v -> v == null ? null : EcoreUtil.convertToString(eAttribute.getEAttributeType(), v))
+                .collect(Collectors.toList());
+        if (dbKeys.size() != eKeys.size()) {
+            return false;
+        }
+        for (int i = 0; i < dbKeys.size(); ++i) {
+            if (!Objects.equals(dbKeys.get(i), eKeys.get(i))) return false;
+        }
+        return true;
     }
 
     private URI getProxyURI(DBObject dbObject) {

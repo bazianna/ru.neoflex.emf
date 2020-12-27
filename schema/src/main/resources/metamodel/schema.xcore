@@ -14,7 +14,7 @@ class Column {
 }
 
 abstract class DBKey {
-	String name
+	id String name
 	refers Column[] columns
 }
 
