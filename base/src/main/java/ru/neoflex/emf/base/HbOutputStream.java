@@ -10,8 +10,8 @@ import java.util.Map;
 
 public class HbOutputStream extends OutputStream implements URIConverter.Saveable {
     protected HbTransaction tx;
-    private URI uri;
-    private Map<?, ?> options;
+    private final URI uri;
+    private final Map<?, ?> options;
 
     public HbOutputStream(HbTransaction tx, URI uri, Map<?, ?> options) {
         this.tx = tx;

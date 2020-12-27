@@ -9,14 +9,14 @@ import java.io.InputStream;
 import java.util.Map;
 
 public class HbInputStream extends InputStream implements URIConverter.Loadable {
-    private HbTransaction tx;
+    protected HbTransaction tx;
     private URI uri;
     private Map<String, Object> options;
 
-    public HbInputStream(HbTransaction tx, URI uri, Map<String, Object> options) {
+    public HbInputStream(HbTransaction tx, URI uri, Map<?, ?> options) {
         this.tx = tx;
         this.uri = uri;
-        this.options = options;
+        this.options = (Map<String, Object>) options;
     }
 
     @Override

@@ -49,8 +49,16 @@ public class HbHandler extends URIHandlerImpl {
 
     @Override
     public InputStream createInputStream(URI uri, Map<?, ?> options) throws IOException {
-        HbTransaction effectiveTx = tx != null ? tx : getDbServer().createDBTransaction(false);
-        return new HbInputStream(effectiveTx, uri, (Map<String, Object>) options);
+        if (tx != null) {
+            return new HbInputStream(tx, uri, options);
+        }
+        HbTransaction effectiveTx = getDbServer().createDBTransaction(true);
+        return new HbInputStream(effectiveTx, uri, options) {
+            @Override
+            public void close() throws IOException {
+                this.tx.close();
+            }
+        };
     }
 
     @Override
