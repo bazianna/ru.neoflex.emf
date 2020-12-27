@@ -54,4 +54,14 @@ public class HronTests {
         String s = resource.toString();
         logger.info(s);
     }
+
+    @Test
+    public void EStringToStringMapEntryTest() throws IOException {
+        HronResourceSet rs = new HronResourceSet();
+        URI uri = URI.createURI("EStringToStringMapEntry.hron");
+        Resource resource = rs.createResource(uri);
+        resource.getContents().add(EcoreUtil.copy(EcorePackage.eINSTANCE.getEBigDecimal().getEAnnotations().get(0)));
+        String s = resource.toString();
+        logger.info(s);
+    }
 }

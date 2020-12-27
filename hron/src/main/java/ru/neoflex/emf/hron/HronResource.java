@@ -107,7 +107,9 @@ public class HronResource extends ResourceImpl {
             String nsPrefix = eClass.getEPackage().getNsPrefix();
             String className = nsPrefix + "." + eClass.getName();
             result.put("eClass", className);
-            String id = EcoreUtil.getID(rootObject);
+            String id = rootObject instanceof EPackage ?
+                    ((EPackage) rootObject).getNsURI() :
+                    EcoreUtil.getID(rootObject);
             result.put("id", id);
             if (id == null) {
                 throw new IllegalArgumentException(String.format("Id value for %s not found or not set", className));
@@ -146,7 +148,7 @@ public class HronResource extends ResourceImpl {
                     if (!sf.isMany()) {
                         Object value = eObject.eGet(sf);
                         String attribute = getAttributeString(eDataType, value);
-                        eFeature.put("attribute", attribute);
+                        eFeature.put("attribute", Collections.singletonList(attribute));
                     } else {
                         List<String> attributes = new ArrayList<>();
                         eFeature.put("attributes", attributes);
