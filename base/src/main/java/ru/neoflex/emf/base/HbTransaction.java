@@ -304,7 +304,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     private URI getProxyURI(DBObject dbObject) {
-        DBObject root = getRootContainer(dbObject, null);
+        DBObject root = getRootContainer(dbObject);
 //        DBObject root = dbObject;
         return getHbServer().createURI(root.getId())
                 .appendFragment(String.valueOf(dbObject.getId()));
@@ -312,10 +312,10 @@ public class HbTransaction implements AutoCloseable, Serializable {
 
     private EObject loadEObject(HbResource resource, DBObject dbObject, Map<String, Object> options) {
         if (options != null && (Boolean) options.getOrDefault(HbHandler.OPTION_GET_ROOT_CONTAINER, Boolean.FALSE)) {
-            dbObject = getRootContainer(dbObject, null);
+            dbObject = getRootContainer(dbObject);
         }
         String classUri = dbObject.getClassUri();
-        EClass eClass = (EClass) getResourceSet().getEObject(URI.createURI(classUri), false);
+        EClass eClass = (EClass) resource.getResourceSet().getEObject(URI.createURI(classUri), false);
         Objects.requireNonNull(eClass, () -> String.format("Class not found %s", classUri));
         EObject eObject = EcoreUtil.create(eClass);
 
@@ -399,15 +399,14 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 .collect(Collectors.toList()).stream().map(dbResource -> createResource(rs, dbResource, null));
     }
 
-    private DBObject getRootContainer(DBObject dbObject, Set<Long> excludes) {
-        while (excludes == null || !excludes.contains(dbObject.getId())) {
+    private DBObject getRootContainer(DBObject dbObject) {
+        while (true) {
             DBObject parent = dbObject.getContainer();
             if (parent == null) {
                 return dbObject;
             }
             dbObject = parent;
         }
-        return null;
     }
 
     public void save(HbResource resource) {
