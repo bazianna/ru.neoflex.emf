@@ -271,6 +271,11 @@ public class HbTransaction implements AutoCloseable, Serializable {
                         containedDBObject = toDeleteC.stream().filter(o ->
                                 equalsBy(o, containedEObject, qSF)).findFirst().orElse(null);
                     }
+                    if (containedDBObject == null && containedEObject instanceof ENamedElement) {
+                        String name = ((ENamedElement)containedEObject).getName();
+                        containedDBObject = toDeleteC.stream().filter(o ->
+                                o.getAttributesMap().get("name").contains(name)).findFirst().orElse(null);
+                    }
                     if (containedDBObject == null && !eReference.getEKeys().isEmpty()) {
                         containedDBObject = toDeleteC.stream().filter(o -> {
                             for (EAttribute a : eReference.getEKeys()) {
