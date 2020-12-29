@@ -3,6 +3,7 @@ package ru.neoflex.emf.restserver;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import ru.neoflex.emf.base.HbServer;
@@ -27,6 +28,9 @@ public class HbHronSupport implements HronSupport {
 
     @Override
     public EObject lookupEObject(EClass eClass, String qName) {
+        if (EcorePackage.eINSTANCE.getEPackage().isSuperTypeOf(eClass)) {
+            return hbServer.getPackageRegistry().getEPackage(qName);
+        }
         Resource resource = hbServer.findBy(rs, eClass, qName);
         if (resource == null || resource.getContents().size() != 1) {
             return null;
