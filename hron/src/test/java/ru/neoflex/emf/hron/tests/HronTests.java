@@ -46,13 +46,17 @@ public class HronTests {
     }
 
     @Test
-    public void ecoreTest() throws IOException {
+    public void ecoreTest() throws IOException, URISyntaxException {
         HronResourceSet rs = new HronResourceSet();
         URI uri = URI.createURI("ecore.hron");
         Resource resource = rs.createResource(uri);
         resource.getContents().add(EcoreUtil.copy(EcorePackage.eINSTANCE));
         String s = resource.toString();
         logger.info(s);
+        String old = new String(
+                Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("ecore.hron").toURI())
+                ), StandardCharsets.UTF_8);
+        Assert.assertEquals(old, s);
     }
 
     @Test
@@ -68,7 +72,7 @@ public class HronTests {
     @Test
     public void hronTest() throws IOException {
         HronResourceSet rs = new HronResourceSet();
-        URI uri = URI.createURI("EStringToStringMapEntry.hron");
+        URI uri = URI.createURI("HronPackage.hron");
         Resource resource = rs.createResource(uri);
         resource.getContents().add(EcoreUtil.copy(HronPackage.eINSTANCE));
         String s = resource.toString();

@@ -1,0 +1,1480 @@
+[
+  ecore.EPackage {
+    name = "ecore"
+    nsURI = "http://www.eclipse.org/emf/2002/Ecore"
+    nsPrefix = "ecore"
+    eClassifiers = [
+      EAttribute: ecore.EClass {
+        name = "EAttribute"
+        eSuperTypes = [
+          #EStructuralFeature
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "iD"
+            eType = #EBoolean
+          }
+          ecore.EReference {
+            name = "eAttributeType"
+            lowerBound = "1"
+            eType = #EDataType
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+        ]
+      }
+      EAnnotation: ecore.EClass {
+        name = "EAnnotation"
+        eSuperTypes = [
+          #EModelElement
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "source"
+            eType = #EString
+          }
+          ecore.EReference {
+            name = "details"
+            upperBound = "-1"
+            eType = #EStringToStringMapEntry
+            containment = "true"
+            resolveProxies = "false"
+          }
+          EAnnotation_eModelElement: ecore.EReference {
+            name = "eModelElement"
+            eType = #EModelElement
+            transient = "true"
+            resolveProxies = "false"
+            eOpposite = #EModelElement_eAnnotations
+          }
+          ecore.EReference {
+            name = "contents"
+            upperBound = "-1"
+            eType = #EObject
+            containment = "true"
+            resolveProxies = "false"
+          }
+          ecore.EReference {
+            name = "references"
+            upperBound = "-1"
+            eType = #EObject
+          }
+        ]
+      }
+      EClass: ecore.EClass {
+        name = "EClass"
+        eSuperTypes = [
+          #EClassifier
+        ]
+        eOperations = [
+          ecore.EOperation {
+            name = "isSuperTypeOf"
+            eType = #EBoolean
+            eParameters = [
+              ecore.EParameter {
+                name = "someClass"
+                eType = #EClass
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "getFeatureCount"
+            eType = #EInt
+          }
+          ecore.EOperation {
+            name = "getEStructuralFeature"
+            eType = #EStructuralFeature
+            eParameters = [
+              ecore.EParameter {
+                name = "featureID"
+                eType = #EInt
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "getFeatureID"
+            eType = #EInt
+            eParameters = [
+              ecore.EParameter {
+                name = "feature"
+                eType = #EStructuralFeature
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "getEStructuralFeature"
+            eType = #EStructuralFeature
+            eParameters = [
+              ecore.EParameter {
+                name = "featureName"
+                eType = #EString
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "getOperationCount"
+            eType = #EInt
+          }
+          ecore.EOperation {
+            name = "getEOperation"
+            eType = #EOperation
+            eParameters = [
+              ecore.EParameter {
+                name = "operationID"
+                eType = #EInt
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "getOperationID"
+            eType = #EInt
+            eParameters = [
+              ecore.EParameter {
+                name = "operation"
+                eType = #EOperation
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "getOverride"
+            eType = #EOperation
+            eParameters = [
+              ecore.EParameter {
+                name = "operation"
+                eType = #EOperation
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "getFeatureType"
+            eType = #EGenericType
+            eParameters = [
+              ecore.EParameter {
+                name = "feature"
+                eType = #EStructuralFeature
+              }
+            ]
+          }
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "abstract"
+            eType = #EBoolean
+          }
+          ecore.EAttribute {
+            name = "interface"
+            eType = #EBoolean
+          }
+          ecore.EReference {
+            name = "eSuperTypes"
+            upperBound = "-1"
+            eType = #EClass
+            unsettable = "true"
+          }
+          EClass_eOperations: ecore.EReference {
+            name = "eOperations"
+            upperBound = "-1"
+            eType = #EOperation
+            containment = "true"
+            resolveProxies = "false"
+            eOpposite = #EOperation_eContainingClass
+          }
+          ecore.EReference {
+            name = "eAllAttributes"
+            upperBound = "-1"
+            eType = #EAttribute
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eAllReferences"
+            upperBound = "-1"
+            eType = #EReference
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eReferences"
+            upperBound = "-1"
+            eType = #EReference
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eAttributes"
+            upperBound = "-1"
+            eType = #EAttribute
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eAllContainments"
+            upperBound = "-1"
+            eType = #EReference
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eAllOperations"
+            upperBound = "-1"
+            eType = #EOperation
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eAllStructuralFeatures"
+            upperBound = "-1"
+            eType = #EStructuralFeature
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eAllSuperTypes"
+            upperBound = "-1"
+            eType = #EClass
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eIDAttribute"
+            eType = #EAttribute
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+            resolveProxies = "false"
+          }
+          EClass_eStructuralFeatures: ecore.EReference {
+            name = "eStructuralFeatures"
+            upperBound = "-1"
+            eType = #EStructuralFeature
+            containment = "true"
+            resolveProxies = "false"
+            eOpposite = #EStructuralFeature_eContainingClass
+          }
+          ecore.EReference {
+            name = "eGenericSuperTypes"
+            upperBound = "-1"
+            eType = #EGenericType
+            unsettable = "true"
+            containment = "true"
+            resolveProxies = "false"
+          }
+          ecore.EReference {
+            name = "eAllGenericSuperTypes"
+            upperBound = "-1"
+            eType = #EGenericType
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+        ]
+      }
+      EClassifier: ecore.EClass {
+        name = "EClassifier"
+        abstract = "true"
+        eSuperTypes = [
+          #ENamedElement
+        ]
+        eOperations = [
+          ecore.EOperation {
+            name = "isInstance"
+            eType = #EBoolean
+            eParameters = [
+              ecore.EParameter {
+                name = "object"
+                eType = #EJavaObject
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "getClassifierID"
+            eType = #EInt
+          }
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "instanceClassName"
+            eType = #EString
+            volatile = "true"
+            unsettable = "true"
+          }
+          ecore.EAttribute {
+            name = "instanceClass"
+            eGenericType = ecore.EGenericType {
+              eTypeArguments = [
+                ecore.EGenericType {
+                }
+              ]
+              eClassifier = #EJavaClass
+            }
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EAttribute {
+            name = "defaultValue"
+            eType = #EJavaObject
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EAttribute {
+            name = "instanceTypeName"
+            eType = #EString
+            volatile = "true"
+            unsettable = "true"
+          }
+          EClassifier_ePackage: ecore.EReference {
+            name = "ePackage"
+            eType = #EPackage
+            changeable = "false"
+            transient = "true"
+            eOpposite = #EPackage_eClassifiers
+          }
+          ecore.EReference {
+            name = "eTypeParameters"
+            upperBound = "-1"
+            eType = #ETypeParameter
+            containment = "true"
+          }
+        ]
+      }
+      EDataType: ecore.EClass {
+        name = "EDataType"
+        eSuperTypes = [
+          #EClassifier
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "serializable"
+            eType = #EBoolean
+            defaultValueLiteral = "true"
+          }
+        ]
+      }
+      EEnum: ecore.EClass {
+        name = "EEnum"
+        eSuperTypes = [
+          #EDataType
+        ]
+        eOperations = [
+          ecore.EOperation {
+            name = "getEEnumLiteral"
+            eType = #EEnumLiteral
+            eParameters = [
+              ecore.EParameter {
+                name = "name"
+                eType = #EString
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "getEEnumLiteral"
+            eType = #EEnumLiteral
+            eParameters = [
+              ecore.EParameter {
+                name = "value"
+                eType = #EInt
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "getEEnumLiteralByLiteral"
+            eType = #EEnumLiteral
+            eParameters = [
+              ecore.EParameter {
+                name = "literal"
+                eType = #EString
+              }
+            ]
+          }
+        ]
+        eStructuralFeatures = [
+          EEnum_eLiterals: ecore.EReference {
+            name = "eLiterals"
+            upperBound = "-1"
+            eType = #EEnumLiteral
+            containment = "true"
+            resolveProxies = "false"
+            eOpposite = #EEnumLiteral_eEnum
+          }
+        ]
+      }
+      EEnumLiteral: ecore.EClass {
+        name = "EEnumLiteral"
+        eSuperTypes = [
+          #ENamedElement
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "value"
+            eType = #EInt
+          }
+          ecore.EAttribute {
+            name = "instance"
+            eType = #EEnumerator
+            transient = "true"
+          }
+          ecore.EAttribute {
+            name = "literal"
+            eType = #EString
+          }
+          EEnumLiteral_eEnum: ecore.EReference {
+            name = "eEnum"
+            eType = #EEnum
+            changeable = "false"
+            transient = "true"
+            resolveProxies = "false"
+            eOpposite = #EEnum_eLiterals
+          }
+        ]
+      }
+      EFactory: ecore.EClass {
+        name = "EFactory"
+        eSuperTypes = [
+          #EModelElement
+        ]
+        eOperations = [
+          ecore.EOperation {
+            name = "create"
+            eType = #EObject
+            eParameters = [
+              ecore.EParameter {
+                name = "eClass"
+                eType = #EClass
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "createFromString"
+            eType = #EJavaObject
+            eParameters = [
+              ecore.EParameter {
+                name = "eDataType"
+                eType = #EDataType
+              }
+              ecore.EParameter {
+                name = "literalValue"
+                eType = #EString
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "convertToString"
+            eType = #EString
+            eParameters = [
+              ecore.EParameter {
+                name = "eDataType"
+                eType = #EDataType
+              }
+              ecore.EParameter {
+                name = "instanceValue"
+                eType = #EJavaObject
+              }
+            ]
+          }
+        ]
+        eStructuralFeatures = [
+          EFactory_ePackage: ecore.EReference {
+            name = "ePackage"
+            lowerBound = "1"
+            eType = #EPackage
+            transient = "true"
+            resolveProxies = "false"
+            eOpposite = #EPackage_eFactoryInstance
+          }
+        ]
+      }
+      EModelElement: ecore.EClass {
+        name = "EModelElement"
+        abstract = "true"
+        eOperations = [
+          ecore.EOperation {
+            name = "getEAnnotation"
+            eType = #EAnnotation
+            eParameters = [
+              ecore.EParameter {
+                name = "source"
+                eType = #EString
+              }
+            ]
+          }
+        ]
+        eStructuralFeatures = [
+          EModelElement_eAnnotations: ecore.EReference {
+            name = "eAnnotations"
+            upperBound = "-1"
+            eType = #EAnnotation
+            containment = "true"
+            resolveProxies = "false"
+            eOpposite = #EAnnotation_eModelElement
+          }
+        ]
+      }
+      ENamedElement: ecore.EClass {
+        name = "ENamedElement"
+        abstract = "true"
+        eSuperTypes = [
+          #EModelElement
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "name"
+            eType = #EString
+          }
+        ]
+      }
+      EObject: ecore.EClass {
+        name = "EObject"
+        eOperations = [
+          ecore.EOperation {
+            name = "eClass"
+            eType = #EClass
+          }
+          ecore.EOperation {
+            name = "eIsProxy"
+            eType = #EBoolean
+          }
+          ecore.EOperation {
+            name = "eResource"
+            eType = #EResource
+          }
+          ecore.EOperation {
+            name = "eContainer"
+            eType = #EObject
+          }
+          ecore.EOperation {
+            name = "eContainingFeature"
+            eType = #EStructuralFeature
+          }
+          ecore.EOperation {
+            name = "eContainmentFeature"
+            eType = #EReference
+          }
+          ecore.EOperation {
+            name = "eContents"
+            eGenericType = ecore.EGenericType {
+              eTypeArguments = [
+                ecore.EGenericType {
+                  eClassifier = #EObject
+                }
+              ]
+              eClassifier = #EEList
+            }
+          }
+          ecore.EOperation {
+            name = "eAllContents"
+            eGenericType = ecore.EGenericType {
+              eTypeArguments = [
+                ecore.EGenericType {
+                  eClassifier = #EObject
+                }
+              ]
+              eClassifier = #ETreeIterator
+            }
+          }
+          ecore.EOperation {
+            name = "eCrossReferences"
+            eGenericType = ecore.EGenericType {
+              eTypeArguments = [
+                ecore.EGenericType {
+                  eClassifier = #EObject
+                }
+              ]
+              eClassifier = #EEList
+            }
+          }
+          ecore.EOperation {
+            name = "eGet"
+            eType = #EJavaObject
+            eParameters = [
+              ecore.EParameter {
+                name = "feature"
+                eType = #EStructuralFeature
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "eGet"
+            eType = #EJavaObject
+            eParameters = [
+              ecore.EParameter {
+                name = "feature"
+                eType = #EStructuralFeature
+              }
+              ecore.EParameter {
+                name = "resolve"
+                eType = #EBoolean
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "eSet"
+            eParameters = [
+              ecore.EParameter {
+                name = "feature"
+                eType = #EStructuralFeature
+              }
+              ecore.EParameter {
+                name = "newValue"
+                eType = #EJavaObject
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "eIsSet"
+            eType = #EBoolean
+            eParameters = [
+              ecore.EParameter {
+                name = "feature"
+                eType = #EStructuralFeature
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "eUnset"
+            eParameters = [
+              ecore.EParameter {
+                name = "feature"
+                eType = #EStructuralFeature
+              }
+            ]
+          }
+          ecore.EOperation {
+            name = "eInvoke"
+            eType = #EJavaObject
+            eParameters = [
+              ecore.EParameter {
+                name = "operation"
+                eType = #EOperation
+              }
+              ecore.EParameter {
+                name = "arguments"
+                eGenericType = ecore.EGenericType {
+                  eTypeArguments = [
+                    ecore.EGenericType {
+                    }
+                  ]
+                  eClassifier = #EEList
+                }
+              }
+            ]
+            eExceptions = [
+              #EInvocationTargetException
+            ]
+          }
+        ]
+      }
+      EOperation: ecore.EClass {
+        name = "EOperation"
+        eSuperTypes = [
+          #ETypedElement
+        ]
+        eOperations = [
+          ecore.EOperation {
+            name = "getOperationID"
+            eType = #EInt
+          }
+          ecore.EOperation {
+            name = "isOverrideOf"
+            eType = #EBoolean
+            eParameters = [
+              ecore.EParameter {
+                name = "someOperation"
+                eType = #EOperation
+              }
+            ]
+          }
+        ]
+        eStructuralFeatures = [
+          EOperation_eContainingClass: ecore.EReference {
+            name = "eContainingClass"
+            eType = #EClass
+            changeable = "false"
+            transient = "true"
+            resolveProxies = "false"
+            eOpposite = #EClass_eOperations
+          }
+          ecore.EReference {
+            name = "eTypeParameters"
+            upperBound = "-1"
+            eType = #ETypeParameter
+            containment = "true"
+          }
+          EOperation_eParameters: ecore.EReference {
+            name = "eParameters"
+            upperBound = "-1"
+            eType = #EParameter
+            containment = "true"
+            resolveProxies = "false"
+            eOpposite = #EParameter_eOperation
+          }
+          ecore.EReference {
+            name = "eExceptions"
+            upperBound = "-1"
+            eType = #EClassifier
+            unsettable = "true"
+          }
+          ecore.EReference {
+            name = "eGenericExceptions"
+            upperBound = "-1"
+            eType = #EGenericType
+            unsettable = "true"
+            containment = "true"
+            resolveProxies = "false"
+          }
+        ]
+      }
+      EPackage: ecore.EClass {
+        name = "EPackage"
+        eSuperTypes = [
+          #ENamedElement
+        ]
+        eOperations = [
+          ecore.EOperation {
+            name = "getEClassifier"
+            eType = #EClassifier
+            eParameters = [
+              ecore.EParameter {
+                name = "name"
+                eType = #EString
+              }
+            ]
+          }
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "nsURI"
+            eType = #EString
+          }
+          ecore.EAttribute {
+            name = "nsPrefix"
+            eType = #EString
+          }
+          EPackage_eFactoryInstance: ecore.EReference {
+            name = "eFactoryInstance"
+            lowerBound = "1"
+            eType = #EFactory
+            transient = "true"
+            resolveProxies = "false"
+            eOpposite = #EFactory_ePackage
+          }
+          EPackage_eClassifiers: ecore.EReference {
+            name = "eClassifiers"
+            upperBound = "-1"
+            eType = #EClassifier
+            containment = "true"
+            eOpposite = #EClassifier_ePackage
+          }
+          EPackage_eSubpackages: ecore.EReference {
+            name = "eSubpackages"
+            upperBound = "-1"
+            eType = #EPackage
+            containment = "true"
+            eOpposite = #EPackage_eSuperPackage
+          }
+          EPackage_eSuperPackage: ecore.EReference {
+            name = "eSuperPackage"
+            eType = #EPackage
+            changeable = "false"
+            transient = "true"
+            eOpposite = #EPackage_eSubpackages
+          }
+        ]
+      }
+      EParameter: ecore.EClass {
+        name = "EParameter"
+        eSuperTypes = [
+          #ETypedElement
+        ]
+        eStructuralFeatures = [
+          EParameter_eOperation: ecore.EReference {
+            name = "eOperation"
+            eType = #EOperation
+            changeable = "false"
+            transient = "true"
+            resolveProxies = "false"
+            eOpposite = #EOperation_eParameters
+          }
+        ]
+      }
+      EReference: ecore.EClass {
+        name = "EReference"
+        eSuperTypes = [
+          #EStructuralFeature
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "containment"
+            eType = #EBoolean
+          }
+          ecore.EAttribute {
+            name = "container"
+            eType = #EBoolean
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EAttribute {
+            name = "resolveProxies"
+            eType = #EBoolean
+            defaultValueLiteral = "true"
+          }
+          ecore.EReference {
+            name = "eOpposite"
+            eType = #EReference
+          }
+          ecore.EReference {
+            name = "eReferenceType"
+            lowerBound = "1"
+            eType = #EClass
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eKeys"
+            upperBound = "-1"
+            eType = #EAttribute
+          }
+        ]
+      }
+      EStructuralFeature: ecore.EClass {
+        name = "EStructuralFeature"
+        abstract = "true"
+        eSuperTypes = [
+          #ETypedElement
+        ]
+        eOperations = [
+          ecore.EOperation {
+            name = "getFeatureID"
+            eType = #EInt
+          }
+          ecore.EOperation {
+            name = "getContainerClass"
+            eGenericType = ecore.EGenericType {
+              eTypeArguments = [
+                ecore.EGenericType {
+                }
+              ]
+              eClassifier = #EJavaClass
+            }
+          }
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "changeable"
+            eType = #EBoolean
+            defaultValueLiteral = "true"
+          }
+          ecore.EAttribute {
+            name = "volatile"
+            eType = #EBoolean
+          }
+          ecore.EAttribute {
+            name = "transient"
+            eType = #EBoolean
+          }
+          ecore.EAttribute {
+            name = "defaultValueLiteral"
+            eType = #EString
+          }
+          ecore.EAttribute {
+            name = "defaultValue"
+            eType = #EJavaObject
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EAttribute {
+            name = "unsettable"
+            eType = #EBoolean
+          }
+          ecore.EAttribute {
+            name = "derived"
+            eType = #EBoolean
+          }
+          EStructuralFeature_eContainingClass: ecore.EReference {
+            name = "eContainingClass"
+            eType = #EClass
+            changeable = "false"
+            transient = "true"
+            resolveProxies = "false"
+            eOpposite = #EClass_eStructuralFeatures
+          }
+        ]
+      }
+      ETypedElement: ecore.EClass {
+        name = "ETypedElement"
+        abstract = "true"
+        eSuperTypes = [
+          #ENamedElement
+        ]
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "ordered"
+            eType = #EBoolean
+            defaultValueLiteral = "true"
+          }
+          ecore.EAttribute {
+            name = "unique"
+            eType = #EBoolean
+            defaultValueLiteral = "true"
+          }
+          ecore.EAttribute {
+            name = "lowerBound"
+            eType = #EInt
+          }
+          ecore.EAttribute {
+            name = "upperBound"
+            eType = #EInt
+            defaultValueLiteral = "1"
+          }
+          ecore.EAttribute {
+            name = "many"
+            eType = #EBoolean
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EAttribute {
+            name = "required"
+            eType = #EBoolean
+            changeable = "false"
+            volatile = "true"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eType"
+            eType = #EClassifier
+            volatile = "true"
+            unsettable = "true"
+          }
+          ecore.EReference {
+            name = "eGenericType"
+            eType = #EGenericType
+            volatile = "true"
+            unsettable = "true"
+            containment = "true"
+            resolveProxies = "false"
+          }
+        ]
+      }
+      EStringToStringMapEntry: ecore.EClass {
+        name = "EStringToStringMapEntry"
+        instanceClassName = "java.util.Map$Entry"
+        eStructuralFeatures = [
+          ecore.EAttribute {
+            name = "key"
+            eType = #EString
+          }
+          ecore.EAttribute {
+            name = "value"
+            eType = #EString
+          }
+        ]
+      }
+      EGenericType: ecore.EClass {
+        name = "EGenericType"
+        eOperations = [
+          ecore.EOperation {
+            name = "isInstance"
+            eType = #EBoolean
+            eParameters = [
+              ecore.EParameter {
+                name = "object"
+                eType = #EJavaObject
+              }
+            ]
+          }
+        ]
+        eStructuralFeatures = [
+          ecore.EReference {
+            name = "eUpperBound"
+            eType = #EGenericType
+            containment = "true"
+            resolveProxies = "false"
+          }
+          ecore.EReference {
+            name = "eTypeArguments"
+            upperBound = "-1"
+            eType = #EGenericType
+            containment = "true"
+            resolveProxies = "false"
+          }
+          ecore.EReference {
+            name = "eRawType"
+            lowerBound = "1"
+            eType = #EClassifier
+            changeable = "false"
+            transient = "true"
+            derived = "true"
+          }
+          ecore.EReference {
+            name = "eLowerBound"
+            eType = #EGenericType
+            containment = "true"
+            resolveProxies = "false"
+          }
+          ecore.EReference {
+            name = "eTypeParameter"
+            eType = #ETypeParameter
+            resolveProxies = "false"
+          }
+          ecore.EReference {
+            name = "eClassifier"
+            eType = #EClassifier
+          }
+        ]
+      }
+      ETypeParameter: ecore.EClass {
+        name = "ETypeParameter"
+        eSuperTypes = [
+          #ENamedElement
+        ]
+        eStructuralFeatures = [
+          ecore.EReference {
+            name = "eBounds"
+            upperBound = "-1"
+            eType = #EGenericType
+            containment = "true"
+            resolveProxies = "false"
+          }
+        ]
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#decimal"
+              }
+            ]
+          }
+        ]
+        name = "EBigDecimal"
+        instanceClassName = "java.math.BigDecimal"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#integer"
+              }
+            ]
+          }
+        ]
+        name = "EBigInteger"
+        instanceClassName = "java.math.BigInteger"
+      }
+      EBoolean: ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#boolean"
+              }
+            ]
+          }
+        ]
+        name = "EBoolean"
+        instanceClassName = "boolean"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "EBoolean"
+              }
+              ecore.EStringToStringMapEntry {
+                key = "name"
+                value = "EBoolean:Object"
+              }
+            ]
+          }
+        ]
+        name = "EBooleanObject"
+        instanceClassName = "java.lang.Boolean"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#byte"
+              }
+            ]
+          }
+        ]
+        name = "EByte"
+        instanceClassName = "byte"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#hexBinary"
+              }
+            ]
+          }
+        ]
+        name = "EByteArray"
+        instanceClassName = "byte[]"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "EByte"
+              }
+              ecore.EStringToStringMapEntry {
+                key = "name"
+                value = "EByte:Object"
+              }
+            ]
+          }
+        ]
+        name = "EByteObject"
+        instanceClassName = "java.lang.Byte"
+      }
+      ecore.EDataType {
+        name = "EChar"
+        instanceClassName = "char"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "EChar"
+              }
+              ecore.EStringToStringMapEntry {
+                key = "name"
+                value = "EChar:Object"
+              }
+            ]
+          }
+        ]
+        name = "ECharacterObject"
+        instanceClassName = "java.lang.Character"
+      }
+      ecore.EDataType {
+        name = "EDate"
+        instanceClassName = "java.util.Date"
+      }
+      ecore.EDataType {
+        name = "EDiagnosticChain"
+        instanceClassName = "org.eclipse.emf.common.util.DiagnosticChain"
+        serializable = "false"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#double"
+              }
+            ]
+          }
+        ]
+        name = "EDouble"
+        instanceClassName = "double"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "EDouble"
+              }
+              ecore.EStringToStringMapEntry {
+                key = "name"
+                value = "EDouble:Object"
+              }
+            ]
+          }
+        ]
+        name = "EDoubleObject"
+        instanceClassName = "java.lang.Double"
+      }
+      EEList: ecore.EDataType {
+        name = "EEList"
+        instanceClassName = "org.eclipse.emf.common.util.EList"
+        eTypeParameters = [
+          ecore.ETypeParameter {
+            name = "E"
+          }
+        ]
+        serializable = "false"
+      }
+      EEnumerator: ecore.EDataType {
+        name = "EEnumerator"
+        instanceClassName = "org.eclipse.emf.common.util.Enumerator"
+        serializable = "false"
+      }
+      ecore.EDataType {
+        name = "EFeatureMap"
+        instanceClassName = "org.eclipse.emf.ecore.util.FeatureMap"
+        serializable = "false"
+      }
+      ecore.EDataType {
+        name = "EFeatureMapEntry"
+        instanceClassName = "org.eclipse.emf.ecore.util.FeatureMap$Entry"
+        serializable = "false"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#float"
+              }
+            ]
+          }
+        ]
+        name = "EFloat"
+        instanceClassName = "float"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "EFloat"
+              }
+              ecore.EStringToStringMapEntry {
+                key = "name"
+                value = "EFloat:Object"
+              }
+            ]
+          }
+        ]
+        name = "EFloatObject"
+        instanceClassName = "java.lang.Float"
+      }
+      EInt: ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#int"
+              }
+            ]
+          }
+        ]
+        name = "EInt"
+        instanceClassName = "int"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "EInt"
+              }
+              ecore.EStringToStringMapEntry {
+                key = "name"
+                value = "EInt:Object"
+              }
+            ]
+          }
+        ]
+        name = "EIntegerObject"
+        instanceClassName = "java.lang.Integer"
+      }
+      EJavaClass: ecore.EDataType {
+        name = "EJavaClass"
+        instanceClassName = "java.lang.Class"
+        eTypeParameters = [
+          ecore.ETypeParameter {
+            name = "T"
+          }
+        ]
+      }
+      EJavaObject: ecore.EDataType {
+        name = "EJavaObject"
+        instanceClassName = "java.lang.Object"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#long"
+              }
+            ]
+          }
+        ]
+        name = "ELong"
+        instanceClassName = "long"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "ELong"
+              }
+              ecore.EStringToStringMapEntry {
+                key = "name"
+                value = "ELong:Object"
+              }
+            ]
+          }
+        ]
+        name = "ELongObject"
+        instanceClassName = "java.lang.Long"
+      }
+      ecore.EDataType {
+        name = "EMap"
+        instanceClassName = "java.util.Map"
+        eTypeParameters = [
+          ecore.ETypeParameter {
+            name = "K"
+          }
+          ecore.ETypeParameter {
+            name = "V"
+          }
+        ]
+        serializable = "false"
+      }
+      EResource: ecore.EDataType {
+        name = "EResource"
+        instanceClassName = "org.eclipse.emf.ecore.resource.Resource"
+        serializable = "false"
+      }
+      ecore.EDataType {
+        name = "EResourceSet"
+        instanceClassName = "org.eclipse.emf.ecore.resource.ResourceSet"
+        serializable = "false"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#short"
+              }
+            ]
+          }
+        ]
+        name = "EShort"
+        instanceClassName = "short"
+      }
+      ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "EShort"
+              }
+              ecore.EStringToStringMapEntry {
+                key = "name"
+                value = "EShort:Object"
+              }
+            ]
+          }
+        ]
+        name = "EShortObject"
+        instanceClassName = "java.lang.Short"
+      }
+      EString: ecore.EDataType {
+        eAnnotations = [
+          ecore.EAnnotation {
+            source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData"
+            details = [
+              ecore.EStringToStringMapEntry {
+                key = "baseType"
+                value = "http://www.w3.org/2001/XMLSchema#string"
+              }
+            ]
+          }
+        ]
+        name = "EString"
+        instanceClassName = "java.lang.String"
+      }
+      ETreeIterator: ecore.EDataType {
+        name = "ETreeIterator"
+        instanceClassName = "org.eclipse.emf.common.util.TreeIterator"
+        eTypeParameters = [
+          ecore.ETypeParameter {
+            name = "E"
+          }
+        ]
+        serializable = "false"
+      }
+      EInvocationTargetException: ecore.EDataType {
+        name = "EInvocationTargetException"
+        instanceClassName = "java.lang.reflect.InvocationTargetException"
+        serializable = "false"
+      }
+    ]
+  }
+]
