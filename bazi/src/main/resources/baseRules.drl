@@ -24,6 +24,8 @@ import ru.neoflex.emf.bazi.calendar.Months
 import ru.neoflex.emf.bazi.calendar.Day
 import ru.neoflex.emf.bazi.calendar.Hour
 
+dialect  "mvel"
+
 global DBServerSvc dbServerSvc;
 global HbTransaction tx;
 
@@ -86,8 +88,10 @@ global HbTransaction tx;
 //}
 
 query "EObjects"
-    $eObject : NatalChart()
+    $eObject : EObject()
 end
+
+
 //
 //rule "Create Calendar Year"
 //when
@@ -126,7 +130,7 @@ function BaZiDate createBaZiDate(HbTransaction tx, InputParams inputParams) {
     BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
     baZiDate.setGregorianYear(inputParams.getYear());
     baZiDate.setGregorianMonth(inputParams.getMonth());
-    baZiDate.setDay(inputParams.getMonth());
+    baZiDate.setDay(inputParams.getDay());
 
     return baZiDate;
 }
