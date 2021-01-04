@@ -92,7 +92,6 @@ query "EObjects"
     $eObject : EObject()
 end
 
-
 //
 //rule "Create Calendar Year"
 //when
@@ -152,6 +151,38 @@ function Pillar createYearPillar(BaZiDate baZiDate) {
     return pillar;
 }
 
+function Pillar createMonthPillar(BaZiDate baZiDate) {
+    Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyIndex = baZiDate.getChineseMonth() % 10 + 1;
+    Elements sky = elements.get(skyIndex);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthIndex = baZiDate.getChineseMonth() % 12 + 1;
+    Zoo earth = zoo.get(earthIndex);
+
+    pillar.setSky(sky);
+    pillar.setEarth(earth);
+    return pillar;
+}
+
+function Pillar createDayPillar(BaZiDate baZiDate) {
+    Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyIndex = baZiDate.getDay() % 10 + 1;
+    Elements sky = elements.get(skyIndex);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthIndex = baZiDate.getDay() % 12 + 1;
+    Zoo earth = zoo.get(earthIndex);
+
+    pillar.setSky(sky);
+    pillar.setEarth(earth);
+    return pillar;
+}
+
 rule "Create NatalChart"
 when
     $inputParams: InputParams()
@@ -178,5 +209,25 @@ when
 then
     Pillar year = createYearPillar($baZiDate);
     $natalChart.setYear(year);
+    update($natalChart);
+end;
+
+rule "Set Month Pillar"
+when
+    $natalChart: NatalChart()
+    $baZiDate: BaZiDate()
+then
+    Pillar month = createMonthPillar($baZiDate);
+    $natalChart.setMonth(month);
+    update($natalChart);
+end;
+
+rule "Set Day Pillar"
+when
+    $natalChart: NatalChart()
+    $baZiDate: BaZiDate()
+then
+    Pillar day = createDayPillar($baZiDate);
+    $natalChart.setDay(day);
     update($natalChart);
 end;
