@@ -23,6 +23,7 @@ import ru.neoflex.emf.bazi.calendar.Month
 import ru.neoflex.emf.bazi.calendar.Months
 import ru.neoflex.emf.bazi.calendar.Day
 import ru.neoflex.emf.bazi.calendar.Hour
+import ru.neoflex.emf.bazi.natalChart.Zoo
 
 dialect  "mvel"
 
@@ -135,15 +136,29 @@ function BaZiDate createBaZiDate(HbTransaction tx, InputParams inputParams) {
     return baZiDate;
 }
 
+function Pillar createYearPillar(BaZiDate baZiDate) {
+    Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyIndex = baZiDate.getChineseYear() % 10 + 1;
+    Elements sky = elements.get(skyIndex);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthIndex = baZiDate.getChineseYear() % 12 + 1;
+    Zoo earth = zoo.get(earthIndex);
+
+    pillar.setSky(sky);
+    pillar.setEarth(earth);
+    return pillar;
+}
+
 rule "Create NatalChart"
 when
-    $baZiDate: BaZiDate()
     $inputParams: InputParams()
     not NatalChart(inputParams == $inputParams)
 then
     NatalChart natalChart = NatalChartFactory.eINSTANCE.createNatalChart();
     natalChart.setInputParams($inputParams);
-
     insert(natalChart);
 end;
 
@@ -156,3 +171,12 @@ then
     insert(baZiDate);
 end;
 
+rule "Set Year Pillar"
+when
+    $natalChart: NatalChart()
+    $baZiDate: BaZiDate()
+then
+    Pillar year = createYearPillar($baZiDate);
+    $natalChart.setYear(year);
+    update($natalChart);
+end;
