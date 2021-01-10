@@ -24,6 +24,13 @@ import ru.neoflex.emf.bazi.calendar.Months
 import ru.neoflex.emf.bazi.calendar.Day
 import ru.neoflex.emf.bazi.calendar.Hour
 import ru.neoflex.emf.bazi.natalChart.Zoo
+import org.joda.time.Days
+import java.util.Date
+import java.text.SimpleDateFormat
+import org.joda.time.format.DateTimeFormatter
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.DateTime
+import java.text.DateFormat
 
 dialect  "mvel"
 
@@ -126,24 +133,15 @@ end
 //end;
 //
 
-function BaZiDate createBaZiDate(HbTransaction tx, InputParams inputParams) {
-    BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
-    baZiDate.setGregorianYear(inputParams.getYear());
-    baZiDate.setGregorianMonth(inputParams.getMonth());
-    baZiDate.setDay(inputParams.getDay());
-
-    return baZiDate;
-}
-
 function Pillar createYearPillar(BaZiDate baZiDate) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
     List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyIndex = baZiDate.getChineseYear() % 10 + 1;
+    Integer skyIndex = baZiDate.getChineseYear() % 10 < 4 ? baZiDate.getChineseYear() % 10 + 7 : baZiDate.getChineseYear() % 10 - 3;
     Elements sky = elements.get(skyIndex);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
-    Integer earthIndex = baZiDate.getChineseYear() % 12 + 1;
+    Integer earthIndex = baZiDate.getChineseYear() % 12 < 4 ? baZiDate.getChineseYear() % 12 + 9 : baZiDate.getChineseYear() % 12 - 3;
     Zoo earth = zoo.get(earthIndex);
 
     pillar.setSky(sky);
@@ -155,11 +153,11 @@ function Pillar createMonthPillar(BaZiDate baZiDate) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
     List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyIndex = baZiDate.getChineseMonth() % 10 + 1;
+    Integer skyIndex = baZiDate.getChineseMonth() % 10 < 9 ? baZiDate.getChineseMonth() % 10 + 2 : baZiDate.getChineseMonth() % 10 - 8;
     Elements sky = elements.get(skyIndex);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
-    Integer earthIndex = baZiDate.getChineseMonth() % 12 + 1;
+    Integer earthIndex = baZiDate.getChineseMonth() % 12 < 11 ? baZiDate.getChineseMonth() % 12 + 2 : baZiDate.getChineseMonth() % 12 - 10;
     Zoo earth = zoo.get(earthIndex);
 
     pillar.setSky(sky);
@@ -167,19 +165,30 @@ function Pillar createMonthPillar(BaZiDate baZiDate) {
     return pillar;
 }
 
+function Integer daysBetween(Date d1, Date d2){
+             return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 function Pillar createDayPillar(BaZiDate baZiDate) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
+    DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+
+    Date dayStart = formatter.parse("01.01.0001");
+    Date dayEnd = formatter.parse(baZiDate.getDay().toString() + "." + baZiDate.getChineseMonth().toString() + "." + baZiDate.getChineseYear().toString());
+    Integer days = daysBetween(dayStart ,dayEnd);
+
     List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyIndex = baZiDate.getDay() % 10 + 1;
+    Integer skyIndex = days % 10 < 6 ? days % 10 + 5 : days % 10 - 5;
     Elements sky = elements.get(skyIndex);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
-    Integer earthIndex = baZiDate.getDay() % 12 + 1;
+    Integer earthIndex = days % 12 < 11 ? days % 12 + 3 : days % 12 - 10;
     Zoo earth = zoo.get(earthIndex);
 
     pillar.setSky(sky);
     pillar.setEarth(earth);
+    pillar.setTest("dayStart: " + dayStart.toString() + ", dayEnd: " + dayEnd.toString() + ", earthIndex: " + earthIndex.toString() + ", days: " + days.toString() + ", days % 12: " + (days % 12));
     return pillar;
 }
 
@@ -191,15 +200,6 @@ then
     NatalChart natalChart = NatalChartFactory.eINSTANCE.createNatalChart();
     natalChart.setInputParams($inputParams);
     insert(natalChart);
-end;
-
-rule "Create BaZiDate"
-when
-    $inputParams: InputParams()
-    not BaZiDate()
-then
-    BaZiDate baZiDate = createBaZiDate(tx, $inputParams);
-    insert(baZiDate);
 end;
 
 rule "Set Year Pillar"

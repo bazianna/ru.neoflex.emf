@@ -8,6 +8,8 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
 import org.kie.internal.builder.DecisionTableInputType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +19,12 @@ import ru.neoflex.emf.drools.DroolsSvc;
 import ru.neoflex.emf.restserver.DBServerSvc;
 
 import javax.annotation.PostConstruct;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @RestController()
@@ -29,10 +35,15 @@ public class BaziController {
     final
     DBServerSvc dbServerSvc;
 
+    private static final Logger logger = LoggerFactory.getLogger(BaziController.class);
 
     public BaziController(DroolsSvc droolsSvc, DBServerSvc dbServerSvc) {
         this.droolsSvc = droolsSvc;
         this.dbServerSvc = dbServerSvc;
+    }
+
+    public Integer daysBetween(Date d1, Date d2){
+        return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
     }
 
     @PostConstruct
@@ -43,6 +54,32 @@ public class BaziController {
             List<Resource> resources = new ArrayList<>();
             resources.add(DroolsSvc.createClassPathResource("baseRules.drl", null));
             resources.add(DroolsSvc.createDecisionTableResource("calendar.xls", DecisionTableInputType.XLS));
+
+/*            //Удалить после тестирования дня
+            DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+            Date dayStart = null;
+            try {
+                dayStart = formatter.parse("01.01.0001");
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Date dayEnd4 = null;
+            Date dayEnd5 = null;
+            Date dayEnd6 = null;
+            Date dayEnd7 = null;
+            Date dayEnd8 = null;
+            try {
+                dayEnd4 = formatter.parse("04.12.2021");
+                dayEnd5 = formatter.parse("05.12.2021");
+                dayEnd6 = formatter.parse("06.12.2021");
+                dayEnd7 = formatter.parse("07.12.2021");
+                dayEnd8 = formatter.parse("08.12.2021");
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            Integer days = daysBetween(dayStart ,dayEnd4);
+            logger.info(String.valueOf(days), String.valueOf(days % 10 + 1));*/
 
 //            try {
 //                byte[] bazi = Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "bazi", "rules", "bazi.drl"));
