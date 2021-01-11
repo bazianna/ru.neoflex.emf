@@ -426,7 +426,7 @@ public class HbServer implements AutoCloseable {
 
     public EAttribute getQNameSF(EClass eClass) {
         EAttribute sf;
-        if (EcorePackage.Literals.EPACKAGE == eClass) {
+        if (EcorePackage.Literals.EPACKAGE.isSuperTypeOf(eClass)) {
             sf = EcorePackage.Literals.EPACKAGE__NS_URI;
         } else {
             sf = eClass.getEIDAttribute();

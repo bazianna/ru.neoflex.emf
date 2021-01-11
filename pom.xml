@@ -55,6 +55,12 @@
     <packaging>pom</packaging>
     <name>Neoflex EMF Framework Parent Project</name>
 
+    <scm>
+        <url>https://github.com/arch7tect/ru.neoflex.emf</url>
+        <connection>scm:git:https://github.com/arch7tect/ru.neoflex.emf.git</connection>
+        <tag>HEAD</tag>
+    </scm>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -508,6 +514,14 @@
                             <version>${antlr4.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.5.3</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
