@@ -61,7 +61,6 @@ class CalendarPillar {
 
 @BaZi(documentation="Столп в карте. Применяется к дате рождения(час, день, месяц, год), к тактам, и к обычному календарю")
 class Pillar extends CalendarPillar {
-    String test
     God god
     QiPhase qiPhaseFirstDegree
     QiPhase qiPhaseSecondDegree

@@ -188,7 +188,6 @@ function Pillar createDayPillar(BaZiDate baZiDate) {
 
     pillar.setSky(sky);
     pillar.setEarth(earth);
-    pillar.setTest("dayStart: " + dayStart.toString() + ", dayEnd: " + dayEnd.toString() + ", earthIndex: " + earthIndex.toString() + ", days: " + days.toString() + ", days % 12: " + (days % 12));
     return pillar;
 }
 

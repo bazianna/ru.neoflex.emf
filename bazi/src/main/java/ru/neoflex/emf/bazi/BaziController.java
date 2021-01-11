@@ -54,32 +54,8 @@ public class BaziController {
             List<Resource> resources = new ArrayList<>();
             resources.add(DroolsSvc.createClassPathResource("baseRules.drl", null));
             resources.add(DroolsSvc.createDecisionTableResource("calendar.xls", DecisionTableInputType.XLS));
+            resources.add(DroolsSvc.createDecisionTableResource("hourPillar.xls", DecisionTableInputType.XLS));
 
-/*            //Удалить после тестирования дня
-            DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
-            Date dayStart = null;
-            try {
-                dayStart = formatter.parse("01.01.0001");
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            Date dayEnd4 = null;
-            Date dayEnd5 = null;
-            Date dayEnd6 = null;
-            Date dayEnd7 = null;
-            Date dayEnd8 = null;
-            try {
-                dayEnd4 = formatter.parse("04.12.2021");
-                dayEnd5 = formatter.parse("05.12.2021");
-                dayEnd6 = formatter.parse("06.12.2021");
-                dayEnd7 = formatter.parse("07.12.2021");
-                dayEnd8 = formatter.parse("08.12.2021");
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
-            Integer days = daysBetween(dayStart ,dayEnd4);
-            logger.info(String.valueOf(days), String.valueOf(days % 10 + 1));*/
 
 //            try {
 //                byte[] bazi = Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "bazi", "rules", "bazi.drl"));
