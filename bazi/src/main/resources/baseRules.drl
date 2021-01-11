@@ -175,15 +175,15 @@ function Pillar createDayPillar(BaZiDate baZiDate) {
     DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
 
     Date dayStart = formatter.parse("01.01.0001");
-    Date dayEnd = formatter.parse(baZiDate.getDay().toString() + "." + baZiDate.getChineseMonth().toString() + "." + baZiDate.getChineseYear().toString());
+    Date dayEnd = formatter.parse(baZiDate.getDay().toString() + "." + baZiDate.getGregorianMonth().toString() + "." + baZiDate.getGregorianYear().toString());
     Integer days = daysBetween(dayStart ,dayEnd);
 
     List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyIndex = days % 10 < 6 ? days % 10 + 5 : days % 10 - 5;
+    Integer skyIndex = days % 10 < 7 ? days % 10 + 4 : days % 10 - 6;
     Elements sky = elements.get(skyIndex);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
-    Integer earthIndex = days % 12 < 11 ? days % 12 + 3 : days % 12 - 10;
+    Integer earthIndex = days % 12 < 11 ? days % 12 + 2 : days % 12 - 10;
     Zoo earth = zoo.get(earthIndex);
 
     pillar.setSky(sky);
