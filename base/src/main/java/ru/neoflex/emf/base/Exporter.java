@@ -22,6 +22,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -53,6 +54,14 @@ public class Exporter {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         resource.save(os, null);
         return os.toByteArray();
+    }
+
+    public static String eObjectToString(HbServer hbServer, EObject eObject) throws IOException {
+        return new String(new Exporter(hbServer).exportEObjectWithoutExternalRefs(eObject), StandardCharsets.UTF_8);
+    }
+
+    public static String eObjectRefsToString(HbServer hbServer, EObject eObject) throws TransformerException, ParserConfigurationException {
+        return new String(new Exporter(hbServer).exportExternalRefs(eObject), StandardCharsets.UTF_8);
     }
 
     public void unsetExternalReferences(EObject eObject) {
