@@ -8,6 +8,8 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
 import org.kie.internal.builder.DecisionTableInputType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +19,12 @@ import ru.neoflex.emf.drools.DroolsSvc;
 import ru.neoflex.emf.restserver.DBServerSvc;
 
 import javax.annotation.PostConstruct;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @RestController()
@@ -29,10 +35,15 @@ public class BaziController {
     final
     DBServerSvc dbServerSvc;
 
+    private static final Logger logger = LoggerFactory.getLogger(BaziController.class);
 
     public BaziController(DroolsSvc droolsSvc, DBServerSvc dbServerSvc) {
         this.droolsSvc = droolsSvc;
         this.dbServerSvc = dbServerSvc;
+    }
+
+    public Integer daysBetween(Date d1, Date d2){
+        return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
     }
 
     @PostConstruct
@@ -41,8 +52,10 @@ public class BaziController {
         droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<>("dbServerSvc", dbServerSvc));
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();
-            resources.add(DroolsSvc.createDecisionTableResource("calendar.xls", DecisionTableInputType.XLS));
             resources.add(DroolsSvc.createClassPathResource("baseRules.drl", null));
+            resources.add(DroolsSvc.createDecisionTableResource("calendar.xls", DecisionTableInputType.XLS));
+            resources.add(DroolsSvc.createDecisionTableResource("hourPillar.xls", DecisionTableInputType.XLS));
+
 
 //            try {
 //                byte[] bazi = Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "bazi", "rules", "bazi.drl"));
@@ -51,14 +64,6 @@ public class BaziController {
 //            catch (IOException e) {
 //                throw new IllegalArgumentException(e);
 //            }
-
-
-//            try {
-//                BaZiSvc.createCalendar("\\bazi\\src\\main\\resources\\calendar.xls", dbServerSvc);
-//            } catch (Exception e) {
-//                throw new IllegalArgumentException(e);
-//            }
-
             return resources;
         });
         droolsSvc.setDebug(true);
