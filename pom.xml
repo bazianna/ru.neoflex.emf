@@ -51,7 +51,7 @@
 
     <groupId>ru.neoflex.emf</groupId>
     <artifactId>parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Neoflex EMF Framework Parent Project</name>
 
