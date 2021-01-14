@@ -25,7 +25,7 @@
         <drools.version>7.46.0.Final</drools.version>
         <build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
         <gmavenplus-plugin.version>1.7.1</gmavenplus-plugin.version>
-        <maven-release-plugin.version>2.5.2</maven-release-plugin.version>
+        <maven-release-plugin.version>3.0.0-M1</maven-release-plugin.version>
         <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <springfox-swagger2.version>2.9.2</springfox-swagger2.version>
@@ -296,7 +296,8 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>${maven-release-plugin.version}</version>
                     <configuration>
-                        <tagNameFormat>@{project.version}</tagNameFormat>
+                        <tagNameFormat>v@{project.version}</tagNameFormat>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
                     </configuration>
                 </plugin>
                 <plugin>
