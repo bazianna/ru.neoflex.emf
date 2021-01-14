@@ -23,6 +23,7 @@
         <dependency>
             <groupId>ru.neoflex.emf</groupId>
             <artifactId>restserver</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-sql -->
         <dependency>
