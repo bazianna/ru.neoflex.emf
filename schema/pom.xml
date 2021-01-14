@@ -23,7 +23,6 @@
         <dependency>
             <groupId>ru.neoflex.emf</groupId>
             <artifactId>restserver</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
