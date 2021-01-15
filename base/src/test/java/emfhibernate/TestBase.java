@@ -44,6 +44,8 @@ public class TestBase {
 
     public static HbServer refreshDatabase() throws Exception {
         deleteDirectory(getDatabaseFile());
-        return getDatabase();
+        HbServer hbServer = getDatabase();
+        hbServer.inTransaction(false, tx -> tx.truncate());
+        return hbServer;
     }
 }
