@@ -2,7 +2,8 @@ version: "3.7"
 
 services:
   runtests:
-    image: goyalzz/ubuntu-java-8-maven-docker-image
+    image: runtests
+    build: .
     volumes:
       - ./m2:/root/.m2
       - ./entrypoint.sh:/entrypoint.sh
