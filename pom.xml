@@ -50,14 +50,14 @@
 
     <groupId>ru.neoflex.emf</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
     <name>Neoflex EMF Framework Parent Project</name>
 
     <scm>
         <url>https://github.com/arch7tect/ru.neoflex.emf</url>
         <connection>scm:git:git://github.com/arch7tect/ru.neoflex.emf.git</connection>
-        <tag>HEAD</tag>
+        <tag>v1.0.0</tag>
     </scm>
 
     <distributionManagement>
