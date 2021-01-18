@@ -57,7 +57,6 @@
     <scm>
         <url>https://github.com/arch7tect/ru.neoflex.emf</url>
         <connection>scm:git:https://github.com/arch7tect/ru.neoflex.emf.git</connection>
-        <developerConnection>scm:git:https://github.com/arch7tect/ru.neoflex.emf.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
