@@ -3,7 +3,6 @@ package emfhibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.neoflex.emf.base.HbServer;
-import ru.neoflex.emf.base.HbTransaction;
 import ru.neoflex.emf.hibernatedb.test.TestPackage;
 
 import java.io.File;
@@ -13,6 +12,18 @@ public class TestBase {
     private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
     public static final String HBDB = "hbtest";
     HbServer hbServer;
+
+    public static boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        boolean result = directoryToBeDeleted.delete();
+        logger.info(String.format("Deleting %s: %s", directoryToBeDeleted.getAbsolutePath(), String.valueOf(result)));
+        return result;
+    }
 
     public static HbServer getDatabase() throws Exception {
         Properties properties = new Properties();
@@ -32,8 +43,9 @@ public class TestBase {
     }
 
     public static HbServer refreshDatabase() throws Exception {
+        deleteDirectory(getDatabaseFile());
         HbServer hbServer = getDatabase();
-        hbServer.inTransaction(false, HbTransaction::truncate);
+        hbServer.inTransaction(false, tx -> tx.truncate());
         return hbServer;
     }
 }
