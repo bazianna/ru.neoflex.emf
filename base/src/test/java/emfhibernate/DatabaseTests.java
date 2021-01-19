@@ -9,6 +9,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.neoflex.emf.base.Exporter;
+import ru.neoflex.emf.base.HbServer;
 import ru.neoflex.emf.base.HbTransaction;
 import ru.neoflex.emf.hibernatedb.test.*;
 
@@ -19,6 +23,8 @@ import java.sql.Statement;
 //import org.eclipse.xtext.resource.XtextResourceSet;
 
 public class DatabaseTests extends TestBase {
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseTests.class);
+
     @Before
     public void startUp() throws Exception {
         hbServer = refreshDatabase();
@@ -210,7 +216,10 @@ public class DatabaseTests extends TestBase {
             hbServer.inTransaction(false, tx -> {
                 ResourceSet rs = tx.getResourceSet();
                 Resource views = hbServer.findBy(rs, TestPackage.eINSTANCE.getDBView());
+                Assert.assertEquals(1, views.getContents().size());
                 DBView user_group = (DBView) views.getContents().get(0);
+                logger.info(Exporter.eObjectToString(hbServer, user_group));
+                logger.info(Exporter.eObjectRefsToString(hbServer, user_group));
                 Assert.assertEquals("ID", user_group.getColumns().get(0).getName());
                 Assert.assertEquals("NAME", user_group.getColumns().get(1).getName());
                 Assert.assertEquals(4, user_group.getColumns().size());

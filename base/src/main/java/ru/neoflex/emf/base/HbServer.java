@@ -21,7 +21,9 @@ import org.hibernate.c3p0.internal.C3P0ConnectionProvider;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.hibernate.tool.schema.TargetType;
@@ -65,6 +67,7 @@ public class HbServer implements AutoCloseable {
     private final Properties config;
     private final EPackage.Registry packageRegistry = new EPackageRegistryImpl(EPackage.Registry.INSTANCE);
     private final Map<EClass, List<EClass>> descendants = new HashMap<>();
+    private ServiceRegistry serviceRegistry;
 
 
     public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
@@ -95,7 +98,7 @@ public class HbServer implements AutoCloseable {
         packageRegistry.put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
         packageRegistry.put(GenModelPackage.eNS_URI, GenModelPackage.eINSTANCE);
         Configuration configuration = getConfiguration();
-        ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+        serviceRegistry = new StandardServiceRegistryBuilder()
                 .applySettings(configuration.getProperties()).build();
         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
         String defaultSchema = getConfig().getProperty(CONFIG_DEFAULT_SCHEMA, "");
@@ -426,7 +429,7 @@ public class HbServer implements AutoCloseable {
 
     public EAttribute getQNameSF(EClass eClass) {
         EAttribute sf;
-        if (EcorePackage.Literals.EPACKAGE == eClass) {
+        if (EcorePackage.Literals.EPACKAGE.isSuperTypeOf(eClass)) {
             sf = EcorePackage.Literals.EPACKAGE__NS_URI;
         } else {
             sf = eClass.getEIDAttribute();
@@ -453,6 +456,8 @@ public class HbServer implements AutoCloseable {
 
     @Override
     public void close() {
+        C3P0ConnectionProvider connectionProvider = (C3P0ConnectionProvider) serviceRegistry.getService(MultiTenantConnectionProvider.class);
+        connectionProvider.stop();
         sessionFactory.close();
     }
 
