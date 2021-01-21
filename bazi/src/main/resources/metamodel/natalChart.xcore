@@ -65,6 +65,7 @@ class Pillar extends CalendarPillar {
     QiPhase qiPhaseFirstDegree
     QiPhase qiPhaseSecondDegree
     refers Spirit[] Spirit
+    String testField
 }
 
 @BaZi(documentation="Такт в карте рождения. Длительность такта - 10 лет. У каждого человека они начинаются с разного возраста.")

@@ -31,6 +31,7 @@ import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.DateTime
 import java.text.DateFormat
+import java.util.ArrayList
 
 dialect  "mvel"
 
@@ -153,7 +154,7 @@ function Pillar createMonthPillar(BaZiDate baZiDate) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
     List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyIndex = baZiDate.getChineseMonth() % 10 < 9 ? baZiDate.getChineseMonth() % 10 + 2 : baZiDate.getChineseMonth() % 10 - 8;
+    Integer skyIndex = baZiDate.getChineseMonth() % 10 < 9 ? baZiDate.getChineseMonth() % 10 + 4 : baZiDate.getChineseMonth() % 10 - 8;
     Elements sky = elements.get(skyIndex);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
@@ -165,25 +166,19 @@ function Pillar createMonthPillar(BaZiDate baZiDate) {
     return pillar;
 }
 
-function Integer daysBetween(Date d1, Date d2){
-             return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
-}
+//function Integer daysBetween(Date d1, Date d2){
+//             return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+//}
 
-function Pillar createDayPillar(BaZiDate baZiDate) {
+function Pillar createDayPillar(Integer daysBetween) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
-    DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
-
-    Date dayStart = formatter.parse("01.01.0001");
-    Date dayEnd = formatter.parse(baZiDate.getDay().toString() + "." + baZiDate.getGregorianMonth().toString() + "." + baZiDate.getGregorianYear().toString());
-    Integer days = daysBetween(dayStart ,dayEnd);
-
     List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyIndex = days % 10 < 7 ? days % 10 + 4 : days % 10 - 6;
+    Integer skyIndex = daysBetween % 10 < 7 ? daysBetween % 10 + 4 : daysBetween % 10 - 6;
     Elements sky = elements.get(skyIndex);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
-    Integer earthIndex = days % 12 < 11 ? days % 12 + 2 : days % 12 - 10;
+    Integer earthIndex = daysBetween % 12 < 11 ? daysBetween % 12 + 2 : daysBetween % 12 - 10;
     Zoo earth = zoo.get(earthIndex);
 
     pillar.setSky(sky);
@@ -224,9 +219,21 @@ end;
 rule "Set Day Pillar"
 when
     $natalChart: NatalChart()
-    $baZiDate: BaZiDate()
+    $baZiDate: BaZiDate($daysBetween: daysBetween)
 then
-    Pillar day = createDayPillar($baZiDate);
+    Pillar day = createDayPillar($daysBetween);
     $natalChart.setDay(day);
     update($natalChart);
 end;
+
+//rule "Set BaZiDate"
+//when
+//    $baZiDate: BaZiDate()
+//then
+//    DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+//    Date dayStart = formatter.parse("01.01.0001");
+//    Date dayEnd = formatter.parse($baZiDate.getDay().toString() + "." + $baZiDate.getGregorianMonth().toString() + "." + $baZiDate.getGregorianYear().toString());
+//    Integer days = daysBetween(dayStart ,dayEnd);
+//    $baZiDate.setDaysBetween(days);
+//    update($baZiDate);
+//end;

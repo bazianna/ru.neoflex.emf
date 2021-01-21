@@ -55,6 +55,7 @@ class BaZiDate {
     Integer gregorianMonth
     Integer chineseMonth
     Integer day
+    Integer daysBetween
 }
 
 enum Months {
