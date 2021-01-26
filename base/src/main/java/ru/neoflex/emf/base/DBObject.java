@@ -4,6 +4,9 @@ import javax.persistence.*;
 import java.io.*;
 import java.util.*;
 
+import static javax.persistence.CascadeType.PERSIST;
+
+// https://thorben-janssen.com/hibernate-tip-many-to-many-association-with-additional-attributes/
 @Entity
 @Table(indexes = {
         @Index(columnList = "class_uri"),
@@ -27,11 +30,7 @@ public class DBObject {
     @Column(length = 10485760)
     private byte[] image;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(indexes = {
-            @Index(columnList = "refobject_id"),
-            @Index(columnList = "dbobject_id,index")
-    }, joinColumns = @JoinColumn(name = "dbobject_id"))
+    @OneToMany(mappedBy = "dbObject", cascade = PERSIST)
     private List<DBReference> references;
 
     @ElementCollection(fetch = FetchType.LAZY)

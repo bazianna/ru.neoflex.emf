@@ -4,6 +4,10 @@ import javax.persistence.*;
 
 @Embeddable
 public class DBReference {
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "dbobject_id", nullable = false)
+    private DBObject dbObject;
+
     @Column(length = 512)
     private
     String feature;
