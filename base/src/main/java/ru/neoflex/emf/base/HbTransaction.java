@@ -93,7 +93,10 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     public boolean truncate() {
-        session.createQuery("select r from DBObject r", DBObject.class).getResultStream().forEach(session::delete);
+        session.createQuery("delete from DBAttribute").executeUpdate();
+        session.createQuery("delete from DBReference").executeUpdate();
+        session.createQuery("delete from DBObject ").executeUpdate();
+//        session.createQuery("select r from DBObject r", DBObject.class).getResultStream().forEach(session::delete);
         return true;
     }
 
@@ -131,21 +134,24 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 final int index = i;
                 EObject eRefObject = ref.getValue().get(index);
                 Long id2 = hbServer.getId(eRefObject);
+                DBObject refDBObject;
+                if (id2 != null) {
+                    refDBObject = getOrThrow(id2);
+                } else {
+                    refDBObject = new DBObject();
+                    refDBObject.setClassUri(EcoreUtil.getURI(eRefObject.eClass()).toString());
+                    refDBObject.setProxy(EcoreUtil.getURI(eRefObject).toString());
+                    session.persist(refDBObject);
+                }
                 DBReference dbReference = dbObject.getReferences().stream()
-                        .filter(r -> r.getFeature().equals(feature) && r.getIndex() == index && r.getRefObject().getId().equals(id2))
+                        .filter(r -> r.getId().getFeature().equals(feature) && r.getId().getIndex() == index)
                         .findFirst().orElse(null);
                 if (dbReference != null) {
                     toDeleteNC.remove(dbReference);
-                } else {
-                    DBObject refDBObject;
-                    if (id2 != null) {
-                        refDBObject = getOrThrow(id2);
-                    } else {
-                        refDBObject = new DBObject();
-                        refDBObject.setClassUri(EcoreUtil.getURI(eRefObject.eClass()).toString());
-                        refDBObject.setProxy(EcoreUtil.getURI(eRefObject).toString());
-                        session.persist(refDBObject);
+                    if (!Objects.equals(id2, dbReference.getRefObject().getId())) {
+                        dbReference.setRefObject(refDBObject);
                     }
+                } else {
                     createDBReference(dbObject, feature, index, refDBObject);
                 }
             }
@@ -156,6 +162,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
             if (dbReference.getRefObject().isProxy()) {
                 deleteRecursive(dbReference.getRefObject());
             }
+            session.delete(dbReference);
         });
         eObject.eClass().getEAllReferences().stream()
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && !sf.isContainer() && sf.isContainment() && eObject.eIsSet(sf))
@@ -171,8 +178,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
         DBReference dbReference;
         dbReference = new DBReference();
         dbObject.getReferences().add(dbReference);
-        dbReference.setFeature(feature);
-        dbReference.setIndex(index);
+        dbReference.getId().setFeature(feature);
+        dbReference.getId().setIndex(index);
+        dbReference.setDbObject(dbObject);
         dbReference.setRefObject(refDBObject);
     }
 
@@ -198,6 +206,11 @@ public class HbTransaction implements AutoCloseable, Serializable {
         dbObject.setFeature(containingFeature);
         dbObject.setIndex(containingIndex);
 
+        if (needPersist) {
+            getSession().persist(dbObject);
+            hbServer.setId(eObject, dbObject.getId());
+        }
+
         List<AbstractMap.SimpleEntry<EAttribute, List<Object>>> attrs = eObject.eClass().getEAllAttributes().stream()
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && eObject.eIsSet(sf))
                 .map(sf -> new AbstractMap.SimpleEntry<>(sf,
@@ -217,20 +230,23 @@ public class HbTransaction implements AutoCloseable, Serializable {
                 String value = EcoreUtil.convertToString(eDataType, valueObject);
                 int finalIndex = index;
                 DBAttribute dbAttribute = dbObject.getAttributes().stream()
-                        .filter(a -> a.getFeature().equals(feature) && a.getIndex() == finalIndex && Objects.equals(a.getValue(), value))
+                        .filter(a -> a.getId().getFeature().equals(feature) && a.getId().getIndex() == finalIndex)
                         .findFirst().orElse(null);
                 if (dbAttribute != null) {
                     toDeleteA.remove(dbAttribute);
+                    dbAttribute.setValue(value);
                 } else {
                     dbAttribute = new DBAttribute();
-                    dbObject.getAttributes().add(dbAttribute);
-                    dbAttribute.setFeature(feature);
-                    dbAttribute.setIndex(index);
+                    dbAttribute.setDbObject(dbObject);
+                    dbAttribute.getId().setFeature(feature);
+                    dbAttribute.getId().setIndex(index);
                     dbAttribute.setValue(value);
+                    dbObject.getAttributes().add(dbAttribute);
                 }
             }
         }
         dbObject.getAttributes().removeAll(toDeleteA);
+        toDeleteA.forEach(session::delete);
 
         LinkedHashMap<String, List<String>> entriesMap = new LinkedHashMap<>();
         attrs.forEach(entry -> {
@@ -240,11 +256,6 @@ public class HbTransaction implements AutoCloseable, Serializable {
                     entriesMap.computeIfAbsent(feature, s -> new ArrayList<>()).add(EcoreUtil.convertToString(eDataType, value)));
         });
         dbObject.setAttributesMap(entriesMap);
-
-        if (needPersist) {
-            getSession().persist(dbObject);
-            hbServer.setId(eObject, dbObject.getId());
-        }
 
         List<AbstractMap.SimpleEntry<EReference, List<EObject>>> refsC = eObject.eClass().getEAllReferences().stream()
                 .filter(sf -> !sf.isDerived() && !sf.isTransient() && !sf.isContainer() && sf.isContainment() && eObject.eIsSet(sf))
@@ -352,9 +363,9 @@ public class HbTransaction implements AutoCloseable, Serializable {
         }
 
         List<DBReference> references = new ArrayList<>(dbObject.getReferences());
-        references.sort(Comparator.comparingInt(DBReference::getIndex));
+        references.sort(Comparator.comparingInt(value -> value.getId().getIndex()));
         for (DBReference dbReference : references) {
-            EStructuralFeature sf = eClass.getEStructuralFeature(dbReference.getFeature());
+            EStructuralFeature sf = eClass.getEStructuralFeature(dbReference.getId().getFeature());
             if (sf instanceof EReference) {
                 DBObject dbRef = dbReference.getRefObject();
                 EReference eReference = (EReference) sf;

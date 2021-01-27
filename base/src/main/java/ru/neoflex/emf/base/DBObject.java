@@ -4,8 +4,6 @@ import javax.persistence.*;
 import java.io.*;
 import java.util.*;
 
-import static javax.persistence.CascadeType.PERSIST;
-
 // https://thorben-janssen.com/hibernate-tip-many-to-many-association-with-additional-attributes/
 @Entity
 @Table(indexes = {
@@ -30,13 +28,13 @@ public class DBObject {
     @Column(length = 10485760)
     private byte[] image;
 
-    @OneToMany(mappedBy = "dbObject", cascade = PERSIST)
+    @OneToMany(mappedBy = "dbObject", cascade = CascadeType.ALL)
     private List<DBReference> references;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(indexes = {
-            @Index(columnList = "feature,value")
-    })
+    @OneToMany(mappedBy = "refObject")
+    private List<DBReference> referencedBy;
+
+    @OneToMany(mappedBy = "dbObject", cascade = CascadeType.ALL)
     private List<DBAttribute> attributes;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL}, mappedBy = "container")
@@ -182,5 +180,13 @@ public class DBObject {
             throw new RuntimeException(e);
         }
         image = baos.toByteArray();
+    }
+
+    public List<DBReference> getReferencedBy() {
+        return referencedBy;
+    }
+
+    public void setReferencedBy(List<DBReference> referencedBy) {
+        this.referencedBy = referencedBy;
     }
 }

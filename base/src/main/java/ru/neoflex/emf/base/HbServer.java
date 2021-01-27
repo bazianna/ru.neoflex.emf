@@ -214,6 +214,8 @@ public class HbServer implements AutoCloseable {
                         .applySettings(configuration.getProperties()).build();
                 MetadataSources metadataSources = new MetadataSources(serviceRegistry);
                 metadataSources.addAnnotatedClass(DBObject.class);
+                metadataSources.addAnnotatedClass(DBReference.class);
+                metadataSources.addAnnotatedClass(DBAttribute.class);
                 MetadataBuilder metadataBuilder = metadataSources.getMetadataBuilder();
                 MetadataImplementor metadata = (MetadataImplementor) metadataBuilder.build();
                 SchemaUpdate schemaUpdate = new SchemaUpdate();
@@ -241,6 +243,8 @@ public class HbServer implements AutoCloseable {
         settings.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, HBDBConnectionProvider.class.getName());
         configuration.setProperties(settings);
         configuration.addAnnotatedClass(DBObject.class);
+        configuration.addAnnotatedClass(DBReference.class);
+        configuration.addAnnotatedClass(DBAttribute.class);
         return configuration;
     }
 
@@ -368,7 +372,7 @@ public class HbServer implements AutoCloseable {
         Map<String, Object> options = new HashMap<>();
         URI uri = getQueryUri(eClass, options,
                 "select o from DBObject o join o.attributes a " +
-                        "on a.feature = :feature and a.value = :value " +
+                        "on a.id.feature = :feature and a.value = :value " +
                         "where o.classUri = :classUri%d"
                         );
         Resource resource = rs.createResource(uri);

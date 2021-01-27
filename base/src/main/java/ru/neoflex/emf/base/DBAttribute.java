@@ -1,37 +1,18 @@
 package ru.neoflex.emf.base;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
-@Embeddable
+@Entity
 public class DBAttribute {
-    @Column(length = 512)
-    private
-    String feature;
-    @Column
-    private
-    Integer index;
+    @EmbeddedId
+    private DBAttributeId id = new DBAttributeId();
+
+    @ManyToOne
+    @MapsId("dbObjectId")
+    private DBObject dbObject;
+
     @Column(length = 10485760)
-    private
-    String value;
-
-    public String getFeature() {
-        return feature;
-    }
-
-    public void setFeature(String feature) {
-        this.feature = feature;
-    }
-
-    public Integer getIndex() {
-        return index;
-    }
-
-    public void setIndex(Integer index) {
-        this.index = index;
-    }
+    private String value;
 
     public String getValue() {
         return value;
@@ -39,5 +20,21 @@ public class DBAttribute {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public DBAttributeId getId() {
+        return id;
+    }
+
+    public void setId(DBAttributeId id) {
+        this.id = id;
+    }
+
+    public DBObject getDbObject() {
+        return dbObject;
+    }
+
+    public void setDbObject(DBObject dbObject) {
+        this.dbObject = dbObject;
     }
 }

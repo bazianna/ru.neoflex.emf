@@ -2,42 +2,17 @@ package ru.neoflex.emf.base;
 
 import javax.persistence.*;
 
-@Embeddable
+@Entity
 public class DBReference {
-    @ManyToOne(optional = false, fetch = FetchType.EAGER)
-    @JoinColumn(name = "dbobject_id", nullable = false)
+    @EmbeddedId
+    private DBReferenceId id = new DBReferenceId();
+
+    @ManyToOne
+    @MapsId("dbObjectId")
     private DBObject dbObject;
 
-    @Column(length = 512)
-    private
-    String feature;
-
-    @Column
-    private
-    Integer index;
-
-    @Column(name = "dbobject_id", insertable=false, updatable = false)
-    private Long dbObjectId;
-
-    @ManyToOne(optional = false, fetch = FetchType.EAGER)
-    @JoinColumn(name = "refobject_id", nullable = false)
+    @ManyToOne
     private DBObject refObject;
-
-    public String getFeature() {
-        return feature;
-    }
-
-    public void setFeature(String feature) {
-        this.feature = feature;
-    }
-
-    public Integer getIndex() {
-        return index;
-    }
-
-    public void setIndex(Integer index) {
-        this.index = index;
-    }
 
     public DBObject getRefObject() {
         return refObject;
@@ -47,11 +22,19 @@ public class DBReference {
         this.refObject = dbObject;
     }
 
-    public Long getDbObjectId() {
-        return dbObjectId;
+    public DBReferenceId getId() {
+        return id;
     }
 
-    public void setDbObjectId(Long dbobject_id) {
-        this.dbObjectId = dbobject_id;
+    public void setId(DBReferenceId id) {
+        this.id = id;
+    }
+
+    public DBObject getDbObject() {
+        return dbObject;
+    }
+
+    public void setDbObject(DBObject dbObject) {
+        this.dbObject = dbObject;
     }
 }
