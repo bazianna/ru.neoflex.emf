@@ -154,7 +154,8 @@ function Pillar createMonthPillar(BaZiDate baZiDate) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
     List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyIndex = baZiDate.getChineseMonth() % 10 < 9 ? baZiDate.getChineseMonth() % 10 + 4 : baZiDate.getChineseMonth() % 10 - 8;
+    Integer countMonth = (baZiDate.getChineseYear() - 1) * 12 + baZiDate.getChineseMonth();
+    Integer skyIndex = countMonth % 10 < 5 ? countMonth % 10 + 6 : countMonth % 10 - 4;
     Elements sky = elements.get(skyIndex);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
