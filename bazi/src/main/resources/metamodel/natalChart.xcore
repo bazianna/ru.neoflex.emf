@@ -30,7 +30,6 @@ class InputParams {
 enum TimeCategory {
     _UNDEFINED_
     LOCAL_SOLAR_TIME
-    RUBBER_TIME
     TWO_HOURS
 }
 

@@ -55,6 +55,8 @@ class BaZiDate {
     Integer gregorianMonth
     Integer chineseMonth
     Integer day
+    Integer hour
+    Integer minutes
     Integer daysBetween
 }
 

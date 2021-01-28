@@ -32,6 +32,7 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.DateTime
 import java.text.DateFormat
 import java.util.ArrayList
+import ru.neoflex.emf.bazi.natalChart.TimeCategory
 
 dialect  "mvel"
 
@@ -171,16 +172,18 @@ function Pillar createMonthPillar(BaZiDate baZiDate) {
 //             return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
 //}
 
-function Pillar createDayPillar(Integer daysBetween) {
+function Pillar createDayPillar(Integer daysBetween, Integer hour, Boolean joinedRatHour) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
+
+    Integer correctionByTheHour = joinedRatHour && hour >= 23 && hour < 0 ? 1 : 0;
 
     List<Elements> elements = Arrays.asList(Elements.values());
     Integer skyIndex = daysBetween % 10 < 7 ? daysBetween % 10 + 4 : daysBetween % 10 - 6;
-    Elements sky = elements.get(skyIndex);
+    Elements sky = elements.get(skyIndex + correctionByTheHour);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
     Integer earthIndex = daysBetween % 12 < 11 ? daysBetween % 12 + 2 : daysBetween % 12 - 10;
-    Zoo earth = zoo.get(earthIndex);
+    Zoo earth = zoo.get(earthIndex + correctionByTheHour);
 
     pillar.setSky(sky);
     pillar.setEarth(earth);
@@ -220,9 +223,10 @@ end;
 rule "Set Day Pillar"
 when
     $natalChart: NatalChart()
-    $baZiDate: BaZiDate($daysBetween: daysBetween)
+    $inputParams: InputParams($joinedRatHour: joinedRatHour)
+    $baZiDate: BaZiDate($daysBetween: daysBetween, $hour: hour)
 then
-    Pillar day = createDayPillar($daysBetween);
+    Pillar day = createDayPillar($daysBetween, $hour, $joinedRatHour);
     $natalChart.setDay(day);
     update($natalChart);
 end;
