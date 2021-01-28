@@ -179,11 +179,13 @@ function Pillar createDayPillar(Integer daysBetween, Integer hour, Boolean joine
 
     List<Elements> elements = Arrays.asList(Elements.values());
     Integer skyIndex = daysBetween % 10 < 7 ? daysBetween % 10 + 4 : daysBetween % 10 - 6;
-    Elements sky = elements.get(skyIndex + correctionByTheHour);
+    Integer skyIndexCorrection = skyIndex + correctionByTheHour > 10 ? 1 : skyIndex + correctionByTheHour;
+    Elements sky = elements.get(skyIndexCorrection);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
     Integer earthIndex = daysBetween % 12 < 11 ? daysBetween % 12 + 2 : daysBetween % 12 - 10;
-    Zoo earth = zoo.get(earthIndex + correctionByTheHour);
+    Integer earthIndexCorrection = earthIndex + correctionByTheHour > 12 ? 1 : earthIndex + correctionByTheHour;
+    Zoo earth = zoo.get(earthIndexCorrection);
 
     pillar.setSky(sky);
     pillar.setEarth(earth);
