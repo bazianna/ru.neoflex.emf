@@ -7,11 +7,11 @@ public class DBReference {
     @EmbeddedId
     private DBReferenceId id = new DBReferenceId();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("dbObjectId")
     private DBObject dbObject;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private DBObject refObject;
 
     public DBObject getRefObject() {
