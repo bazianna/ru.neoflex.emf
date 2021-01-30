@@ -36,7 +36,7 @@ public class DBObject {
     @OneToMany(mappedBy = "dbObject", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DBAttribute> attributes;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL}, mappedBy = "container")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, mappedBy = "container", orphanRemoval = true)
     private List<DBObject> content;
 
     @ManyToOne(fetch = FetchType.LAZY)

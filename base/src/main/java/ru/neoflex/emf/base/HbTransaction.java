@@ -185,9 +185,15 @@ public class HbTransaction implements AutoCloseable, Serializable {
     }
 
     private DBObject saveEObjectContainment(HbResource resource, DBObject dbObject, EObject eObject, DBObject container, String containingFeature, Integer containingIndex) {
-        boolean needPersist = dbObject == null;
         if (dbObject == null) {
             dbObject = new DBObject();
+            dbObject.setVersion(resource.getTimeStamp());
+            dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
+            dbObject.setContainer(container);
+            dbObject.setFeature(containingFeature);
+            dbObject.setIndex(containingIndex);
+            getSession().persist(dbObject);
+            hbServer.setId(eObject, dbObject.getId());
         } else {
             Long version = resource.getTimeStamp();
             if (resource.getTimeStamp() <= 0) {
@@ -199,16 +205,7 @@ public class HbTransaction implements AutoCloseable, Serializable {
                         "Version (%d) for updated object %d less then the version in the DB (%d)",
                         version, dbObject.getId(), dbObject.getVersion()));
             }
-        }
-        dbObject.setVersion(resource.getTimeStamp());
-        dbObject.setClassUri(EcoreUtil.getURI(eObject.eClass()).toString());
-        dbObject.setContainer(container);
-        dbObject.setFeature(containingFeature);
-        dbObject.setIndex(containingIndex);
-
-        if (needPersist) {
-            getSession().persist(dbObject);
-            hbServer.setId(eObject, dbObject.getId());
+            dbObject.setVersion(resource.getTimeStamp());
         }
 
         List<AbstractMap.SimpleEntry<EAttribute, List<Object>>> attrs = eObject.eClass().getEAllAttributes().stream()

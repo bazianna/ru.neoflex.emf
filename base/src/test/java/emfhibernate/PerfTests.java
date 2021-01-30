@@ -101,10 +101,11 @@ public class PerfTests extends TestBase {
             Assert.assertEquals(1, resource.getContents().size());
             return (Schema) resource.getContents().get(0);
         });
-        Assert.assertEquals("emf", schema2.getName());
         long afterLoad = System.currentTimeMillis();
+        Assert.assertEquals("emf", schema2.getName());
+        Assert.assertEquals(schema1.getEntities().size(), schema2.getEntities().size());
         Schema schema3 = hbServer.inTransaction(false, tx -> {
-            ResourceSet rs = tx.getResourceSet();
+            ResourceSet rs = tx.createResourceSet();
             Resource resource = rs.createResource(tx.getHbServer().createURI(schema2));
             resource.getContents().add(schema2);
             schema2.getEntities().get(0).setName("newName");
