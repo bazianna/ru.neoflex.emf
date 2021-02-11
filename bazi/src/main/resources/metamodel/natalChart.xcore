@@ -19,7 +19,7 @@ class InputParams {
     Integer day
     Integer month
     Integer year
-    Integer UTC
+    Double UTC
     String placeOfBirth
     Sex sex
     boolean joinedRatHour

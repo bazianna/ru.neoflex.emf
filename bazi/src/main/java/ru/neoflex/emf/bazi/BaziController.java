@@ -22,10 +22,7 @@ import javax.annotation.PostConstruct;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @RestController()
 @RequestMapping("/bazi")
@@ -57,6 +54,34 @@ public class BaziController {
             resources.add(DroolsSvc.createDecisionTableResource("drools/hourPillar.xls", DecisionTableInputType.XLS));
 
 
+
+
+
+
+            Date dayEndFull = null;
+            try {
+                DateFormat formatterFull = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+                dayEndFull = formatterFull.parse("5.1.21 5:31");
+                Long days = dayEndFull.getTime();
+                Double UTC = -15.7;
+
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(dayEndFull);
+                cal.add(Calendar.HOUR_OF_DAY, (int) Math.round(UTC));
+                cal.add(Calendar.MINUTE, (int)((UTC - Math.floor(UTC))*60));
+                cal.getTime();
+
+                Integer year = cal.get(Calendar.YEAR);
+                Integer month = cal.get(Calendar.MONTH) + 1;
+                Integer day = cal.get(Calendar.DAY_OF_MONTH);
+                Integer hour = cal.get(Calendar.HOUR_OF_DAY);
+                Integer minute = cal.get(Calendar.MINUTE);
+
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
 //            try {
 //                byte[] bazi = Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "bazi", "rules", "bazi.drl"));
 //                resources.add(DroolsSvc.createByteArrayResource("bazi.drl", null, bazi));
@@ -81,7 +106,7 @@ public class BaziController {
                            Integer day,
                            Integer month,
                            Integer year,
-                           Integer UTC,
+                           Double UTC,
                            String placeOfBirth,
                            Sex sex,
                            boolean joinedRatHour,
