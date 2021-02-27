@@ -58,6 +58,8 @@ class BaZiDate {
     Integer hour
     Integer minutes
     Integer daysBetween
+    Integer hourBetween
+    String testField
 }
 
 enum Months {

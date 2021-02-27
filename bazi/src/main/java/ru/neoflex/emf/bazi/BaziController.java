@@ -50,8 +50,8 @@ public class BaziController {
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();
             resources.add(DroolsSvc.createClassPathResource("drools/baseRules.drl", null));
-            resources.add(DroolsSvc.createDecisionTableResource("drools/calendar.xls", DecisionTableInputType.XLS));
-            resources.add(DroolsSvc.createDecisionTableResource("drools/hourPillar.xls", DecisionTableInputType.XLS));
+            resources.add(DroolsSvc.createDecisionTableResource("drools/baZiDate.xls", DecisionTableInputType.XLS));
+//            resources.add(DroolsSvc.createDecisionTableResource("drools/hourPillar.xls", DecisionTableInputType.XLS));
 
 
 
@@ -61,13 +61,13 @@ public class BaziController {
             Date dayEndFull = null;
             try {
                 DateFormat formatterFull = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-                dayEndFull = formatterFull.parse("5.1.21 5:31");
+                dayEndFull = formatterFull.parse("2.2.2020 20:02");
                 Long days = dayEndFull.getTime();
-                Double UTC = -15.7;
+                Double UTC = 12.5;
 
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(dayEndFull);
-                cal.add(Calendar.HOUR_OF_DAY, (int) Math.round(UTC));
+                cal.add(Calendar.HOUR_OF_DAY, (int) Math.floor(UTC));
                 cal.add(Calendar.MINUTE, (int)((UTC - Math.floor(UTC))*60));
                 cal.getTime();
 
