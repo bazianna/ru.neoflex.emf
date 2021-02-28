@@ -103,7 +103,8 @@ function Pillar createHourPillar(BaZiDate baZiDate) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
     Float hour = (float)(baZiDate.getHour()) / 2;
-    Integer hourBetween = baZiDate.getHourBetween() / 2;
+
+    Integer hourBetween = (int) (baZiDate.getHourBetween() / 2);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
     Integer earthIndex = baZiDate.getHour() == 23 ? 1 : Math.round(hour) + 1;
@@ -171,7 +172,7 @@ then
     insert(baZiDate);
 end;
 
-rule "Set daysBetween in BaZiDate "
+rule "Set daysBetween in BaZiDate"
 no-loop true
 when
     $baZiDate: BaZiDate()
@@ -182,14 +183,22 @@ then
     Date dayEnd = formatter.parse($inputDay.toString() + "." + $inputMonth.toString() + "." + $inputYear.toString());
     Integer days = daysBetween(dayStart, dayEnd);
     $baZiDate.setDaysBetween(days);
+    update($baZiDate);
+end;
 
+rule "Set hoursBetween in BaZiDate"
+no-loop true
+when
+    $baZiDate: BaZiDate()
+    $inputParams: InputParams($inputDay: day, $inputMonth: month, $inputYear: year, $inputHour: hour, $inputMinutes: minutes, $timeCategory: timeCategory, $UTC: UTC)
+then
     DateFormat formatterHour = new SimpleDateFormat("dd.MM.yyyy HH:mm");
     Date hourEnd = formatterHour.parse($inputDay.toString() + "." + $inputMonth.toString() + "." + $inputYear.toString() + " " + $inputHour.toString() + ":" + $inputMinutes.toString());
     Date hourStart = formatterHour.parse("01.01.0001 00:00");
-    Integer hour = hourBetween(hourStart, hourEnd);
+    Integer UTC = $timeCategory == TimeCategory.LOCAL_SOLAR_TIME ? (int) Math.floor($UTC - 2) : 0;
+    Integer hour = hourBetween(hourStart, hourEnd) - UTC;
     Integer hourCorrect = hour % 2 == 0 ? hour - 1 : hour;
     $baZiDate.setHourBetween(hourCorrect);
-
     update($baZiDate);
 end;
 
