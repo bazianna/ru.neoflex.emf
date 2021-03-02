@@ -535,6 +535,7 @@
         <module>drools</module>
         <module>schema</module>
         <module>hron</module>
+        <module>uiBazi</module>
     </modules>
 
 </project>
