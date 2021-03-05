@@ -23,8 +23,8 @@ public class PerfTests extends TestBase {
     int nUpdates = 10;
     int deep = 3;
     int wide = 10;
-    int nTables = 50;
-    int nColumns = 10;
+    int nTables = 2;
+    int nColumns = 2;
     List<Long> groupIds = new ArrayList<>();
     List<Long> userIds = new ArrayList<>();
 
@@ -56,7 +56,7 @@ public class PerfTests extends TestBase {
                 pKey.setName("table" + i + "_pkey");
                 pKey.getColumns().add(dbTable.getColumns().get(0));
                 dbTable.setPKey(pKey);
-                for (int j = 0; j < 3; ++j) {
+                for (int j = 0; j < (Math.min(nColumns - 2, 3)); ++j) {
                     IEKey ieKey = TestFactory.eINSTANCE.createIEKey();
                     dbTable.getIndexes().add(ieKey);
                     ieKey.setName("table" + i + "_pkey" + j);
@@ -101,11 +101,24 @@ public class PerfTests extends TestBase {
             Assert.assertEquals(1, resource.getContents().size());
             return (Schema) resource.getContents().get(0);
         });
-        Assert.assertEquals("emf", schema2.getName());
         long afterLoad = System.currentTimeMillis();
+        Assert.assertEquals("emf", schema2.getName());
+        Assert.assertEquals(schema1.getEntities().size(), schema2.getEntities().size());
+        Schema schema3 = hbServer.inTransaction(false, tx -> {
+            ResourceSet rs = tx.createResourceSet();
+            Resource resource = rs.createResource(tx.getHbServer().createURI(schema2));
+            resource.getContents().add(schema2);
+            schema2.getEntities().get(0).setName("newName");
+            resource.save(null);
+            Assert.assertEquals(1, resource.getContents().size());
+            return (Schema) resource.getContents().get(0);
+        });
+        long afterUpdate = System.currentTimeMillis();
+        Assert.assertEquals("newName", schema3.getEntities().get(0).getName());
         System.out.println("Created " + count + " objects");
         System.out.println("Inserted in " + (afterInsert - start) / 1000 + "s. " + count * 1000 / (afterInsert - start) + " object/s.");
         System.out.println("Loaded in " + (afterLoad - afterInsert) / 1000 + "s. " + count * 1000 / (afterLoad - afterInsert) + " object/s.");
+        System.out.println("Updated in " + (afterUpdate - afterLoad) / 1000 + "s. " + count * 1000 / (afterUpdate - afterLoad) + " object/s.");
     }
 
     ViewBase createView(String prefix, int deep, int wide) {

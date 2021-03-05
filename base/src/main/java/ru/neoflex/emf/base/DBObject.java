@@ -8,7 +8,6 @@ import java.util.*;
 @Entity
 @Table(indexes = {
         @Index(columnList = "class_uri"),
-        @Index(columnList = "container_id,index")
 })
 public class DBObject {
     @Id
@@ -28,16 +27,16 @@ public class DBObject {
     @Column(length = 10485760)
     private byte[] image;
 
-    @OneToMany(mappedBy = "dbObject", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "dbObject", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<DBReference> references;
 
-    @OneToMany(mappedBy = "refObject")
+    @OneToMany(mappedBy = "refObject", fetch = FetchType.LAZY)
     private List<DBReference> referencedBy;
 
-    @OneToMany(mappedBy = "dbObject", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "dbObject", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DBAttribute> attributes;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL}, mappedBy = "container")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, mappedBy = "container", orphanRemoval = true)
     private List<DBObject> content;
 
     @ManyToOne(fetch = FetchType.LAZY)
