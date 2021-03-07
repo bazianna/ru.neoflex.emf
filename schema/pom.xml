@@ -23,6 +23,11 @@
             <artifactId>restserver</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ru.neoflex.emf</groupId>
+            <artifactId>timezonedb</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

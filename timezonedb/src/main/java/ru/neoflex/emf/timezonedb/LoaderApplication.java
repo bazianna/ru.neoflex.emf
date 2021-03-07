@@ -26,19 +26,20 @@ public class LoaderApplication {
     ApplicationContext context;
     public static void main(String[] args) {
         try {
-            Path tempDir = Files.createTempDirectory("tzraw");
+            Path tempDir = Files.createTempDirectory("timezonedb.");
             try {
                 URL url = new URL("https://timezonedb.com/files/timezonedb.csv.zip");
-                ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
-                Path zip = tempDir.resolve("timezonedb.csv.zip");
-                try (FileChannel fileChannel = FileChannel.open(zip, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
-                    fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-                }
-                try (ZipInputStream zipIn = new ZipInputStream(Files.newInputStream(zip))) {
-                    for (ZipEntry ze; (ze = zipIn.getNextEntry()) != null; ) {
-                        if (!ze.isDirectory()) {
-                            Path csv = tempDir.resolve(ze.getName());
-                            Files.copy(zipIn, csv);
+                try (ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream())) {
+                    Path zip = tempDir.resolve("timezonedb.csv.zip");
+                    try (FileChannel fileChannel = FileChannel.open(zip, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+                        fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+                    }
+                    try (ZipInputStream zipIn = new ZipInputStream(Files.newInputStream(zip))) {
+                        for (ZipEntry ze; (ze = zipIn.getNextEntry()) != null; ) {
+                            if (!ze.isDirectory()) {
+                                Path csv = tempDir.resolve(ze.getName());
+                                Files.copy(zipIn, csv);
+                            }
                         }
                     }
                 }
@@ -46,10 +47,7 @@ public class LoaderApplication {
                         Files.readAllBytes(Paths.get(Thread.currentThread().getContextClassLoader().getResource("loaddb.sql").toURI())
                         ), StandardCharsets.UTF_8);
                 String[] sqls = String.format(loaddb, tempDir.toString().replace("\\", "/")).split(";");
-                ComboPooledDataSource pool = new ComboPooledDataSource();
-                pool.setDriverClass("org.h2.Driver");
-                pool.setJdbcUrl("jdbc:h2:file:~/.h2home/timezone.db");
-                pool.setUser("sa");
+                ComboPooledDataSource pool = TimezoneDBSvc.getDataSource();
                 try {
                     JdbcTemplate jdbcTemplate = new JdbcTemplate(pool);
                     for (String sql: sqls) {

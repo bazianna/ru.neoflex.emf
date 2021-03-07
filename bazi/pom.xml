@@ -25,6 +25,12 @@
         </dependency>
 
         <dependency>
+            <groupId>ru.neoflex.emf</groupId>
+            <artifactId>timezonedb</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-decisiontables</artifactId>
         </dependency>
@@ -32,7 +38,6 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.10.9</version>
         </dependency>
     </dependencies>
 
