@@ -536,6 +536,7 @@
         <module>schema</module>
         <module>hron</module>
         <module>uiBazi</module>
+        <module>timezonedb</module>
     </modules>
 
 </project>

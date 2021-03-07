@@ -120,7 +120,7 @@ public class BaziController {
             parameters.setDay(day);
             parameters.setMonth(month);
             parameters.setYear(year);
-            parameters.setUTC(UTC);
+            // TODO: parameters.setUTC(UTC);
             parameters.setPlaceOfBirth(placeOfBirth);
             parameters.setSex(sex);
             parameters.setJoinedRatHour(joinedRatHour);
