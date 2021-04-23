@@ -542,7 +542,7 @@
         <module>drools</module>
         <module>schema</module>
         <module>hron</module>
-        <module>uiBazi</module>
+<!--        <module>uiBazi</module>-->
         <module>timezonedb</module>
     </modules>
 
