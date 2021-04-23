@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.neoflex.emf.bazi.natalChart.*;
 import ru.neoflex.emf.drools.DroolsSvc;
 import ru.neoflex.emf.restserver.DBServerSvc;
+import ru.neoflex.emf.timezonedb.TimezoneDBSvc;
 
 import javax.annotation.PostConstruct;
 import java.text.DateFormat;
@@ -31,12 +32,15 @@ public class BaziController {
     DroolsSvc droolsSvc;
     final
     DBServerSvc dbServerSvc;
+    final
+    TimezoneDBSvc timezoneDBSvc;
 
     private static final Logger logger = LoggerFactory.getLogger(BaziController.class);
 
-    public BaziController(DroolsSvc droolsSvc, DBServerSvc dbServerSvc) {
+    public BaziController(DroolsSvc droolsSvc, DBServerSvc dbServerSvc, TimezoneDBSvc timezoneDBSvc) {
         this.droolsSvc = droolsSvc;
         this.dbServerSvc = dbServerSvc;
+        this.timezoneDBSvc = timezoneDBSvc;
     }
 
     public Integer daysBetween(Date d1, Date d2){
@@ -47,6 +51,7 @@ public class BaziController {
     void init() {
         dbServerSvc.getDbServer().registerEPackage(NatalChartPackage.eINSTANCE);
         droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<>("dbServerSvc", dbServerSvc));
+        droolsSvc.getGlobals().add(new AbstractMap.SimpleEntry<>("timezoneDBSvc", timezoneDBSvc));
         droolsSvc.getResourceFactories().add(() -> {
             List<Resource> resources = new ArrayList<>();
             resources.add(DroolsSvc.createClassPathResource("drools/baseRules.drl", null));
@@ -110,7 +115,8 @@ public class BaziController {
                            String placeOfBirth,
                            Sex sex,
                            boolean joinedRatHour,
-                           TimeCategory timeCategory
+                           TimeCategory timeCategory,
+                           boolean hourNotKnown
     ) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
             InputParams parameters = NatalChartFactory.eINSTANCE.createInputParams();
@@ -125,6 +131,7 @@ public class BaziController {
             parameters.setSex(sex);
             parameters.setJoinedRatHour(joinedRatHour);
             parameters.setTimeCategory(timeCategory);
+            parameters.setHourNotKnown(hourNotKnown);
             KieSession kieSession = droolsSvc.createSession();
             try {
                 kieSession.setGlobal("tx", tx);
