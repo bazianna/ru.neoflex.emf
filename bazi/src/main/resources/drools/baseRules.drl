@@ -155,36 +155,33 @@ end;
 //    insert(baZiDate);
 //end;
 
-function String timeShiftStart(String year, String month, String day, String hour, String minutes, TimezoneDBSvc timezoneDBSvc) {
+function Date timeShiftStart(String year, String month, String day, String hour, String minutes, String placeOfBirth, TimezoneDBSvc timezoneDBSvc) {
 
     DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     Date dayStart = formatter.parse(year + "-" + month + "-" + day + " " + hour + ":" + minutes + ":00");
 
-    List <ru.neoflex.emf.timezonedb.TimeShift> timeShifts = timezoneDBSvc.timeShift(dayStart, "Europe/Moscow", "Asia/Shanghai");
+    List <ru.neoflex.emf.timezonedb.TimeShift> timeShifts = timezoneDBSvc.timeShift(dayStart, placeOfBirth, "Asia/Shanghai");
 
-
-    return timeShifts.get(1).getLocalDT();
+    return formatter.parse(timeShifts.get(1).getLocalDT());
 }
 
 rule "Create BaZiDate LOCAL_SOLAR_TIME"
 when
-    $inputParams: InputParams(timeCategory == TimeCategory.LOCAL_SOLAR_TIME, hourNotKnown == false, $inputYear: year, $inputMonth: month, $inputDay: day, $inputHour: hour, $inputMinutes: minutes)
+    $inputParams: InputParams(timeCategory == TimeCategory.LOCAL_SOLAR_TIME, hourNotKnown == false, $inputYear: year, $inputMonth: month, $inputDay: day, $inputHour: hour, $placeOfBirth: placeOfBirth, $inputMinutes: minutes)
     not BaZiDate(gregorianYear == null)
 then
-    String newDay = timeShiftStart($inputYear.toString(), $inputMonth.toString(), $inputDay.toString(), $inputHour.toString(), $inputMinutes.toString(), timezoneDBSvc);
+    Date newDay = timeShiftStart($inputYear.toString(), $inputMonth.toString(), $inputDay.toString(), $inputHour.toString(), $inputMinutes.toString(), $placeOfBirth, timezoneDBSvc);
 
+    java.util.Calendar cal = java.util.Calendar.getInstance();
+    cal.setTime(newDay);
 
-//    java.util.Calendar cal = java.util.Calendar.getInstance();
-//    cal.setTime(newDay);
-//
     BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
-//    baZiDate.setGregorianYear(cal.get(java.util.Calendar.YEAR));
-//    baZiDate.setGregorianMonth(cal.get(java.util.Calendar.MONTH) + 1);
-//    baZiDate.setDay(cal.get(java.util.Calendar.DAY_OF_MONTH));
-//    baZiDate.setHour(cal.get(java.util.Calendar.HOUR_OF_DAY));
-//    baZiDate.setMinutes(cal.get(java.util.Calendar.MINUTE));
+    baZiDate.setGregorianYear(cal.get(java.util.Calendar.YEAR));
+    baZiDate.setGregorianMonth(cal.get(java.util.Calendar.MONTH) + 1);
+    baZiDate.setDay(cal.get(java.util.Calendar.DAY_OF_MONTH));
+    baZiDate.setHour(cal.get(java.util.Calendar.HOUR_OF_DAY));
+    baZiDate.setMinutes(cal.get(java.util.Calendar.MINUTE));
 
-    baZiDate.setTestField(newDay);
     insert(baZiDate);
 end;
 
