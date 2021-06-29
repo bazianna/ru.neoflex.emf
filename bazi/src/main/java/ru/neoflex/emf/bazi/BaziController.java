@@ -149,7 +149,7 @@ public class BaziController {
                     }
                 }
                 eObjects.save(null);
-                eObjects.getContents().removeIf(eObject -> !(eObject instanceof NatalChart));
+//                eObjects.getContents().removeIf(eObject -> !(eObject instanceof NatalChart));
                 eObjects.load(null);
                 return DBServerSvc.createJsonHelper().toJson(eObjects);
             }

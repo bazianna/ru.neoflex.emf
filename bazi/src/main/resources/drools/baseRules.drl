@@ -182,6 +182,16 @@ then
     baZiDate.setHour(cal.get(java.util.Calendar.HOUR_OF_DAY));
     baZiDate.setMinutes(cal.get(java.util.Calendar.MINUTE));
 
+    String year = baZiDate.getGregorianYear() > 999 ? "" + baZiDate.getGregorianYear() : "0" + baZiDate.getGregorianYear();
+    String month = baZiDate.getGregorianMonth() > 9 ? "" + baZiDate.getGregorianMonth() : "0" + baZiDate.getGregorianMonth();
+    String day = baZiDate.getDay() > 9 ? "" + baZiDate.getDay() : "0" + baZiDate.getDay();
+    String hour = baZiDate.getHour() > 9 ? "" + baZiDate.getHour() : "0" + baZiDate.getHour();
+    String minutes = baZiDate.getMinutes() > 9 ? "" + baZiDate.getMinutes() : "0" + baZiDate.getMinutes() ;
+
+    String fullDate = year + month + day + hour + minutes;
+
+    baZiDate.setIntFullDate(Long.parseLong(fullDate));
+
     insert(baZiDate);
 end;
 
