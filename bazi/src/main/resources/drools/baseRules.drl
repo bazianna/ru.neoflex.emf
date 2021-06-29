@@ -47,38 +47,8 @@ query "EObjects"
     $eObject : EObject()
 end
 
-//function Pillar createYearPillar(BaZiDate baZiDate) {
-//    Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
-//
-//    List<Elements> elements = Arrays.asList(Elements.values());
-//    Integer skyIndex = baZiDate.getChineseYear() % 10 < 4 ? baZiDate.getChineseYear() % 10 + 7 : baZiDate.getChineseYear() % 10 - 3;
-//    Elements sky = elements.get(skyIndex);
-//
-//    List<Zoo> zoo = Arrays.asList(Zoo.values());
-//    Integer earthIndex = baZiDate.getChineseYear() % 12 < 4 ? baZiDate.getChineseYear() % 12 + 9 : baZiDate.getChineseYear() % 12 - 3;
-//    Zoo earth = zoo.get(earthIndex);
-//
-//    pillar.setSky(sky);
-//    pillar.setEarth(earth);
-//    return pillar;
-//}
 
-//function Pillar createMonthPillar(BaZiDate baZiDate) {
-//    Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
-//
-//    List<Elements> elements = Arrays.asList(Elements.values());
-//    Integer countMonth = (baZiDate.getChineseYear() - 1) * 12 + baZiDate.getChineseMonth();
-//    Integer skyIndex = countMonth % 10 < 5 ? countMonth % 10 + 6 : countMonth % 10 - 4;
-//    Elements sky = elements.get(skyIndex);
-//
-//    List<Zoo> zoo = Arrays.asList(Zoo.values());
-//    Integer earthIndex = baZiDate.getChineseMonth() % 12 < 11 ? baZiDate.getChineseMonth() % 12 + 2 : baZiDate.getChineseMonth() % 12 - 10;
-//    Zoo earth = zoo.get(earthIndex);
-//
-//    pillar.setSky(sky);
-//    pillar.setEarth(earth);
-//    return pillar;
-//}
+
 
 //function Pillar createDayPillar(BaZiDate baZiDate, Boolean joinedRatHour) {
 //    Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
@@ -131,6 +101,50 @@ end
 //             return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60));
 //}
 
+function Date timeShiftStart(String year, String month, String day, String hour, String minutes, String placeOfBirth, TimezoneDBSvc timezoneDBSvc) {
+
+    DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    Date dayStart = formatter.parse(year + "-" + month + "-" + day + " " + hour + ":" + minutes + ":00");
+
+    List <ru.neoflex.emf.timezonedb.TimeShift> timeShifts = timezoneDBSvc.timeShift(dayStart, placeOfBirth, "Asia/Shanghai");
+
+    return formatter.parse(timeShifts.get(1).getLocalDT());
+}
+
+function Pillar createYearPillar(BaZiDate baZiDate) {
+    Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyIndex = baZiDate.getChineseYear() % 10 < 4 ? baZiDate.getChineseYear() % 10 + 7 : baZiDate.getChineseYear() % 10 - 3;
+    Elements sky = elements.get(skyIndex);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthIndex = baZiDate.getChineseYear() % 12 < 4 ? baZiDate.getChineseYear() % 12 + 9 : baZiDate.getChineseYear() % 12 - 3;
+    Zoo earth = zoo.get(earthIndex);
+
+    pillar.setSky(sky);
+    pillar.setEarth(earth);
+    return pillar;
+}
+
+function Pillar createMonthPillar(BaZiDate baZiDate) {
+    Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer countMonth = (baZiDate.getChineseYear() - 1) * 12 + baZiDate.getChineseMonth();
+    Integer skyIndex = countMonth % 10 < 5 ? countMonth % 10 + 6 : countMonth % 10 - 4;
+    Elements sky = elements.get(skyIndex);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthIndex = baZiDate.getChineseMonth() % 12 < 11 ? baZiDate.getChineseMonth() % 12 + 2 : baZiDate.getChineseMonth() % 12 - 10;
+    Zoo earth = zoo.get(earthIndex);
+
+    pillar.setSky(sky);
+    pillar.setEarth(earth);
+    return pillar;
+}
+
+
 rule "Create NatalChart"
 when
     $inputParams: InputParams()
@@ -154,16 +168,6 @@ end;
 //    baZiDate.setMinutes($inputMinutes);
 //    insert(baZiDate);
 //end;
-
-function Date timeShiftStart(String year, String month, String day, String hour, String minutes, String placeOfBirth, TimezoneDBSvc timezoneDBSvc) {
-
-    DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    Date dayStart = formatter.parse(year + "-" + month + "-" + day + " " + hour + ":" + minutes + ":00");
-
-    List <ru.neoflex.emf.timezonedb.TimeShift> timeShifts = timezoneDBSvc.timeShift(dayStart, placeOfBirth, "Asia/Shanghai");
-
-    return formatter.parse(timeShifts.get(1).getLocalDT());
-}
 
 rule "Create BaZiDate LOCAL_SOLAR_TIME"
 when
@@ -225,27 +229,27 @@ end;
 //    update($baZiDate);
 //end;
 
-//rule "Set Year Pillar"
-//no-loop true
-//when
-//    $natalChart: NatalChart()
-//    $baZiDate: BaZiDate(chineseYear != null)
-//then
-//    Pillar year = createYearPillar($baZiDate);
-//    $natalChart.setYear(year);
-//    update($natalChart);
-//end;
+rule "Set Year Pillar"
+no-loop true
+when
+    $natalChart: NatalChart()
+    $baZiDate: BaZiDate(chineseYear != null)
+then
+    Pillar year = createYearPillar($baZiDate);
+    $natalChart.setYear(year);
+    update($natalChart);
+end;
 
-//rule "Set Month Pillar"
-//no-loop true
-//when
-//    $natalChart: NatalChart()
-//    $baZiDate: BaZiDate(chineseYear != null)
-//then
-//    Pillar month = createMonthPillar($baZiDate);
-//    $natalChart.setMonth(month);
-//    update($natalChart);
-//end;
+rule "Set Month Pillar"
+no-loop true
+when
+    $natalChart: NatalChart()
+    $baZiDate: BaZiDate(chineseYear != null)
+then
+    Pillar month = createMonthPillar($baZiDate);
+    $natalChart.setMonth(month);
+    update($natalChart);
+end;
 
 //rule "Set Day Pillar"
 //no-loop true
