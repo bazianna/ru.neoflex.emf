@@ -543,6 +543,7 @@
         <module>schema</module>
         <module>hron</module>
         <module>timezonedb</module>
+        <module>ui-vue</module>
     </modules>
 
 </project>
