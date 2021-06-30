@@ -1,0 +1,20 @@
+{
+  "name": "ui-vue",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "install": "^0.13.0",
+    "vite-plugin-pwa": "^0.7.3",
+    "vue": "^3.0.5",
+    "vue-material": "^1.0.0-beta-15"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^1.2.1",
+    "@vue/compiler-sfc": "^3.0.5",
+    "vite": "^2.1.5"
+  }
+}
