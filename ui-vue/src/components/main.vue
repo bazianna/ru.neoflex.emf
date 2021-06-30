@@ -5,6 +5,8 @@
       <span class="name">Имя:</span>
       <label class="radio">
         <input type="text" v-model="state.name"/>
+        <input type="text" v-model="state.name"/>
+        <input type="text" v-model="state.testState"/>
       </label>
     </section>
 
@@ -39,6 +41,9 @@
     </section>
 
 
+
+
+
     <input type="radio" name="type" value="D" v-model="state.type" />
     <input type="radio" name="type" value="C" v-model="state.type" />
     <input type="radio" name="type" value="B" v-model="state.type" />
@@ -48,28 +53,38 @@
     <component :is="view"></component>
   </keep-alive>
 </template>
+
 <script setup>
-import CardA from './cardA.vue'
-import CardB from './cardB.vue'
-import CardC from './cardC.vue'
-import CardD from './cardD.vue'
-import CardE from './cardE.vue'
-import { reactive, computed } from 'vue'
+    import CardA from './cardA.vue'
+    import CardB from './cardB.vue'
+    import CardC from './cardC.vue'
+    import CardD from './cardD.vue'
+    import CardE from './cardE.vue'
+    import { reactive, computed } from 'vue'
 
-const state = reactive({
-  name: '',
-  type: 'A'
-})
+    const state = reactive({
+      name: '',
+      type: 'A',
+      testState: ''
+    })
 
-const view = computed(() => {
-  return {
-    A: CardA,
-    B: CardB,
-    C: CardC,
-    D: CardD,
-    E: CardE,
-  }[state.type]
-})
+    const view = computed(() => {
+      return {
+        A: CardA,
+        B: CardB,
+        C: CardC,
+        D: CardD,
+        E: CardE,
+      }[state.type]
+    })
+
+    const post = fetch("http://jsonplaceholder.typicode.com/posts", { "Content-Type": "application/json" })
+        .then(response => response.json())
+        .then(data => {
+          state.testState = data[1].title
+          console.log(data[1].title)
+        })
+
 </script>
 <style scoped>
 [type="radio"][value="A"]::before{
