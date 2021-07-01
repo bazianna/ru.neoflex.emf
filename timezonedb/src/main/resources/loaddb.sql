@@ -29,7 +29,7 @@ DROP TABLE IF EXISTS country;
 CREATE TABLE country
 (
     country_code CHAR(2)     NULL,
-    country_name VARCHAR(45) NULL
+    country_name VARCHAR(100) NULL
 )AS
 SELECT *
 FROM CSVREAD('%1$s/country.csv');

@@ -59,6 +59,7 @@ class BaZiDate {
     Integer minutes
     Integer daysBetween
     Integer hourBetween
+    Long intFullDate
     String testField
 }
 

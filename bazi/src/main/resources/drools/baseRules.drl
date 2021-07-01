@@ -34,14 +34,31 @@ import java.text.DateFormat
 import java.util.ArrayList
 import ru.neoflex.emf.bazi.natalChart.TimeCategory
 
+import ru.neoflex.emf.timezonedb.TimezoneDBSvc
+import ru.neoflex.emf.timezonedb.TimeShift
+
 dialect  "mvel"
 
 global DBServerSvc dbServerSvc;
+global TimezoneDBSvc timezoneDBSvc;
 global HbTransaction tx;
 
 query "EObjects"
     $eObject : EObject()
 end
+
+
+
+
+function Date timeShiftStart(String year, String month, String day, String hour, String minutes, String placeOfBirth, TimezoneDBSvc timezoneDBSvc) {
+
+    DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    Date dayStart = formatter.parse(year + "-" + month + "-" + day + " " + hour + ":" + minutes + ":00");
+
+    List <ru.neoflex.emf.timezonedb.TimeShift> timeShifts = timezoneDBSvc.timeShift(dayStart, placeOfBirth, "Asia/Shanghai");
+
+    return formatter.parse(timeShifts.get(1).getLocalDT());
+}
 
 function Pillar createYearPillar(BaZiDate baZiDate) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
@@ -99,33 +116,59 @@ function Pillar createDayPillar(BaZiDate baZiDate, Boolean joinedRatHour) {
     return pillar;
 }
 
-function Pillar createHourPillar(BaZiDate baZiDate) {
+function Integer daysBetween(Date d1, Date d2){
+             return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function Pillar createHourPillarEarth(BaZiDate baZiDate) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
     Float hour = (float)(baZiDate.getHour()) / 2;
-
-    Integer hourBetween = (int) (baZiDate.getHourBetween() / 2);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
     Integer earthIndex = baZiDate.getHour() == 23 ? 1 : Math.round(hour) + 1;
     Zoo earth = zoo.get(earthIndex);
 
+    pillar.setEarth(earth);
+    return pillar;
+}
+
+function Pillar createHourPillarSky(BaZiDate baZiDate, NatalChart natalChart) {
+    Pillar pillar = natalChart.getHour();
+
+    Zoo earth = pillar.getEarth();
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthIndex = zoo.indexOf(earth);
+
     List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyIndex = hourBetween % 10 < 3 ? hourBetween % 10 + 8 : hourBetween % 10 - 2;
+    Elements skyDay = natalChart.getDay().getSky();
+    Integer skyDayIndex = elements.indexOf(skyDay);
+
+    Integer skyIndex = skyDayIndex == 1 || skyDayIndex == 6
+                       ?
+                       earthIndex > 10 ? earthIndex - 10 : earthIndex
+                       :
+                           skyDayIndex == 2 || skyDayIndex == 7
+                           ?
+                           earthIndex + 2 > 10 ? earthIndex + 2 - 10 : earthIndex + 2
+                           :
+                               skyDayIndex == 3 || skyDayIndex == 8
+                               ?
+                               earthIndex + 4 > 10 ? earthIndex + 4 - 10 : earthIndex + 4
+                               :
+                                    skyDayIndex == 4 || skyDayIndex == 9
+                                    ?
+                                    earthIndex + 6 > 10 ? earthIndex + 6 - 10 : earthIndex + 6
+                                    :
+                                        earthIndex + 8 > 10 ? earthIndex + 8 - 10 : earthIndex + 8;
     Elements sky = elements.get(skyIndex);
 
-    pillar.setEarth(earth);
     pillar.setSky(sky);
     return pillar;
 }
 
-function Integer daysBetween(Date d1, Date d2){
-             return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
-}
 
-function Integer hourBetween(Date d1, Date d2){
-             return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60));
-}
+
 
 rule "Create NatalChart"
 when
@@ -137,31 +180,29 @@ then
     insert(natalChart);
 end;
 
-rule "Create BaZiDate TWO_HOURS"
-when
-    $inputParams: InputParams(timeCategory == TimeCategory.TWO_HOURS, $inputDay: day, $inputMonth: month, $inputYear: year, $inputHour: hour, $inputMinutes: minutes)
-    not BaZiDate(gregorianYear == null)
-then
-    BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
-    baZiDate.setGregorianYear($inputYear);
-    baZiDate.setGregorianMonth($inputMonth);
-    baZiDate.setDay($inputDay);
-    baZiDate.setHour($inputHour);
-    baZiDate.setMinutes($inputMinutes);
-    insert(baZiDate);
-end;
+//rule "Create BaZiDate TWO_HOURS"
+//when
+//    $inputParams: InputParams(timeCategory == TimeCategory.TWO_HOURS, $inputDay: day, $inputMonth: month, $inputYear: year, $inputHour: hour, $inputMinutes: minutes)
+//    not BaZiDate(gregorianYear == null)
+//then
+//    BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
+//    baZiDate.setGregorianYear($inputYear);
+//    baZiDate.setGregorianMonth($inputMonth);
+//    baZiDate.setDay($inputDay);
+//    baZiDate.setHour($inputHour);
+//    baZiDate.setMinutes($inputMinutes);
+//    insert(baZiDate);
+//end;
 
 rule "Create BaZiDate LOCAL_SOLAR_TIME"
 when
-    $inputParams: InputParams(timeCategory == TimeCategory.LOCAL_SOLAR_TIME, $inputDay: day, $inputMonth: month, $inputYear: year, $inputHour: hour, $inputMinutes: minutes, $UTC: UTC)
+    $inputParams: InputParams(timeCategory == TimeCategory.LOCAL_SOLAR_TIME, hourNotKnown == false, $inputYear: year, $inputMonth: month, $inputDay: day, $inputHour: hour, $placeOfBirth: placeOfBirth, $inputMinutes: minutes)
     not BaZiDate(gregorianYear == null)
 then
-    DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-    Date dayEnd = formatter.parse($inputDay.toString() + "." + $inputMonth.toString() + "." + $inputYear.toString() + " " + $inputHour.toString() + ":" + $inputMinutes.toString());
+    Date newDay = timeShiftStart($inputYear.toString(), $inputMonth.toString(), $inputDay.toString(), $inputHour.toString(), $inputMinutes.toString(), $placeOfBirth, timezoneDBSvc);
+
     java.util.Calendar cal = java.util.Calendar.getInstance();
-    cal.setTime(dayEnd);
-    cal.add(java.util.Calendar.HOUR_OF_DAY, (int) Math.round($UTC));
-    cal.add(java.util.Calendar.MINUTE, (int)(($UTC - Math.floor($UTC))*60));
+    cal.setTime(newDay);
 
     BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
     baZiDate.setGregorianYear(cal.get(java.util.Calendar.YEAR));
@@ -169,37 +210,18 @@ then
     baZiDate.setDay(cal.get(java.util.Calendar.DAY_OF_MONTH));
     baZiDate.setHour(cal.get(java.util.Calendar.HOUR_OF_DAY));
     baZiDate.setMinutes(cal.get(java.util.Calendar.MINUTE));
+
+    String year = baZiDate.getGregorianYear() > 999 ? "" + baZiDate.getGregorianYear() : "0" + baZiDate.getGregorianYear();
+    String month = baZiDate.getGregorianMonth() > 9 ? "" + baZiDate.getGregorianMonth() : "0" + baZiDate.getGregorianMonth();
+    String day = baZiDate.getDay() > 9 ? "" + baZiDate.getDay() : "0" + baZiDate.getDay();
+    String hour = baZiDate.getHour() > 9 ? "" + baZiDate.getHour() : "0" + baZiDate.getHour();
+    String minutes = baZiDate.getMinutes() > 9 ? "" + baZiDate.getMinutes() : "0" + baZiDate.getMinutes() ;
+
+    String fullDate = year + month + day + hour + minutes;
+
+    baZiDate.setIntFullDate(Long.parseLong(fullDate));
+
     insert(baZiDate);
-end;
-
-rule "Set daysBetween in BaZiDate"
-no-loop true
-when
-    $baZiDate: BaZiDate()
-    $inputParams: InputParams($inputDay: day, $inputMonth: month, $inputYear: year, $inputHour: hour, $inputMinutes: minutes)
-then
-    DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
-    Date dayStart = formatter.parse("01.01.0001");
-    Date dayEnd = formatter.parse($inputDay.toString() + "." + $inputMonth.toString() + "." + $inputYear.toString());
-    Integer days = daysBetween(dayStart, dayEnd);
-    $baZiDate.setDaysBetween(days);
-    update($baZiDate);
-end;
-
-rule "Set hoursBetween in BaZiDate"
-no-loop true
-when
-    $baZiDate: BaZiDate()
-    $inputParams: InputParams($inputDay: day, $inputMonth: month, $inputYear: year, $inputHour: hour, $inputMinutes: minutes, $timeCategory: timeCategory, $UTC: UTC)
-then
-    DateFormat formatterHour = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-    Date hourEnd = formatterHour.parse($inputDay.toString() + "." + $inputMonth.toString() + "." + $inputYear.toString() + " " + $inputHour.toString() + ":" + $inputMinutes.toString());
-    Date hourStart = formatterHour.parse("01.01.0001 00:00");
-    Integer UTC = $timeCategory == TimeCategory.LOCAL_SOLAR_TIME ? (int) Math.floor($UTC - 2) : 0;
-    Integer hour = hourBetween(hourStart, hourEnd) - UTC;
-    Integer hourCorrect = hour % 2 == 0 ? hour - 1 : hour;
-    $baZiDate.setHourBetween(hourCorrect);
-    update($baZiDate);
 end;
 
 rule "Set Year Pillar"
@@ -236,13 +258,38 @@ then
     update($natalChart);
 end;
 
-rule "Set Hour Pillar"
+rule "Set daysBetween in BaZiDate"
 no-loop true
 when
-    $natalChart: NatalChart()
+    $baZiDate: BaZiDate()
+    $inputParams: InputParams($inputDay: day, $inputMonth: month, $inputYear: year, $inputHour: hour, $inputMinutes: minutes)
+then
+    DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+    Date dayStart = formatter.parse("01.01.0001");
+    Date dayEnd = formatter.parse($inputDay.toString() + "." + $inputMonth.toString() + "." + $inputYear.toString());
+    Integer days = daysBetween(dayStart, dayEnd);
+    $baZiDate.setDaysBetween(days);
+    update($baZiDate);
+end;
+
+rule "Set Hour Pillar Earth"
+no-loop true
+when
+    $natalChart: NatalChart(day != null)
     $baZiDate: BaZiDate(hour != null)
 then
-    Pillar hour = createHourPillar($baZiDate);
+    Pillar hour = createHourPillarEarth($baZiDate);
+    $natalChart.setHour(hour);
+    update($natalChart);
+end;
+
+rule "Set Hour Pillar Sky"
+no-loop true
+when
+    $natalChart: NatalChart(day != null, hour != null)
+    $baZiDate: BaZiDate(hour != null)
+then
+    Pillar hour = createHourPillarSky($baZiDate, $natalChart);
     $natalChart.setHour(hour);
     update($natalChart);
 end;

@@ -573,8 +573,8 @@
         <module>drools</module>
         <module>schema</module>
         <module>hron</module>
-        <module>uiBazi</module>
         <module>timezonedb</module>
+        <module>ui-vue</module>
     </modules>
 
 </project>
