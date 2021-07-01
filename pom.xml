@@ -95,6 +95,16 @@
                 <groupId>org.eclipse.emf</groupId>
                 <artifactId>org.eclipse.emf.ecore.xcore</artifactId>
                 <version>${ecore-xcore.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>org.eclipse.core.runtime</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>org.eclipse.equinox.common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -135,6 +145,16 @@
                 <artifactId>org.eclipse.emf.codegen.ecore</artifactId>
                 <version>${org.eclipse.emf.codegen.ecore.version}</version>
                 <scope>compile</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>org.eclipse.core.runtime</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>org.eclipse.equinox.common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -189,6 +209,16 @@
                 <groupId>org.eclipse.xtext</groupId>
                 <artifactId>org.eclipse.xtext</artifactId>
                 <version>${xtext.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>org.eclipse.core.runtime</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>org.eclipse.equinox.common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -226,21 +256,7 @@
                 <artifactId>joda-time</artifactId>
                 <version>${joda-time.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.core</groupId>
-                <artifactId>runtime</artifactId>
-                <version>${runtime.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.eclipse.platform</groupId>
-                        <artifactId>org.eclipse.core.runtime</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.platform</groupId>
-                        <artifactId>org.eclipse.equinox.common</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+
             <dependency>
                 <groupId>org.eclipse.equinox</groupId>
                 <artifactId>common</artifactId>
@@ -268,6 +284,16 @@
         <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.platform</groupId>
+                    <artifactId>org.eclipse.core.runtime</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.platform</groupId>
+                    <artifactId>org.eclipse.equinox.common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -284,11 +310,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.core</groupId>
-            <artifactId>runtime</artifactId>
         </dependency>
 
         <dependency>
