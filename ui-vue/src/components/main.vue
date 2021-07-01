@@ -5,39 +5,41 @@
       <span class="name">Имя:</span>
       <label class="radio">
         <input type="text" v-model="state.name"/>
-        <input type="text" v-model="state.name"/>
-        <input type="text" v-model="state.testState"/>
       </label>
     </section>
 
     <section class="item">
       <span class="name">Пол:</span>
       <label class="radio">
-        <select>
-          <option disabled value="">Выберите один из вариантов</option>
-          <option>Жен</option>
-          <option>Муж</option>
+        <select v-model="state.sex">
+          <option label="Жен" value="2"/>
+          <option label="Муж" value="1"/>
         </select>
       </label>
     </section>
 
     <section class="item">
       <span class="name">Дата и время рождения:</span>
-        <input type="number" placeholder="день" />
-        <input type="number" placeholder="месяц"/>
-        <input type="number" placeholder="год"/>
-        <input type="number" placeholder="час"/>
-        <input type="number" placeholder="минуты"/>
+        <input type="number" placeholder="день" v-model="state.day"/>
+        <input type="number" placeholder="месяц" v-model="state.month"/>
+        <input type="number" placeholder="год" v-model="state.year"/>
+        <input type="number" placeholder="час" v-model="state.hour"/>
+        <input type="number" placeholder="минуты" v-model="state.minutes"/>
     </section>
 
     <section class="item">
       <span class="name">Место рождения:</span>
-      <input type="text" placeholder="место рождения" :value="state.name"/>
+      <input type="text" placeholder="место рождения" v-model="state.placeOfBirth"/>
     </section>
 
     <section class="item">
       <span class="name">Время рождения не известно:</span>
-      <input type="checkbox"/>
+      <input type="checkbox" v-model="state.hourNotKnown"/>
+    </section>
+
+    <section class="item">
+
+      <button @click="getBaZiDate()">run</button>
     </section>
 
 
@@ -63,7 +65,16 @@
     import { reactive, computed } from 'vue'
 
     const state = reactive({
-      name: '',
+      name: 'Анна',
+      day: 5,
+      month: 7,
+      year: 2020,
+      hour: 15,
+      minutes: 30,
+      placeOfBirth: 'Asia/Shanghai',
+      sex: 2,
+      hourNotKnown: false,
+
       type: 'A',
       testState: '',
       testState1: ''
@@ -79,26 +90,22 @@
       }[state.type]
     })
 
-    // const post = fetch("http://jsonplaceholder.typicode.com/posts", { "Content-Type": "application/json" })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //       state.testState = data[1].title
-    //       console.log(data[1].title)
-    //     })
-
-    const get = fetch(`/bazi/natalChart?name="Аня"&minutes=${10}&hour=${5}&day=${25}&month=${3}&year=${2020}&placeOfBirth="Asia/Shanghai"`,
-        {
-          method: "GET",
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        })
-        .then(response => response.json())
-        .then(data => {
-          state.testState1 = data
-          console.log(data)
-        })
+    const getBaZiDate = () => {
+      fetch(`/bazi/natalChart?name=${state.name}&minutes=${state.minutes}&hour=${state.hour}&day=${state.day}&month=${state.month}&year=${state.year}&placeOfBirth=${state.placeOfBirth}&sex=${state.sex}&hourNotKnown=${state.hourNotKnown}`,
+          {
+            method: "GET",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            const baZiDate = data.contents.find((cont) => cont['eClass'] === 'ru.neoflex.emf.bazi.calendar#//BaZiDate' )
+            state.baZiDate = baZiDate
+            console.log(baZiDate)
+          })
+    }
 
 </script>
 <style scoped>
