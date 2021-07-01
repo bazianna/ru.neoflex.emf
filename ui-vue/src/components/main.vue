@@ -65,7 +65,8 @@
     const state = reactive({
       name: '',
       type: 'A',
-      testState: ''
+      testState: '',
+      testState1: ''
     })
 
     const view = computed(() => {
@@ -78,11 +79,25 @@
       }[state.type]
     })
 
-    const post = fetch("http://jsonplaceholder.typicode.com/posts", { "Content-Type": "application/json" })
+    // const post = fetch("http://jsonplaceholder.typicode.com/posts", { "Content-Type": "application/json" })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //       state.testState = data[1].title
+    //       console.log(data[1].title)
+    //     })
+
+    const get = fetch(`/bazi/natalChart?name="Аня"&minutes=${10}&hour=${5}&day=${25}&month=${3}&year=${2020}&placeOfBirth="Asia/Shanghai"`,
+        {
+          method: "GET",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        })
         .then(response => response.json())
         .then(data => {
-          state.testState = data[1].title
-          console.log(data[1].title)
+          state.testState1 = data
+          console.log(data)
         })
 
 </script>

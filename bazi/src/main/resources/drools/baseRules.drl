@@ -32,7 +32,6 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.DateTime
 import java.text.DateFormat
 import java.util.ArrayList
-import ru.neoflex.emf.bazi.natalChart.TimeCategory
 
 import ru.neoflex.emf.timezonedb.TimezoneDBSvc
 import ru.neoflex.emf.timezonedb.TimeShift
@@ -93,13 +92,13 @@ function Pillar createMonthPillar(BaZiDate baZiDate) {
     return pillar;
 }
 
-function Pillar createDayPillar(BaZiDate baZiDate, Boolean joinedRatHour) {
+function Pillar createDayPillar(BaZiDate baZiDate) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
     Integer hour = baZiDate.getHour();
     Integer daysBetween = baZiDate.getDaysBetween();
 
-    Integer correctionByTheHour = joinedRatHour && hour >= 23 && hour < 0 ? 1 : 0;
+    Integer correctionByTheHour = hour >= 23 && hour < 0 ? 1 : 0;
 
     List<Elements> elements = Arrays.asList(Elements.values());
     Integer skyIndex = daysBetween % 10 < 7 ? daysBetween % 10 + 4 : daysBetween % 10 - 6;
@@ -182,21 +181,21 @@ end;
 
 //rule "Create BaZiDate TWO_HOURS"
 //when
-//    $inputParams: InputParams(timeCategory == TimeCategory.TWO_HOURS, $inputDay: day, $inputMonth: month, $inputYear: year, $inputHour: hour, $inputMinutes: minutes)
+//    $inputParams: InputParams(hourNotKnown == true, $inputDay: day, $inputMonth: month, $inputYear: year)
 //    not BaZiDate(gregorianYear == null)
 //then
 //    BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
 //    baZiDate.setGregorianYear($inputYear);
 //    baZiDate.setGregorianMonth($inputMonth);
 //    baZiDate.setDay($inputDay);
-//    baZiDate.setHour($inputHour);
-//    baZiDate.setMinutes($inputMinutes);
+//    baZiDate.setHour(0);
+//    baZiDate.setMinutes(0);
 //    insert(baZiDate);
 //end;
 
 rule "Create BaZiDate LOCAL_SOLAR_TIME"
 when
-    $inputParams: InputParams(timeCategory == TimeCategory.LOCAL_SOLAR_TIME, hourNotKnown == false, $inputYear: year, $inputMonth: month, $inputDay: day, $inputHour: hour, $placeOfBirth: placeOfBirth, $inputMinutes: minutes)
+    $inputParams: InputParams(hourNotKnown == false, $inputYear: year, $inputMonth: month, $inputDay: day, $inputHour: hour, $placeOfBirth: placeOfBirth, $inputMinutes: minutes)
     not BaZiDate(gregorianYear == null)
 then
     Date newDay = timeShiftStart($inputYear.toString(), $inputMonth.toString(), $inputDay.toString(), $inputHour.toString(), $inputMinutes.toString(), $placeOfBirth, timezoneDBSvc);
@@ -250,10 +249,10 @@ rule "Set Day Pillar"
 no-loop true
 when
     $natalChart: NatalChart()
-    $inputParams: InputParams($joinedRatHour: joinedRatHour)
+    $inputParams: InputParams()
     $baZiDate: BaZiDate(daysBetween != null, chineseYear != null)
 then
-    Pillar day = createDayPillar($baZiDate, $joinedRatHour);
+    Pillar day = createDayPillar($baZiDate);
     $natalChart.setDay(day);
     update($natalChart);
 end;

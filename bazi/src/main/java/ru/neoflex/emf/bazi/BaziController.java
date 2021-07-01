@@ -108,11 +108,8 @@ public class BaziController {
                            Integer day,
                            Integer month,
                            Integer year,
-                           Double UTC,
                            String placeOfBirth,
                            Sex sex,
-                           boolean joinedRatHour,
-                           TimeCategory timeCategory,
                            boolean hourNotKnown
     ) throws Exception {
         return dbServerSvc.getDbServer().inTransaction(false, tx -> {
@@ -123,11 +120,8 @@ public class BaziController {
             parameters.setDay(day);
             parameters.setMonth(month);
             parameters.setYear(year);
-            // TODO: parameters.setUTC(UTC);
             parameters.setPlaceOfBirth(placeOfBirth);
             parameters.setSex(sex);
-            parameters.setJoinedRatHour(joinedRatHour);
-            parameters.setTimeCategory(timeCategory);
             parameters.setHourNotKnown(hourNotKnown);
             KieSession kieSession = droolsSvc.createSession();
             try {

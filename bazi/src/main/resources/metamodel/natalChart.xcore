@@ -22,16 +22,7 @@ class InputParams {
     Double UTC
     String placeOfBirth
     Sex sex
-    boolean joinedRatHour
-    TimeCategory timeCategory
     boolean hourNotKnown
-}
-
-@BaZi(documentation="Время, по которому будут прооизводится расчеты: Местное солнечное время, ррезиновое время или 2-х часовки (если не известен час рождения)")
-enum TimeCategory {
-    _UNDEFINED_
-    LOCAL_SOLAR_TIME
-    TWO_HOURS
 }
 
 @BaZi(documentation="Пол")
