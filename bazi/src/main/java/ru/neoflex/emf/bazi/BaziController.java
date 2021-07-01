@@ -10,10 +10,7 @@ import org.kie.api.runtime.rule.QueryResultsRow;
 import org.kie.internal.builder.DecisionTableInputType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.neoflex.emf.bazi.natalChart.*;
 import ru.neoflex.emf.drools.DroolsSvc;
 import ru.neoflex.emf.restserver.DBServerSvc;
@@ -105,7 +102,7 @@ public class BaziController {
     }
 
     @GetMapping("/natalChart")
-    JsonNode getNatalChart(String name,
+    JsonNode getNatalChart(@RequestParam String name,
                            Integer minutes,
                            Integer hour,
                            Integer day,

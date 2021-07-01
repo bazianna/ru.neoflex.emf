@@ -20,6 +20,13 @@ export default defineConfig({
         "sizes": "256x256",
       }],
       "theme_color": "#4fc08d"
-    },
-  })]
+    }
+  })],
+  server: {
+    proxy: {
+      '/bazi' : {
+        target: 'http://localhost:8080/'
+      }
+    }
+  }
 })
