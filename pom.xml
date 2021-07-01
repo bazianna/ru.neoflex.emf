@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,13 +41,14 @@
         <antlr4-maven-plugin.version>4.3</antlr4-maven-plugin.version>
         <antlr4.version>4.9</antlr4.version>
         <joda-time.version>2.10.9</joda-time.version>
+        <runtime.version>3.10.0-v20140318-2214</runtime.version>
     </properties>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.3.3.RELEASE</version>
-        <relativePath /> <!-- lookup parent from repository -->
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <groupId>ru.neoflex.emf</groupId>
@@ -224,6 +226,26 @@
                 <artifactId>joda-time</artifactId>
                 <version>${joda-time.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.core</groupId>
+                <artifactId>runtime</artifactId>
+                <version>${runtime.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>org.eclipse.core.runtime</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>org.eclipse.equinox.common</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.equinox</groupId>
+                <artifactId>common</artifactId>
+                <version>3.6.200-v20130402-1505</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -264,6 +286,15 @@
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.eclipse.core</groupId>
+            <artifactId>runtime</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.equinox</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
