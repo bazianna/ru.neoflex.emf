@@ -46,12 +46,27 @@ a {
     min-width: 0;
 }
 
-.card {
-    width: 400px;
-    height: 250px;
-    margin: 2rem auto;
+.card-up {
+    width: 100px;
+    height: 100px;
+    margin-left: auto;
+    margin-right: auto;
+
+
+    border: 2px solid;
     border-radius: .5rem;
-    background: linear-gradient(var(--theme),#2c3e50);
+    border-color: #bf4055;
+}
+
+.card-down {
+    width: 100px;
+    height: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: -12px;
+    border: 2px solid;
+    border-radius: .5rem;
+    border-color: #bf4055;
 }
 .item{
     display: flex;
@@ -306,4 +321,12 @@ a {
 }
 [type="radio"][name="split"][value="dotted"]::before{
     -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='50' height='10' viewBox='0 0 50 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M10 5A5 5 0 1 1 0 5a5 5 0 0 1 10 0zm20 0a5 5 0 1 1-10 0 5 5 0 0 1 10 0zm15 5a5 5 0 1 0 0-10 5 5 0 0 0 0 10z' fill='%23C4C4C4'/%3E%3C/svg%3E")
+}
+
+
+.divTest{
+    height: 10px;
+    border: #2d2d2d;
+    align-items: center;
+    margin: 2rem 0;
 }

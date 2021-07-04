@@ -46,11 +46,13 @@
 
 
 
-    <input type="radio" name="type" value="D" v-model="state.type" />
-    <input type="radio" name="type" value="C" v-model="state.type" />
-    <input type="radio" name="type" value="B" v-model="state.type" />
-    <input type="radio" name="type" value="E" v-model="state.type" />
+<!--    <input type="radio" name="type" value="D" v-model="state.type" />-->
+<!--    <input type="radio" name="type" value="C" v-model="state.type" />-->
+<!--    <input type="radio" name="type" value="B" v-model="state.type" />-->
+<!--    <input type="radio" name="type" value="E" v-model="state.type" />-->
   </div>
+
+
   <keep-alive>
     <component :is="view"></component>
   </keep-alive>
@@ -74,6 +76,7 @@
       placeOfBirth: 'Asia/Shanghai',
       sex: 2,
       hourNotKnown: false,
+      natalChart: Object,
 
       type: 'A',
       testState: '',
@@ -81,14 +84,18 @@
     })
 
     const view = computed(() => {
-      return {
-        A: CardA,
-        B: CardB,
-        C: CardC,
-        D: CardD,
-        E: CardE,
-      }[state.type]
+      return {A: CardA}["A"]
     })
+
+    // const view = computed(() => {
+    //   return {
+    //     A: CardA,
+    //     B: CardB,
+    //     C: CardC,
+    //     D: CardD,
+    //     E: CardE,
+    //   }[state.type]
+    // })
 
     const getBaZiDate = () => {
       fetch(`/bazi/natalChart?name=${state.name}&minutes=${state.minutes}&hour=${state.hour}&day=${state.day}&month=${state.month}&year=${state.year}&placeOfBirth=${state.placeOfBirth}&sex=${state.sex}&hourNotKnown=${state.hourNotKnown}`,
@@ -101,9 +108,9 @@
           })
           .then(response => response.json())
           .then(data => {
-            const baZiDate = data.contents.find((cont) => cont['eClass'] === 'ru.neoflex.emf.bazi.calendar#//BaZiDate' )
-            state.baZiDate = baZiDate
-            console.log(baZiDate)
+            const natalChart = data.contents.find((cont) => cont['eClass'] === 'ru.neoflex.emf.bazi.natalChart#//NatalChart' )
+            state.natalChart = natalChart
+            console.log(natalChart)
           })
     }
 
