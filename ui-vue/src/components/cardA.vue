@@ -34,7 +34,7 @@ import Pre from './pre.vue'
 import { ref, reactive, computed, onMounted } from 'vue'
 
 const props = {
-  natalChart: Object,
+  titleTest: Object,
   default: () => []
 }
 

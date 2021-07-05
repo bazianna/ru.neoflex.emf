@@ -7,6 +7,7 @@ html,body,#app{
 
 :root{
     --theme: #42b983;
+    --color-anna: #3c0000;
 }
 
 #app {
@@ -46,28 +47,42 @@ a {
     min-width: 0;
 }
 
-.card-up {
+.card-name {
+    width: 100px;
+    height: 20px;
+    margin-left: auto;
+    margin-right: -2px;
+    margin-top: -2px;
+    border: 2px solid;
+    border-radius: .5rem;
+    border-color: var(--color-anna);
+    background: var(--color-anna);
+    text-transform: capitalize;
+    color: white;
+}
+
+.card-god {
+    width: 100px;
+    height: 30px;
+    margin-left: auto;
+    margin-right: -2px;
+    margin-top: -2px;
+    border: 2px solid;
+    border-radius: .5rem;
+    border-color: var(--color-anna);
+}
+
+.card-element {
     width: 100px;
     height: 100px;
     margin-left: auto;
-    margin-right: auto;
-
-
+    margin-right: -2px;
+    margin-top: -2px;
     border: 2px solid;
     border-radius: .5rem;
-    border-color: #bf4055;
+    border-color: var(--color-anna);
 }
 
-.card-down {
-    width: 100px;
-    height: 100px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: -12px;
-    border: 2px solid;
-    border-radius: .5rem;
-    border-color: #bf4055;
-}
 .item{
     display: flex;
     align-items: center;
@@ -78,6 +93,13 @@ a {
     margin-right: 1rem;
     text-transform: capitalize;
 }
+
+.icon-elements{
+    width: 65px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+   }
 
 @media screen and (max-width: 1200px) {
     .main{

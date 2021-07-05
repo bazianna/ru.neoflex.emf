@@ -41,9 +41,54 @@
 
       <button @click="getBaZiDate()">run</button>
     </section>
+    <div style="display: inline-flex">
+      <div >
+        <div class="card-name" :style="style">Час</div>
+        <div class="card-god" :style="style"></div>
+        <div class="card-element" :style="style">
+          <img class="icon-elements" :src="state.pathIconHourSky">
+        </div>
+        <div class="card-element" :style="style" >
+          <img class="icon-elements" :src="state.pathIconHourEarth">
+        </div>
+      </div>
 
+      <div>
+        <div class="card-name" :style="style">День</div>
+        <div class="card-god" :style="style"></div>
+        <div class="card-element" :style="style">
+          <img class="icon-elements" :src="state.pathIconDaySky">
+        </div>
+        <div class="card-element" :style="style" >
+          <img class="icon-elements" :src="state.pathIconDayEarth">
+        </div>
+      </div>
 
+      <div>
+        <div class="card-name" :style="style">Месяц</div>
+        <div class="card-god" :style="style"></div>
+        <div class="card-element" :style="style">
+          <img class="icon-elements" :src="state.pathIconMonthSky">
+        </div>
+        <div class="card-element" :style="style" >
+          <img class="icon-elements" :src="state.pathIconMonthEarth">
+        </div>
+      </div>
 
+      <div>
+        <div class="card-name" :style="style">Год</div>
+        <div class="card-god" :style="style"></div>
+        <div class="card-element" :style="style">
+          <img class="icon-elements" :src="state.pathIconYearSky">
+          <span>Металл Ян</span>
+
+        </div>
+        <div class="card-element" :style="style" >
+          <img class="icon-elements" :src="state.pathIconYearEarth">
+          <span>Вода Ян</span>
+        </div>
+      </div>
+    </div>
 
 
 <!--    <input type="radio" name="type" value="D" v-model="state.type" />-->
@@ -53,9 +98,9 @@
   </div>
 
 
-  <keep-alive>
-    <component :is="view"></component>
-  </keep-alive>
+<!--  <keep-alive>-->
+<!--    <component :is="view"></component>-->
+<!--  </keep-alive>-->
 </template>
 
 <script setup>
@@ -78,13 +123,19 @@
       hourNotKnown: false,
       natalChart: Object,
 
+      pathIconHourSky: '',
+      pathIconHourEarth: '',
+      pathIconDaySky: '',
+      pathIconDayEarth: '',
+      pathIconMonthSKy: '',
+      pathIconMonthEarth: '',
+      pathIconYearSky: '',
+      pathIconYearEarth: '',
+
       type: 'A',
       testState: '',
-      testState1: ''
-    })
 
-    const view = computed(() => {
-      return {A: CardA}["A"]
+
     })
 
     // const view = computed(() => {
@@ -111,6 +162,14 @@
             const natalChart = data.contents.find((cont) => cont['eClass'] === 'ru.neoflex.emf.bazi.natalChart#//NatalChart' )
             state.natalChart = natalChart
             console.log(natalChart)
+            state.pathIconHourSky = 'src/icons/' + natalChart.hour.sky.toString() + '.svg'
+            state.pathIconHourEarth = 'src/icons/' + natalChart.hour.earth.toString() + '.svg'
+            state.pathIconDaySky = 'src/icons/' + natalChart.day.sky.toString() + '.svg'
+            state.pathIconDayEarth = 'src/icons/' + natalChart.day.earth.toString() + '.svg'
+            state.pathIconMonthSky = 'src/icons/' + natalChart.month.sky.toString() + '.svg'
+            state.pathIconMonthEarth = 'src/icons/' + natalChart.month.earth.toString() + '.svg'
+            state.pathIconYearSky = 'src/icons/' + natalChart.year.sky.toString() + '.svg'
+            state.pathIconYearEarth = 'src/icons/' + natalChart.year.earth.toString() + '.svg'
           })
     }
 
