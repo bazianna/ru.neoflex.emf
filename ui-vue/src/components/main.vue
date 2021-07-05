@@ -47,9 +47,11 @@
         <div class="card-god" :style="style"></div>
         <div class="card-element" :style="style">
           <img class="icon-elements" :src="state.pathIconHourSky">
+          <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.hour.sky)}}</span>
         </div>
         <div class="card-element" :style="style" >
           <img class="icon-elements" :src="state.pathIconHourEarth">
+          <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.hour.earth)}}</span>
         </div>
       </div>
 
@@ -58,9 +60,11 @@
         <div class="card-god" :style="style"></div>
         <div class="card-element" :style="style">
           <img class="icon-elements" :src="state.pathIconDaySky">
+          <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.day.sky)}}</span>
         </div>
         <div class="card-element" :style="style" >
           <img class="icon-elements" :src="state.pathIconDayEarth">
+          <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.day.earth)}}</span>
         </div>
       </div>
 
@@ -69,9 +73,11 @@
         <div class="card-god" :style="style"></div>
         <div class="card-element" :style="style">
           <img class="icon-elements" :src="state.pathIconMonthSky">
+          <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.month.sky)}}</span>
         </div>
         <div class="card-element" :style="style" >
           <img class="icon-elements" :src="state.pathIconMonthEarth">
+          <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.month.earth)}}</span>
         </div>
       </div>
 
@@ -80,12 +86,11 @@
         <div class="card-god" :style="style"></div>
         <div class="card-element" :style="style">
           <img class="icon-elements" :src="state.pathIconYearSky">
-          <span>Металл Ян</span>
-
+          <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.year.sky)}}</span>
         </div>
         <div class="card-element" :style="style" >
           <img class="icon-elements" :src="state.pathIconYearEarth">
-          <span>Вода Ян</span>
+          <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.year.earth)}}</span>
         </div>
       </div>
     </div>
@@ -121,16 +126,16 @@
       placeOfBirth: 'Asia/Shanghai',
       sex: 2,
       hourNotKnown: false,
-      natalChart: Object,
+      natalChart: null,
 
-      pathIconHourSky: '',
-      pathIconHourEarth: '',
-      pathIconDaySky: '',
-      pathIconDayEarth: '',
-      pathIconMonthSKy: '',
-      pathIconMonthEarth: '',
-      pathIconYearSky: '',
-      pathIconYearEarth: '',
+      pathIconHourSky: null,
+      pathIconHourEarth: null,
+      pathIconDaySky: null,
+      pathIconDayEarth: null,
+      pathIconMonthSKy: null,
+      pathIconMonthEarth: null,
+      pathIconYearSky: null,
+      pathIconYearEarth: null,
 
       type: 'A',
       testState: '',
@@ -138,17 +143,43 @@
 
     })
 
-    // const view = computed(() => {
-    //   return {
-    //     A: CardA,
-    //     B: CardB,
-    //     C: CardC,
-    //     D: CardD,
-    //     E: CardE,
-    //   }[state.type]
-    // })
+    const getElementName = (title) => {
+      return {
+        TreeYang: 'Дерево Ян',
+        TreeYin: 'Дерево Инь',
+        FireYang: 'Огонь Ян',
+        FireYin: 'Огонь Инь',
+        EarthYang: 'Земля Ян',
+        EarthYin: 'Земля Инь',
+        MetalYang: 'Металл Ян',
+        MetalYin: 'Металл Инь',
+        WaterYang: 'Вода Ян',
+        WaterYin: 'Вода Инь',
+        Rat: 'Вода Ян',
+        Beef: 'Земля Инь',
+        Tiger: 'Дерево Ян',
+        Rabbit: 'Дерево Инь',
+        Dragon: 'Земля Ян',
+        Snake: 'Огонь Инь',
+        Horse: 'Огонь Ян',
+        Goat: 'Земля Инь',
+        Monkey: 'Металл Ян',
+        Chicken: 'Металл Инь',
+        Dog: 'Земля Ян',
+        Pig: 'Вода Инь'
+      }[title]
+    }
 
     const getBaZiDate = () => {
+      state.pathIconHourSky = null
+      state.pathIconHourEarth = null
+      state.pathIconDaySky = null
+      state.pathIconDayEarth = null
+      state.pathIconMonthSky = null
+      state.pathIconMonthEarth = null
+      state.pathIconYearSky = null
+      state.pathIconYearEarth = null
+      state.natalChart = null
       fetch(`/bazi/natalChart?name=${state.name}&minutes=${state.minutes}&hour=${state.hour}&day=${state.day}&month=${state.month}&year=${state.year}&placeOfBirth=${state.placeOfBirth}&sex=${state.sex}&hourNotKnown=${state.hourNotKnown}`,
           {
             method: "GET",
