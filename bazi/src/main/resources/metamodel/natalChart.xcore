@@ -79,8 +79,9 @@ class HiddenPillar {
     Elements sky
 }
 
-@BaZi(documentation="Божествка в карте Ба Цзы. Всего 10. Каждый небесный ствол имеет Божество, рассчитанное исходя из Господина Дня")
+@BaZi(documentation="Божества в карте Ба Цзы. Всего 10. Каждый небесный ствол имеет Божество, рассчитанное исходя из Господина Дня")
 enum God {
+    _UNDEFINED_
     Friends
     RobWealth
     EatingGod

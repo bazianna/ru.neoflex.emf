@@ -43,55 +43,145 @@
     </section>
     <div style="display: inline-flex">
       <div >
-        <div class="card-name" :style="style">Час</div>
-        <div class="card-god" :style="style"></div>
-        <div class="card-element" :style="style">
+        <div class="card-name" >Час</div>
+        <div class="card-god">
+          <span v-if="state.natalChart !== null">{{getGodName(state.natalChart.hour.god)}}</span>
+        </div>
+        <div class="card-element" >
           <img class="icon-elements" :src="state.pathIconHourSky">
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.hour.sky)}}</span>
         </div>
-        <div class="card-element" :style="style" >
+        <div class="card-element">
           <img class="icon-elements" :src="state.pathIconHourEarth">
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.hour.earth)}}</span>
         </div>
+
+
+                  <div v-if="state.natalChart != null && state.natalChart.hour.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
+                    <span>{{getGodName(state.natalChart.hour.hiddenPillar[0].god)}}</span>
+                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <span>{{getElementName(state.natalChart.hour.hiddenPillar[0].sky)}}</span>
+                  </div>
+
+                  <div v-if="state.natalChart != null && state.natalChart.hour.hiddenPillar[1] !== undefined" class="card-hidden-element">
+                    <span>{{getGodName(state.natalChart.hour.hiddenPillar[1].god)}}</span>
+                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <span>{{getElementName(state.natalChart.hour.hiddenPillar[1].sky)}}</span>
+                  </div>
+
+                  <div v-if="state.natalChart != null && state.natalChart.hour.hiddenPillar[2] !== undefined" class="card-hidden-element">
+                    <span>{{getGodName(state.natalChart.hour.hiddenPillar[2].god)}}</span>
+                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <span>{{getElementName(state.natalChart.hour.hiddenPillar[2].sky)}}</span>
+                  </div>
+
       </div>
 
       <div>
-        <div class="card-name" :style="style">День</div>
-        <div class="card-god" :style="style"></div>
-        <div class="card-element" :style="style">
+        <div class="card-name">День</div>
+        <div class="card-god">
+          <span v-if="state.natalChart !== null">Личность</span>
+        </div>
+        <div class="card-element">
           <img class="icon-elements" :src="state.pathIconDaySky">
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.day.sky)}}</span>
         </div>
-        <div class="card-element" :style="style" >
+        <div class="card-element">
           <img class="icon-elements" :src="state.pathIconDayEarth">
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.day.earth)}}</span>
         </div>
+
+                <div v-if="state.natalChart != null && state.natalChart.day.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
+                  <span>{{getGodName(state.natalChart.day.hiddenPillar[0].god)}}</span>
+                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <span>{{getElementName(state.natalChart.day.hiddenPillar[0].sky)}}</span>
+                </div>
+
+                <div v-if="state.natalChart != null && state.natalChart.day.hiddenPillar[1] !== undefined" class="card-hidden-element">
+                  <span>{{getGodName(state.natalChart.day.hiddenPillar[1].god)}}</span>
+                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <span>{{getElementName(state.natalChart.day.hiddenPillar[1].sky)}}</span>
+                </div>
+
+                <div v-if="state.natalChart != null && state.natalChart.day.hiddenPillar[2] !== undefined" class="card-hidden-element">
+                  <span>{{getGodName(state.natalChart.day.hiddenPillar[2].god)}}</span>
+                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <span>{{getElementName(state.natalChart.day.hiddenPillar[2].sky)}}</span>
+                </div>
+
       </div>
 
       <div>
-        <div class="card-name" :style="style">Месяц</div>
-        <div class="card-god" :style="style"></div>
-        <div class="card-element" :style="style">
+        <div class="card-name">Месяц</div>
+        <div class="card-god">
+          <span v-if="state.natalChart !== null">{{getGodName(state.natalChart.month.god)}}</span>
+        </div>
+        <div class="card-element">
           <img class="icon-elements" :src="state.pathIconMonthSky">
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.month.sky)}}</span>
         </div>
-        <div class="card-element" :style="style" >
+        <div class="card-element">
           <img class="icon-elements" :src="state.pathIconMonthEarth">
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.month.earth)}}</span>
         </div>
+
+
+                <div v-if="state.natalChart != null && state.natalChart.month.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
+                  <span>{{getGodName(state.natalChart.month.hiddenPillar[0].god)}}</span>
+                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <span>{{getElementName(state.natalChart.month.hiddenPillar[0].sky)}}</span>
+                </div>
+
+                <div v-if="state.natalChart != null && state.natalChart.month.hiddenPillar[1] !== undefined" class="card-hidden-element">
+                  <span>{{getGodName(state.natalChart.month.hiddenPillar[1].god)}}</span>
+                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <span>{{getElementName(state.natalChart.month.hiddenPillar[1].sky)}}</span>
+                </div>
+
+                <div v-if="state.natalChart != null && state.natalChart.month.hiddenPillar[2] !== undefined" class="card-hidden-element">
+                  <span>{{getGodName(state.natalChart.month.hiddenPillar[2].god)}}</span>
+                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <span>{{getElementName(state.natalChart.month.hiddenPillar[2].sky)}}</span>
+                </div>
+
+
+
+
       </div>
 
       <div>
-        <div class="card-name" :style="style">Год</div>
-        <div class="card-god" :style="style"></div>
-        <div class="card-element" :style="style">
+        <div class="card-name">Год</div>
+        <div class="card-god">
+          <span v-if="state.natalChart !== null">{{getGodName(state.natalChart.year.god)}}</span>
+        </div>
+        <div class="card-element">
           <img class="icon-elements" :src="state.pathIconYearSky">
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.year.sky)}}</span>
         </div>
-        <div class="card-element" :style="style" >
+        <div class="card-element">
           <img class="icon-elements" :src="state.pathIconYearEarth">
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.year.earth)}}</span>
         </div>
+
+                  <div v-if="state.natalChart != null && state.natalChart.year.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
+                    <span>{{getGodName(state.natalChart.year.hiddenPillar[0].god)}}</span>
+                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <span>{{getElementName(state.natalChart.year.hiddenPillar[0].sky)}}</span>
+                  </div>
+
+                  <div v-if="state.natalChart != null && state.natalChart.year.hiddenPillar[1] !== undefined" class="card-hidden-element">
+                    <span>{{getGodName(state.natalChart.year.hiddenPillar[1].god)}}</span>
+                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <span>{{getElementName(state.natalChart.year.hiddenPillar[1].sky)}}</span>
+                  </div>
+
+                  <div v-if="state.natalChart != null && state.natalChart.year.hiddenPillar[2] !== undefined" class="card-hidden-element">
+                    <span>{{getGodName(state.natalChart.year.hiddenPillar[2].god)}}</span>
+                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <span>{{getElementName(state.natalChart.year.hiddenPillar[2].sky)}}</span>
+                  </div>
+
+
       </div>
     </div>
 
@@ -170,6 +260,21 @@
       }[title]
     }
 
+    const getGodName = (title) => {
+      return {
+        Friends: 'Друзья',
+        RobWealth: 'Грабители богатства',
+        EatingGod: 'Дух удовольствия',
+        HurtingOfficer: 'Вызов власти',
+        IndirectWealth: 'Непрямые деньги',
+        DirectWealth: 'Прямые деньги',
+        SevenKilling: '7-ой убийца',
+        DirectOfficer: 'Прямая власть',
+        IndirectResource: 'Непрямые ресурсы',
+        DirectResource: 'Прямые ресурсы'
+      }[title]
+    }
+
     const getBaZiDate = () => {
       state.pathIconHourSky = null
       state.pathIconHourEarth = null
@@ -205,20 +310,20 @@
     }
 
 </script>
-<style scoped>
-[type="radio"][value="A"]::before{
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='150' height='100' viewBox='0 0 150 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M75 0c0 11.046-8.954 20-20 20S35 11.046 35 0H10C4.477 0 0 4.477 0 10v80c0 5.523 4.477 10 10 10h25c0-11.046 8.954-20 20-20s20 8.954 20 20h65c5.523 0 10-4.477 10-10V10c0-5.523-4.477-10-10-10H75z' fill='%23C4C4C4'/%3E%3C/svg%3E")
-}
-[type="radio"][value="D"]::before{
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='150' height='100' viewBox='0 0 150 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M55 20c11.046 0 20-8.954 20-20h65c5.523 0 10 4.477 10 10v80c0 5.523-4.477 10-10 10H75c0-11.046-8.954-20-20-20s-20 8.954-20 20H10c-5.523 0-10-4.477-10-10V10C0 4.477 4.477 0 10 0h25c0 11.046 8.954 20 20 20zm0 40c5.523 0 10-4.477 10-10s-4.477-10-10-10-10 4.477-10 10 4.477 10 10 10z' fill='%23EC7979'/%3E%3C/svg%3E")
-}
-[type="radio"][value="B"]::before{
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='150' height='100' viewBox='0 0 150 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M20 0h110c0 11.046 8.954 20 20 20v60c-11.046 0-20 8.954-20 20H20c0-11.046-8.954-20-20-20V20c11.046 0 20-8.954 20-20z' fill='%23C4C4C4'/%3E%3C/svg%3E")
-}
-[type="radio"][value="C"]::before{
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='150' height='100' viewBox='0 0 150 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M65 0c0 11.046-8.954 20-20 20S25 11.046 25 0H10C4.477 0 0 4.477 0 10v80c0 5.523 4.477 10 10 10h15c0-11.046 8.954-20 20-20s20 8.954 20 20h20c0-11.046 8.954-20 20-20s20 8.954 20 20h15c5.523 0 10-4.477 10-10V10c0-5.523-4.477-10-10-10h-15c0 11.046-8.954 20-20 20S85 11.046 85 0H65z' fill='%23C4C4C4'/%3E%3C/svg%3E")
-}
-[type="radio"][value="E"]::before{
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='150' height='100' viewBox='0 0 150 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M20 0c0 11.046-8.954 20-20 20v20c5.523 0 10 4.477 10 10S5.523 60 0 60v20c11.046 0 20 8.954 20 20h109c0-11.046 8.954-20 20-20 .335 0 .669.008 1 .025V60c-5.523 0-10-4.477-10-10s4.477-10 10-10V20c-11.046 0-20-8.954-20-20H20z' fill='%23EC7979'/%3E%3C/svg%3E")
-}
-</style>
+<!--<style scoped>-->
+<!--[type="radio"][value="A"]::before{-->
+<!--  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='150' height='100' viewBox='0 0 150 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M75 0c0 11.046-8.954 20-20 20S35 11.046 35 0H10C4.477 0 0 4.477 0 10v80c0 5.523 4.477 10 10 10h25c0-11.046 8.954-20 20-20s20 8.954 20 20h65c5.523 0 10-4.477 10-10V10c0-5.523-4.477-10-10-10H75z' fill='%23C4C4C4'/%3E%3C/svg%3E")-->
+<!--}-->
+<!--[type="radio"][value="D"]::before{-->
+<!--  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='150' height='100' viewBox='0 0 150 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M55 20c11.046 0 20-8.954 20-20h65c5.523 0 10 4.477 10 10v80c0 5.523-4.477 10-10 10H75c0-11.046-8.954-20-20-20s-20 8.954-20 20H10c-5.523 0-10-4.477-10-10V10C0 4.477 4.477 0 10 0h25c0 11.046 8.954 20 20 20zm0 40c5.523 0 10-4.477 10-10s-4.477-10-10-10-10 4.477-10 10 4.477 10 10 10z' fill='%23EC7979'/%3E%3C/svg%3E")-->
+<!--}-->
+<!--[type="radio"][value="B"]::before{-->
+<!--  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='150' height='100' viewBox='0 0 150 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M20 0h110c0 11.046 8.954 20 20 20v60c-11.046 0-20 8.954-20 20H20c0-11.046-8.954-20-20-20V20c11.046 0 20-8.954 20-20z' fill='%23C4C4C4'/%3E%3C/svg%3E")-->
+<!--}-->
+<!--[type="radio"][value="C"]::before{-->
+<!--  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='150' height='100' viewBox='0 0 150 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M65 0c0 11.046-8.954 20-20 20S25 11.046 25 0H10C4.477 0 0 4.477 0 10v80c0 5.523 4.477 10 10 10h15c0-11.046 8.954-20 20-20s20 8.954 20 20h20c0-11.046 8.954-20 20-20s20 8.954 20 20h15c5.523 0 10-4.477 10-10V10c0-5.523-4.477-10-10-10h-15c0 11.046-8.954 20-20 20S85 11.046 85 0H65z' fill='%23C4C4C4'/%3E%3C/svg%3E")-->
+<!--}-->
+<!--[type="radio"][value="E"]::before{-->
+<!--  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='150' height='100' viewBox='0 0 150 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M20 0c0 11.046-8.954 20-20 20v20c5.523 0 10 4.477 10 10S5.523 60 0 60v20c11.046 0 20 8.954 20 20h109c0-11.046 8.954-20 20-20 .335 0 .669.008 1 .025V60c-5.523 0-10-4.477-10-10s4.477-10 10-10V20c-11.046 0-20-8.954-20-20H20z' fill='%23EC7979'/%3E%3C/svg%3E")-->
+<!--}-->
+<!--</style>-->

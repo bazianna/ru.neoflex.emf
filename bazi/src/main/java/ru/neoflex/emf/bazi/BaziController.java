@@ -11,16 +11,18 @@ import org.kie.internal.builder.DecisionTableInputType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-import ru.neoflex.emf.bazi.natalChart.*;
+import ru.neoflex.emf.bazi.natalChart.InputParams;
+import ru.neoflex.emf.bazi.natalChart.NatalChartFactory;
+import ru.neoflex.emf.bazi.natalChart.NatalChartPackage;
+import ru.neoflex.emf.bazi.natalChart.Sex;
 import ru.neoflex.emf.drools.DroolsSvc;
 import ru.neoflex.emf.restserver.DBServerSvc;
 import ru.neoflex.emf.timezonedb.TimezoneDBSvc;
 
 import javax.annotation.PostConstruct;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController()
 @RequestMapping("/bazi")
@@ -40,10 +42,6 @@ public class BaziController {
         this.timezoneDBSvc = timezoneDBSvc;
     }
 
-    public Integer daysBetween(Date d1, Date d2){
-        return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
-    }
-
     @PostConstruct
     void init() {
         dbServerSvc.getDbServer().registerEPackage(NatalChartPackage.eINSTANCE);
@@ -53,36 +51,9 @@ public class BaziController {
             List<Resource> resources = new ArrayList<>();
             resources.add(DroolsSvc.createClassPathResource("drools/baseRules.drl", null));
             resources.add(DroolsSvc.createDecisionTableResource("drools/baZiDate.xls", DecisionTableInputType.XLS));
-//            resources.add(DroolsSvc.createDecisionTableResource("drools/hourPillar.xls", DecisionTableInputType.XLS));
+            resources.add(DroolsSvc.createClassPathResource("drools/gods.drl", null));
 
 
-
-
-
-
-            Date dayEndFull = null;
-            try {
-                DateFormat formatterFull = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-                dayEndFull = formatterFull.parse("2.2.2020 20:02");
-                Long days = dayEndFull.getTime();
-                Double UTC = 12.5;
-
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(dayEndFull);
-                cal.add(Calendar.HOUR_OF_DAY, (int) Math.floor(UTC));
-                cal.add(Calendar.MINUTE, (int)((UTC - Math.floor(UTC))*60));
-                cal.getTime();
-
-                Integer year = cal.get(Calendar.YEAR);
-                Integer month = cal.get(Calendar.MONTH) + 1;
-                Integer day = cal.get(Calendar.DAY_OF_MONTH);
-                Integer hour = cal.get(Calendar.HOUR_OF_DAY);
-                Integer minute = cal.get(Calendar.MINUTE);
-
-
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
 
 //            try {
 //                byte[] bazi = Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "bazi", "rules", "bazi.drl"));

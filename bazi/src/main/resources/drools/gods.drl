@@ -1,0 +1,213 @@
+package ru.neoflex.emf.bazi
+
+import ru.neoflex.emf.bazi.natalChart.NatalChart
+import ru.neoflex.emf.bazi.natalChart.InputParams
+import ru.neoflex.emf.bazi.calendar.Calendar
+import ru.neoflex.emf.bazi.calendar.Year
+import ru.neoflex.emf.bazi.calendar.CalendarFactory
+import ru.neoflex.emf.bazi.calendar.BaZiDate
+import ru.neoflex.emf.bazi.natalChart.NatalChartFactory
+import ru.neoflex.emf.bazi.natalChart.Pillar
+import ru.neoflex.emf.bazi.natalChart.Zoo
+import ru.neoflex.emf.bazi.natalChart.Elements
+import java.util.Arrays
+import java.util.List
+import ru.neoflex.emf.restserver.DBServerSvc
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectWriter
+import ru.neoflex.emf.bazi.natalChart.God
+
+function Pillar updateGodPillar(Pillar pillar, NatalChart natalChart) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Elements skyDay = natalChart.getDay().getSky();
+    Integer skyDayIndex = elements.indexOf(skyDay);
+
+    Elements skyPillar = pillar.getSky();
+    Integer skyPillarIndex = elements.indexOf(skyPillar);
+
+    List<God> gods = Arrays.asList(God.values());
+
+    Integer godIndex = skyDayIndex == skyPillarIndex
+           ?
+           1
+           :
+                   ( ( skyDayIndex == 1 || skyDayIndex == 2 ) && skyDayIndex + 8 == skyPillarIndex )
+                   ||
+                   ( skyDayIndex >= 3 && skyDayIndex <= 10 && skyDayIndex - 2 == skyPillarIndex )
+                   ?
+                   10
+                   :
+                       ( skyDayIndex == 1 && skyDayIndex + 9 == skyPillarIndex )
+                       ||
+                       ( skyDayIndex == 2 && skyDayIndex + 7 == skyPillarIndex )
+                       ||
+                       ( ( skyDayIndex == 3 || skyDayIndex == 5 || skyDayIndex == 7 || skyDayIndex == 9) && skyDayIndex - 1 == skyPillarIndex )
+                       ||
+                       ( ( skyDayIndex == 4 || skyDayIndex == 6 || skyDayIndex == 8 || skyDayIndex == 10) && skyDayIndex - 3 == skyPillarIndex )
+                       ?
+                       9
+                       :
+                           ( skyDayIndex >= 1 && skyDayIndex <= 4 && skyDayIndex + 6 == skyPillarIndex )
+                           ||
+                           ( skyDayIndex >= 5 && skyDayIndex <= 10 && skyDayIndex - 4 == skyPillarIndex )
+                           ?
+                           8
+                           :
+                                ( ( skyDayIndex == 1 || skyDayIndex == 3) && skyDayIndex + 7 == skyPillarIndex )
+                                ||
+                                ( ( skyDayIndex == 2 || skyDayIndex == 4) && skyDayIndex + 5 == skyPillarIndex )
+                                ||
+                                ( ( skyDayIndex == 5 || skyDayIndex == 7 || skyDayIndex == 9 ) && skyDayIndex - 3 == skyPillarIndex )
+                                ||
+                                ( ( skyDayIndex == 6 || skyDayIndex == 8 || skyDayIndex == 10 ) && skyDayIndex - 5 == skyPillarIndex )
+                                ?
+                                7
+                                :
+                                    ( skyDayIndex >= 1 && skyDayIndex <= 6 && skyDayIndex + 4 == skyPillarIndex )
+                                    ||
+                                    ( skyDayIndex >= 7 && skyDayIndex <= 10 && skyDayIndex - 6 == skyPillarIndex )
+                                    ?
+                                    6
+                                    :
+                                        ( ( skyDayIndex == 1 || skyDayIndex == 3 || skyDayIndex == 5) && skyDayIndex + 5 == skyPillarIndex )
+                                        ||
+                                        ( ( skyDayIndex == 2 || skyDayIndex == 4 || skyDayIndex == 6) && skyDayIndex + 3 == skyPillarIndex )
+                                        ||
+                                        ( ( skyDayIndex == 7 || skyDayIndex == 9 ) && skyDayIndex - 5 == skyPillarIndex )
+                                        ||
+                                        ( ( skyDayIndex == 8 || skyDayIndex == 10 ) && skyDayIndex - 7 == skyPillarIndex )
+                                        ?
+                                        5
+                                        :
+                                                ( skyDayIndex >= 1 && skyDayIndex <= 8 && skyDayIndex + 2 == skyPillarIndex )
+                                                ||
+                                                ( ( skyDayIndex == 9 || skyDayIndex == 10 ) && skyDayIndex - 8 == skyPillarIndex )
+                                                ?
+                                                4
+                                                :
+                                                    ( ( skyDayIndex == 1 || skyDayIndex == 3 || skyDayIndex == 5 || skyDayIndex == 7) && skyDayIndex + 3 == skyPillarIndex )
+                                                    ||
+                                                    ( ( skyDayIndex == 2 || skyDayIndex == 4 || skyDayIndex == 6 || skyDayIndex == 8) && skyDayIndex + 1 == skyPillarIndex )
+                                                    ||
+                                                    ( skyDayIndex == 9 && skyDayIndex - 7 == skyPillarIndex )
+                                                    ||
+                                                    ( skyDayIndex == 10 && skyDayIndex - 9 == skyPillarIndex )
+                                                    ?
+                                                    3
+                                                    :
+                                                        2;
+    God god = gods.get(godIndex);
+    pillar.setGod(god);
+    return pillar;
+}
+
+function Pillar updateGodHiddenPillar(Pillar pillar, NatalChart natalChart) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    List<God> gods = Arrays.asList(God.values());
+
+    Elements skyDay = natalChart.getDay().getSky();
+    Integer skyDayIndex = elements.indexOf(skyDay);
+
+    pillar.getHiddenPillar().forEach(hiddenPillar -> {
+
+        Integer skyPillarIndex = elements.indexOf(hiddenPillar.getSky());
+
+        Integer godIndex = skyDayIndex == skyPillarIndex
+               ?
+               1
+               :
+                       ( ( skyDayIndex == 1 || skyDayIndex == 2 ) && skyDayIndex + 8 == skyPillarIndex )
+                       ||
+                       ( skyDayIndex >= 3 && skyDayIndex <= 10 && skyDayIndex - 2 == skyPillarIndex )
+                       ?
+                       10
+                       :
+                           ( skyDayIndex == 1 && skyDayIndex + 9 == skyPillarIndex )
+                           ||
+                           ( skyDayIndex == 2 && skyDayIndex + 7 == skyPillarIndex )
+                           ||
+                           ( ( skyDayIndex == 3 || skyDayIndex == 5 || skyDayIndex == 7 || skyDayIndex == 9) && skyDayIndex - 1 == skyPillarIndex )
+                           ||
+                           ( ( skyDayIndex == 4 || skyDayIndex == 6 || skyDayIndex == 8 || skyDayIndex == 10) && skyDayIndex - 3 == skyPillarIndex )
+                           ?
+                           9
+                           :
+                               ( skyDayIndex >= 1 && skyDayIndex <= 4 && skyDayIndex + 6 == skyPillarIndex )
+                               ||
+                               ( skyDayIndex >= 5 && skyDayIndex <= 10 && skyDayIndex - 4 == skyPillarIndex )
+                               ?
+                               8
+                               :
+                                    ( ( skyDayIndex == 1 || skyDayIndex == 3) && skyDayIndex + 7 == skyPillarIndex )
+                                    ||
+                                    ( ( skyDayIndex == 2 || skyDayIndex == 4) && skyDayIndex + 5 == skyPillarIndex )
+                                    ||
+                                    ( ( skyDayIndex == 5 || skyDayIndex == 7 || skyDayIndex == 9 ) && skyDayIndex - 3 == skyPillarIndex )
+                                    ||
+                                    ( ( skyDayIndex == 6 || skyDayIndex == 8 || skyDayIndex == 10 ) && skyDayIndex - 5 == skyPillarIndex )
+                                    ?
+                                    7
+                                    :
+                                        ( skyDayIndex >= 1 && skyDayIndex <= 6 && skyDayIndex + 4 == skyPillarIndex )
+                                        ||
+                                        ( skyDayIndex >= 7 && skyDayIndex <= 10 && skyDayIndex - 6 == skyPillarIndex )
+                                        ?
+                                        6
+                                        :
+                                            ( ( skyDayIndex == 1 || skyDayIndex == 3 || skyDayIndex == 5) && skyDayIndex + 5 == skyPillarIndex )
+                                            ||
+                                            ( ( skyDayIndex == 2 || skyDayIndex == 4 || skyDayIndex == 6) && skyDayIndex + 3 == skyPillarIndex )
+                                            ||
+                                            ( ( skyDayIndex == 7 || skyDayIndex == 9 ) && skyDayIndex - 5 == skyPillarIndex )
+                                            ||
+                                            ( ( skyDayIndex == 8 || skyDayIndex == 10 ) && skyDayIndex - 7 == skyPillarIndex )
+                                            ?
+                                            5
+                                            :
+                                                    ( skyDayIndex >= 1 && skyDayIndex <= 8 && skyDayIndex + 2 == skyPillarIndex )
+                                                    ||
+                                                    ( ( skyDayIndex == 9 || skyDayIndex == 10 ) && skyDayIndex - 8 == skyPillarIndex )
+                                                    ?
+                                                    4
+                                                    :
+                                                        ( ( skyDayIndex == 1 || skyDayIndex == 3 || skyDayIndex == 5 || skyDayIndex == 7) && skyDayIndex + 3 == skyPillarIndex )
+                                                        ||
+                                                        ( ( skyDayIndex == 2 || skyDayIndex == 4 || skyDayIndex == 6 || skyDayIndex == 8) && skyDayIndex + 1 == skyPillarIndex )
+                                                        ||
+                                                        ( skyDayIndex == 9 && skyDayIndex - 7 == skyPillarIndex )
+                                                        ||
+                                                        ( skyDayIndex == 10 && skyDayIndex - 9 == skyPillarIndex )
+                                                        ?
+                                                        3
+                                                        :
+                                                            2;
+            God god = gods.get(godIndex);
+            hiddenPillar.setGod(god);
+            pillar.setGod(god);
+    });
+
+    return pillar;
+}
+
+
+rule "Set Gods in NatalChart"
+no-loop true
+when
+    $natalChart: NatalChart(day != null, hour != null)
+    $baZiDate: BaZiDate(hour != null)
+then
+    updateGodPillar($natalChart.getHour(), $natalChart);
+    updateGodHiddenPillar($natalChart.getHour(), $natalChart);
+
+    updateGodHiddenPillar($natalChart.getDay(), $natalChart);
+
+    updateGodPillar($natalChart.getMonth(), $natalChart);
+    updateGodHiddenPillar($natalChart.getMonth(), $natalChart);
+
+    updateGodPillar($natalChart.getYear(), $natalChart);
+    updateGodHiddenPillar($natalChart.getYear(), $natalChart);
+
+    update($natalChart);
+end;
