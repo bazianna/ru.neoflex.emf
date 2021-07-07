@@ -48,30 +48,30 @@
           <span v-if="state.natalChart !== null">{{getGodName(state.natalChart.hour.god)}}</span>
         </div>
         <div class="card-element" >
-          <img class="icon-elements" :src="state.pathIconHourSky">
+          <img v-if="state.natalChart !== null" class="icon-elements" :src=getIconPath(state.natalChart.hour.sky)>
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.hour.sky)}}</span>
         </div>
         <div class="card-element">
-          <img class="icon-elements" :src="state.pathIconHourEarth">
+          <img v-if="state.natalChart !== null" class="icon-elements" :src=getIconPath(state.natalChart.hour.earth)>
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.hour.earth)}}</span>
         </div>
 
 
                   <div v-if="state.natalChart != null && state.natalChart.hour.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
                     <span>{{getGodName(state.natalChart.hour.hiddenPillar[0].god)}}</span>
-                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.hour.hiddenPillar[0].sky)>
                     <span>{{getElementName(state.natalChart.hour.hiddenPillar[0].sky)}}</span>
                   </div>
 
                   <div v-if="state.natalChart != null && state.natalChart.hour.hiddenPillar[1] !== undefined" class="card-hidden-element">
                     <span>{{getGodName(state.natalChart.hour.hiddenPillar[1].god)}}</span>
-                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.hour.hiddenPillar[1].sky)>
                     <span>{{getElementName(state.natalChart.hour.hiddenPillar[1].sky)}}</span>
                   </div>
 
                   <div v-if="state.natalChart != null && state.natalChart.hour.hiddenPillar[2] !== undefined" class="card-hidden-element">
                     <span>{{getGodName(state.natalChart.hour.hiddenPillar[2].god)}}</span>
-                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.hour.hiddenPillar[2].sky)>
                     <span>{{getElementName(state.natalChart.hour.hiddenPillar[2].sky)}}</span>
                   </div>
 
@@ -83,29 +83,29 @@
           <span v-if="state.natalChart !== null">Личность</span>
         </div>
         <div class="card-element">
-          <img class="icon-elements" :src="state.pathIconDaySky">
+          <img v-if="state.natalChart !== null" class="icon-elements" :src=getIconPath(state.natalChart.day.sky)>
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.day.sky)}}</span>
         </div>
         <div class="card-element">
-          <img class="icon-elements" :src="state.pathIconDayEarth">
+          <img v-if="state.natalChart !== null" class="icon-elements" :src=getIconPath(state.natalChart.day.earth)>
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.day.earth)}}</span>
         </div>
 
                 <div v-if="state.natalChart != null && state.natalChart.day.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
                   <span>{{getGodName(state.natalChart.day.hiddenPillar[0].god)}}</span>
-                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.day.hiddenPillar[0].sky)>
                   <span>{{getElementName(state.natalChart.day.hiddenPillar[0].sky)}}</span>
                 </div>
 
                 <div v-if="state.natalChart != null && state.natalChart.day.hiddenPillar[1] !== undefined" class="card-hidden-element">
                   <span>{{getGodName(state.natalChart.day.hiddenPillar[1].god)}}</span>
-                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.day.hiddenPillar[1].sky)>
                   <span>{{getElementName(state.natalChart.day.hiddenPillar[1].sky)}}</span>
                 </div>
 
                 <div v-if="state.natalChart != null && state.natalChart.day.hiddenPillar[2] !== undefined" class="card-hidden-element">
                   <span>{{getGodName(state.natalChart.day.hiddenPillar[2].god)}}</span>
-                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.day.hiddenPillar[2].sky)>
                   <span>{{getElementName(state.natalChart.day.hiddenPillar[2].sky)}}</span>
                 </div>
 
@@ -117,30 +117,30 @@
           <span v-if="state.natalChart !== null">{{getGodName(state.natalChart.month.god)}}</span>
         </div>
         <div class="card-element">
-          <img class="icon-elements" :src="state.pathIconMonthSky">
+          <img v-if="state.natalChart != null" class="icon-elements" :src=getIconPath(state.natalChart.month.sky)>
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.month.sky)}}</span>
         </div>
         <div class="card-element">
-          <img class="icon-elements" :src="state.pathIconMonthEarth">
+          <img v-if="state.natalChart != null" class="icon-elements" :src=getIconPath(state.natalChart.month.earth)>
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.month.earth)}}</span>
         </div>
 
 
                 <div v-if="state.natalChart != null && state.natalChart.month.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
                   <span>{{getGodName(state.natalChart.month.hiddenPillar[0].god)}}</span>
-                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.month.hiddenPillar[0].sky)>
                   <span>{{getElementName(state.natalChart.month.hiddenPillar[0].sky)}}</span>
                 </div>
 
                 <div v-if="state.natalChart != null && state.natalChart.month.hiddenPillar[1] !== undefined" class="card-hidden-element">
                   <span>{{getGodName(state.natalChart.month.hiddenPillar[1].god)}}</span>
-                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.month.hiddenPillar[1].sky)>
                   <span>{{getElementName(state.natalChart.month.hiddenPillar[1].sky)}}</span>
                 </div>
 
                 <div v-if="state.natalChart != null && state.natalChart.month.hiddenPillar[2] !== undefined" class="card-hidden-element">
                   <span>{{getGodName(state.natalChart.month.hiddenPillar[2].god)}}</span>
-                  <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                  <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.month.hiddenPillar[2].sky)>
                   <span>{{getElementName(state.natalChart.month.hiddenPillar[2].sky)}}</span>
                 </div>
 
@@ -155,29 +155,29 @@
           <span v-if="state.natalChart !== null">{{getGodName(state.natalChart.year.god)}}</span>
         </div>
         <div class="card-element">
-          <img class="icon-elements" :src="state.pathIconYearSky">
+          <img v-if="state.natalChart != null" class="icon-elements" :src=getIconPath(state.natalChart.year.sky)>
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.year.sky)}}</span>
         </div>
         <div class="card-element">
-          <img class="icon-elements" :src="state.pathIconYearEarth">
+          <img v-if="state.natalChart != null" class="icon-elements" :src=getIconPath(state.natalChart.year.earth)>
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.year.earth)}}</span>
         </div>
 
                   <div v-if="state.natalChart != null && state.natalChart.year.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
                     <span>{{getGodName(state.natalChart.year.hiddenPillar[0].god)}}</span>
-                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.year.hiddenPillar[0].sky)>
                     <span>{{getElementName(state.natalChart.year.hiddenPillar[0].sky)}}</span>
                   </div>
 
                   <div v-if="state.natalChart != null && state.natalChart.year.hiddenPillar[1] !== undefined" class="card-hidden-element">
                     <span>{{getGodName(state.natalChart.year.hiddenPillar[1].god)}}</span>
-                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.year.hiddenPillar[1].sky)>
                     <span>{{getElementName(state.natalChart.year.hiddenPillar[1].sky)}}</span>
                   </div>
 
                   <div v-if="state.natalChart != null && state.natalChart.year.hiddenPillar[2] !== undefined" class="card-hidden-element">
                     <span>{{getGodName(state.natalChart.year.hiddenPillar[2].god)}}</span>
-                    <img class="icon-hidden-elements" :src="state.pathIconHourEarth">
+                    <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.year.hiddenPillar[2].sky)>
                     <span>{{getElementName(state.natalChart.year.hiddenPillar[2].sky)}}</span>
                   </div>
 
@@ -205,6 +205,7 @@
     import CardD from './cardD.vue'
     import CardE from './cardE.vue'
     import { reactive, computed } from 'vue'
+    import Ecore from "ecore";
 
     const state = reactive({
       name: 'Анна',
@@ -217,15 +218,6 @@
       sex: 2,
       hourNotKnown: false,
       natalChart: null,
-
-      pathIconHourSky: null,
-      pathIconHourEarth: null,
-      pathIconDaySky: null,
-      pathIconDayEarth: null,
-      pathIconMonthSKy: null,
-      pathIconMonthEarth: null,
-      pathIconYearSky: null,
-      pathIconYearEarth: null,
 
       type: 'A',
       testState: '',
@@ -276,15 +268,6 @@
     }
 
     const getBaZiDate = () => {
-      state.pathIconHourSky = null
-      state.pathIconHourEarth = null
-      state.pathIconDaySky = null
-      state.pathIconDayEarth = null
-      state.pathIconMonthSky = null
-      state.pathIconMonthEarth = null
-      state.pathIconYearSky = null
-      state.pathIconYearEarth = null
-      state.natalChart = null
       fetch(`/bazi/natalChart?name=${state.name}&minutes=${state.minutes}&hour=${state.hour}&day=${state.day}&month=${state.month}&year=${state.year}&placeOfBirth=${state.placeOfBirth}&sex=${state.sex}&hourNotKnown=${state.hourNotKnown}`,
           {
             method: "GET",
@@ -295,18 +278,15 @@
           })
           .then(response => response.json())
           .then(data => {
+            console.log(data)
             const natalChart = data.contents.find((cont) => cont['eClass'] === 'ru.neoflex.emf.bazi.natalChart#//NatalChart' )
             state.natalChart = natalChart
             console.log(natalChart)
-            state.pathIconHourSky = 'src/icons/' + natalChart.hour.sky.toString() + '.svg'
-            state.pathIconHourEarth = 'src/icons/' + natalChart.hour.earth.toString() + '.svg'
-            state.pathIconDaySky = 'src/icons/' + natalChart.day.sky.toString() + '.svg'
-            state.pathIconDayEarth = 'src/icons/' + natalChart.day.earth.toString() + '.svg'
-            state.pathIconMonthSky = 'src/icons/' + natalChart.month.sky.toString() + '.svg'
-            state.pathIconMonthEarth = 'src/icons/' + natalChart.month.earth.toString() + '.svg'
-            state.pathIconYearSky = 'src/icons/' + natalChart.year.sky.toString() + '.svg'
-            state.pathIconYearEarth = 'src/icons/' + natalChart.year.earth.toString() + '.svg'
           })
+    }
+
+    const getIconPath = (element) => {
+      return 'src/icons/' + element.toString() + '.svg'
     }
 
 </script>
