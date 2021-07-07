@@ -52,6 +52,7 @@ public class BaziController {
             resources.add(DroolsSvc.createClassPathResource("drools/baseRules.drl", null));
             resources.add(DroolsSvc.createDecisionTableResource("drools/baZiDate.xls", DecisionTableInputType.XLS));
             resources.add(DroolsSvc.createClassPathResource("drools/gods.drl", null));
+            resources.add(DroolsSvc.createClassPathResource("drools/qiPhase.drl", null));
 
 
 

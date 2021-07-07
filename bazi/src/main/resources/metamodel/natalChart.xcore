@@ -128,6 +128,7 @@ enum Zoo {
 
 @BaZi(documentation="Фаза Ци. У каждого столпа есть фаза ци 1-ой и 2-ой степени")
 enum QiPhase {
+    _UNDEFINED_
     DiscoveringTheQi   = 1
     CirculatingTheQi   = 2
     GatheringTheQi     = 3
