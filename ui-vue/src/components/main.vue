@@ -56,6 +56,10 @@
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.hour.earth)}}</span>
         </div>
 
+        <div v-if="state.natalChart != null" class="card-qiPhase">
+          <span>{{getElementName(state.natalChart.hour.qiPhaseFirstDegree)}} / {{getElementName(state.natalChart.hour.qiPhaseSecondDegree)}}</span>
+        </div>
+
 
                   <div v-if="state.natalChart != null && state.natalChart.hour.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
                     <span>{{getGodName(state.natalChart.hour.hiddenPillar[0].god)}}</span>
@@ -91,6 +95,10 @@
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.day.earth)}}</span>
         </div>
 
+        <div v-if="state.natalChart != null" class="card-qiPhase">
+          <span>{{getElementName(state.natalChart.day.qiPhaseFirstDegree)}} / {{getElementName(state.natalChart.day.qiPhaseSecondDegree)}}</span>
+        </div>
+
                 <div v-if="state.natalChart != null && state.natalChart.day.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
                   <span>{{getGodName(state.natalChart.day.hiddenPillar[0].god)}}</span>
                   <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.day.hiddenPillar[0].sky)>
@@ -123,6 +131,10 @@
         <div class="card-element">
           <img v-if="state.natalChart != null" class="icon-elements" :src=getIconPath(state.natalChart.month.earth)>
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.month.earth)}}</span>
+        </div>
+
+        <div v-if="state.natalChart != null" class="card-qiPhase">
+          <span>{{getElementName(state.natalChart.month.qiPhaseFirstDegree)}} / {{getElementName(state.natalChart.month.qiPhaseSecondDegree)}}</span>
         </div>
 
 
@@ -161,6 +173,10 @@
         <div class="card-element">
           <img v-if="state.natalChart != null" class="icon-elements" :src=getIconPath(state.natalChart.year.earth)>
           <span v-if="state.natalChart !== null">{{getElementName(state.natalChart.year.earth)}}</span>
+        </div>
+
+        <div v-if="state.natalChart != null" class="card-qiPhase">
+          <span>{{getElementName(state.natalChart.year.qiPhaseFirstDegree)}} / {{getElementName(state.natalChart.year.qiPhaseSecondDegree)}}</span>
         </div>
 
                   <div v-if="state.natalChart != null && state.natalChart.year.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
@@ -248,7 +264,19 @@
         Monkey: 'Металл Ян',
         Chicken: 'Металл Инь',
         Dog: 'Земля Ян',
-        Pig: 'Вода Инь'
+        Pig: 'Вода Инь',
+        DiscoveringTheQi: '1',
+        CirculatingTheQi: '2',
+        GatheringTheQi: '3',
+        AligningTheQi: '4',
+        ProtectingTheQi: '5',
+        PurifyingTheQi: '6',
+        MobilizingTheQi: '7',
+        DirectingTheQi: '8',
+        ConsolidatingTheQi: '9',
+        TransformingTheQi: '10',
+        UnifyingTheQi: '11',
+        TransmittingTheQi: '12'
       }[title]
     }
 

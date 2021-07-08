@@ -1,0 +1,110 @@
+package ru.neoflex.emf.bazi
+
+import ru.neoflex.emf.bazi.natalChart.NatalChart
+import ru.neoflex.emf.bazi.natalChart.InputParams
+import ru.neoflex.emf.bazi.calendar.Calendar
+import ru.neoflex.emf.bazi.calendar.Year
+import ru.neoflex.emf.bazi.calendar.CalendarFactory
+import ru.neoflex.emf.bazi.calendar.BaZiDate
+import ru.neoflex.emf.bazi.natalChart.NatalChartFactory
+import ru.neoflex.emf.bazi.natalChart.Pillar
+import ru.neoflex.emf.bazi.natalChart.Zoo
+import ru.neoflex.emf.bazi.natalChart.Elements
+import java.util.Arrays
+import java.util.List
+import ru.neoflex.emf.restserver.DBServerSvc
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectWriter
+import ru.neoflex.emf.bazi.natalChart.God
+import ru.neoflex.emf.bazi.natalChart.QiPhase
+
+function Pillar addQiPhase(Pillar pillar, Elements skyElement, Integer category) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyElementIndex = elements.indexOf(skyElement);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Integer qiPhaseFirstIndex =
+           skyElementIndex == 1 && earthPillarIndex >=1 && earthPillarIndex <= 11
+           ?
+           earthPillarIndex + 1
+           :
+                   skyElementIndex == 1 && earthPillarIndex == 12
+                   ?
+                   earthPillarIndex - 11
+                   :
+                       (skyElementIndex == 3 || skyElementIndex == 5) && earthPillarIndex >=3 && earthPillarIndex <= 12
+                       ?
+                       earthPillarIndex - 2
+                       :
+                           (skyElementIndex == 3 || skyElementIndex == 5) && earthPillarIndex >=1 && earthPillarIndex <= 2
+                           ?
+                           earthPillarIndex + 10
+                           :
+                                skyElementIndex == 7 && earthPillarIndex >=6 && earthPillarIndex <= 12
+                                ?
+                                earthPillarIndex - 5
+                                :
+                                    skyElementIndex == 7 && earthPillarIndex >=1 && earthPillarIndex <= 5
+                                    ?
+                                    earthPillarIndex + 7
+                                    :
+                                        skyElementIndex == 9 && earthPillarIndex >=9 && earthPillarIndex <= 12
+                                        ?
+                                        earthPillarIndex - 8
+                                        :
+                                                skyElementIndex == 9 && earthPillarIndex >=1 && earthPillarIndex <= 8
+                                                ?
+                                                earthPillarIndex + 4
+                                                :
+                                                    skyElementIndex == 10 && earthPillarIndex >=5 && earthPillarIndex <= 12
+                                                    ?
+                                                    13 - (earthPillarIndex - 4)
+                                                    :
+                                                        skyElementIndex == 10 && earthPillarIndex >=1 && earthPillarIndex <= 4
+                                                        ?
+                                                        13 - (earthPillarIndex + 8)
+                                                        :
+                                                            skyElementIndex == 8 && earthPillarIndex == 1
+                                                                ?
+                                                                13 - (earthPillarIndex + 11)
+                                                                :
+                                                                    skyElementIndex == 8 && earthPillarIndex >=2 && earthPillarIndex <= 12
+                                                                    ?
+                                                                    13 - (earthPillarIndex - 1)
+                                                                    :
+                                                                        (skyElementIndex == 6 || skyElementIndex == 4) && earthPillarIndex >=1 && earthPillarIndex <= 10
+                                                                        ?
+                                                                        13 - (earthPillarIndex + 2)
+                                                                        :
+                                                                            (skyElementIndex == 6 || skyElementIndex == 4) && earthPillarIndex >=11 && earthPillarIndex <= 12
+                                                                            ?
+                                                                            13 - (earthPillarIndex - 10)
+                                                                            :
+                                                                                2;
+
+    List<QiPhase> qiPhases = Arrays.asList(QiPhase.values());
+    if(category == 1) {pillar.setQiPhaseFirstDegree(qiPhases.get(qiPhaseFirstIndex));}else {pillar.setQiPhaseSecondDegree(qiPhases.get(qiPhaseFirstIndex));}
+    return pillar;
+}
+
+rule "Set QiPhaseFirst in NatalChart"
+no-loop true
+when
+    $natalChart: NatalChart(day != null, hour != null)
+    $baZiDate: BaZiDate(hour != null)
+then
+    addQiPhase($natalChart.getHour(), $natalChart.getDay().getSky(), 1);
+    addQiPhase($natalChart.getDay(), $natalChart.getDay().getSky(), 1);
+    addQiPhase($natalChart.getMonth(), $natalChart.getDay().getSky(), 1);
+    addQiPhase($natalChart.getYear(), $natalChart.getDay().getSky(), 1);
+
+    addQiPhase($natalChart.getHour(), $natalChart.getHour().getSky(), 2);
+    addQiPhase($natalChart.getDay(), $natalChart.getDay().getSky(), 2);
+    addQiPhase($natalChart.getMonth(), $natalChart.getMonth().getSky(), 2);
+    addQiPhase($natalChart.getYear(), $natalChart.getYear().getSky(), 2);
+    update($natalChart);
+end;
