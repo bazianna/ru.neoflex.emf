@@ -20,6 +20,7 @@ class Spirit {
 
 @BaZi(documentation="Дух может быть личный или рода")
 enum SpiritsCategory {
+    _UNDEFINED_
     Personal
     Genus
 }

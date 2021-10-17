@@ -1,0 +1,363 @@
+package ru.neoflex.emf.bazi
+
+import ru.neoflex.emf.bazi.natalChart.NatalChart
+import ru.neoflex.emf.bazi.natalChart.InputParams
+import ru.neoflex.emf.bazi.calendar.Calendar
+import ru.neoflex.emf.bazi.calendar.Year
+import ru.neoflex.emf.bazi.calendar.CalendarFactory
+import ru.neoflex.emf.bazi.calendar.BaZiDate
+import ru.neoflex.emf.bazi.natalChart.NatalChartFactory
+import ru.neoflex.emf.bazi.natalChart.Pillar
+import ru.neoflex.emf.bazi.natalChart.Zoo
+import ru.neoflex.emf.bazi.natalChart.Elements
+import java.util.Arrays
+import java.util.List
+import ru.neoflex.emf.restserver.DBServerSvc
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectWriter
+import ru.neoflex.emf.bazi.natalChart.God
+import ru.neoflex.emf.bazi.natalChart.QiPhase
+import ru.neoflex.emf.bazi.spirit.Spirit
+import ru.neoflex.emf.bazi.spirit.SpiritFactory
+import ru.neoflex.emf.bazi.spirit.SpiritsCategory
+
+function Pillar addSpiritAngel(Pillar pillar, Elements skyElement, Spirit spirit) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyElementIndex = elements.indexOf(skyElement);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+           (skyElementIndex == 1 || skyElementIndex == 5 || skyElementIndex == 7) && (earthPillarIndex == 2 || earthPillarIndex == 8)
+           ||
+                   (skyElementIndex == 2 || skyElementIndex == 6) && (earthPillarIndex == 1 || earthPillarIndex == 9)
+                   ||
+                       (skyElementIndex == 3 || skyElementIndex == 4) && (earthPillarIndex == 10 || earthPillarIndex == 12)
+                       ||
+                           skyElementIndex == 8 && (earthPillarIndex == 3 || earthPillarIndex == 7)
+                           ||
+                                (skyElementIndex == 9 || skyElementIndex == 10) && (earthPillarIndex == 4 || earthPillarIndex == 6);
+
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritAngelTaiChi(Pillar pillar, Elements skyElement, Spirit spirit) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyElementIndex = elements.indexOf(skyElement);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+           (skyElementIndex == 1 || skyElementIndex == 2) && (earthPillarIndex == 1 || earthPillarIndex == 7)
+           ||
+                   (skyElementIndex == 3 || skyElementIndex == 4) && (earthPillarIndex == 4 || earthPillarIndex == 10)
+                   ||
+                       (skyElementIndex == 5 || skyElementIndex == 6) && (earthPillarIndex == 2 || earthPillarIndex == 5 || earthPillarIndex == 8 || earthPillarIndex == 11)
+                       ||
+                           (skyElementIndex == 7 || skyElementIndex == 8) && (earthPillarIndex == 3 || earthPillarIndex == 12)
+                           ||
+                                (skyElementIndex == 9 || skyElementIndex == 10) && (earthPillarIndex == 6 || earthPillarIndex == 9);
+
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritAngelPersonalLife(Pillar pillar, Elements skyElement, Spirit spirit) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyElementIndex = elements.indexOf(skyElement);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+           skyElementIndex == 1 && earthPillarIndex == 3
+           ||
+                   skyElementIndex == 2 && (earthPillarIndex == 2 || earthPillarIndex == 12)
+                   ||
+                       skyElementIndex == 3 && (earthPillarIndex == 1 || earthPillarIndex == 11)
+                       ||
+                           skyElementIndex == 4 && earthPillarIndex == 10
+                           ||
+                                skyElementIndex == 5 && earthPillarIndex == 9
+                                ||
+                                    skyElementIndex == 6 && earthPillarIndex == 8
+                                    ||
+                                        skyElementIndex == 7 && earthPillarIndex == 7
+                                        ||
+                                            skyElementIndex == 8 && earthPillarIndex == 6
+                                            ||
+                                                skyElementIndex == 9 && earthPillarIndex == 5
+                                                ||
+                                                    skyElementIndex == 10 && earthPillarIndex == 4;
+
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritAngelHeavenlyKitchen(Pillar pillar, Elements skyElement, Spirit spirit) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyElementIndex = elements.indexOf(skyElement);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+           skyElementIndex == 1 && earthPillarIndex == 6
+           ||
+                   skyElementIndex == 2 && earthPillarIndex == 7
+                   ||
+                       skyElementIndex == 3 && (earthPillarIndex == 5 || earthPillarIndex == 11)
+                       ||
+                           skyElementIndex == 4 && (earthPillarIndex == 2 || earthPillarIndex == 8)
+                           ||
+                                skyElementIndex == 5 && earthPillarIndex == 9
+                                ||
+                                    skyElementIndex == 6 && earthPillarIndex == 10
+                                    ||
+                                        skyElementIndex == 7 && earthPillarIndex == 12
+                                        ||
+                                            skyElementIndex == 8 && earthPillarIndex == 1
+                                            ||
+                                                skyElementIndex == 9 && earthPillarIndex == 3
+                                                ||
+                                                    skyElementIndex == 10 && earthPillarIndex == 4;
+
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritAngelStateStamps(Pillar pillar, Elements skyElement, Spirit spirit) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyElementIndex = elements.indexOf(skyElement);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+           skyElementIndex == 1 && earthPillarIndex == 11
+           ||
+                   skyElementIndex == 2 && earthPillarIndex == 12
+                   ||
+                       (skyElementIndex == 3 || skyElementIndex == 5 ) && earthPillarIndex == 2
+                       ||
+                           (skyElementIndex == 4 || skyElementIndex == 6 ) && earthPillarIndex == 3
+                           ||
+                                skyElementIndex == 7 && earthPillarIndex == 5
+                                ||
+                                    skyElementIndex == 8 && earthPillarIndex == 6
+                                    ||
+                                        skyElementIndex == 9 && earthPillarIndex == 8
+                                        ||
+                                            skyElementIndex == 10 && earthPillarIndex == 9;
+
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritAngelHeavenlyPower(Pillar pillar, Elements skyElement, Spirit spirit) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyElementIndex = elements.indexOf(skyElement);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+           skyElementIndex == 1 && earthPillarIndex == 10
+           ||
+                   skyElementIndex == 2 && earthPillarIndex == 9
+                   ||
+                       skyElementIndex == 3 && earthPillarIndex == 1
+                       ||
+                           skyElementIndex == 4 && earthPillarIndex == 12
+                           ||
+                                skyElementIndex == 5 && earthPillarIndex == 4
+                                ||
+                                    skyElementIndex == 6 && earthPillarIndex == 3
+                                    ||
+                                        skyElementIndex == 7 && earthPillarIndex == 7
+                                        ||
+                                            skyElementIndex == 8 && earthPillarIndex == 6
+                                            ||
+                                                skyElementIndex == 9 && ( earthPillarIndex == 2 || earthPillarIndex == 8 )
+                                                ||
+                                                    skyElementIndex == 10 && ( earthPillarIndex == 5 || earthPillarIndex == 11 );
+
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritAngelHeavenlyOfficer(Pillar pillar, Elements skyElement, Spirit spirit) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyElementIndex = elements.indexOf(skyElement);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+           skyElementIndex == 1 && earthPillarIndex == 8
+           ||
+                   skyElementIndex == 2 && earthPillarIndex == 5
+                   ||
+                       skyElementIndex == 3 && earthPillarIndex == 6
+                       ||
+                           skyElementIndex == 4 && earthPillarIndex == 10
+                           ||
+                                skyElementIndex == 5 && earthPillarIndex == 11
+                                ||
+                                    skyElementIndex == 6 && earthPillarIndex == 4
+                                    ||
+                                        skyElementIndex == 7 && ( earthPillarIndex == 2 || earthPillarIndex == 12 )
+                                        ||
+                                            skyElementIndex == 8 && earthPillarIndex == 9
+                                            ||
+                                                skyElementIndex == 9 && earthPillarIndex == 3
+                                                ||
+                                                    skyElementIndex == 10 && earthPillarIndex == 7;
+
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritAngelLiterature(Pillar pillar, Elements skyElement, Spirit spirit) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyElementIndex = elements.indexOf(skyElement);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+           skyElementIndex == 1 && earthPillarIndex == 6
+           ||
+                   skyElementIndex == 2 && earthPillarIndex == 7
+                   ||
+                       (skyElementIndex == 3 || skyElementIndex == 5 ) && earthPillarIndex == 9
+                       ||
+                           (skyElementIndex == 4 || skyElementIndex == 6 ) && earthPillarIndex == 10
+                           ||
+                                skyElementIndex == 7 && earthPillarIndex == 12
+                                ||
+                                    skyElementIndex == 8 && earthPillarIndex == 1
+                                    ||
+                                        skyElementIndex == 9 && earthPillarIndex == 3
+                                        ||
+                                            skyElementIndex == 10 && earthPillarIndex == 4;
+
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritAngelCorrectSize(Pillar pillar, Elements skyElement, Spirit spirit) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyElementIndex = elements.indexOf(skyElement);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+           (skyElementIndex == 1 || skyElementIndex == 3 || skyElementIndex == 5 ) && earthPillarIndex == 6
+           ||
+                   (skyElementIndex == 2 || skyElementIndex == 4 || skyElementIndex == 6 ) && earthPillarIndex == 8
+                   ||
+                       (skyElementIndex == 7 || skyElementIndex == 9 ) && earthPillarIndex == 12
+                       ||
+                           (skyElementIndex == 8 || skyElementIndex == 10 ) && earthPillarIndex == 2;
+
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+rule "Add Spirit Angel All"
+no-loop true
+when
+    $natalChart: NatalChart(day != null, hour != null)
+    $angelPersolan: Spirit(name == "angelPersolan")
+    $angelGenus: Spirit(name == "angelGenus")
+    $angelTaiChi: Spirit(name == "angelTaiChi")
+    $angelPersonalLife: Spirit(name == "angelPersonalLife")
+    $angelHeavenlyKitchen: Spirit(name == "angelHeavenlyKitchen")
+    $angelStateStamps: Spirit(name == "angelStateStamps")
+    $angelHeavenlyPower: Spirit(name == "angelHeavenlyPower")
+    $angelHeavenlyOfficer: Spirit(name == "angelHeavenlyOfficer")
+    $angelLiterature: Spirit(name == "angelLiterature")
+    $angelCorrectSize: Spirit(name == "angelCorrectSize")
+
+
+then
+   addSpiritAngel($natalChart.getHour(), $natalChart.getDay().getSky(), $angelPersolan);
+   addSpiritAngel($natalChart.getMonth(), $natalChart.getDay().getSky(), $angelPersolan);
+   addSpiritAngel($natalChart.getYear(), $natalChart.getDay().getSky(), $angelPersolan);
+
+   addSpiritAngel($natalChart.getHour(), $natalChart.getYear().getSky(), $angelGenus);
+   addSpiritAngel($natalChart.getDay(), $natalChart.getYear().getSky(), $angelGenus);
+   addSpiritAngel($natalChart.getMonth(), $natalChart.getYear().getSky(), $angelGenus);
+
+   addSpiritAngelTaiChi($natalChart.getYear(), $natalChart.getDay().getSky(), $angelTaiChi);
+
+   addSpiritAngelPersonalLife($natalChart.getHour(), $natalChart.getDay().getSky(), $angelPersonalLife);
+   addSpiritAngelPersonalLife($natalChart.getDay(), $natalChart.getDay().getSky(), $angelPersonalLife);
+   addSpiritAngelPersonalLife($natalChart.getMonth(), $natalChart.getDay().getSky(), $angelPersonalLife);
+   addSpiritAngelPersonalLife($natalChart.getYear(), $natalChart.getDay().getSky(), $angelPersonalLife);
+
+   addSpiritAngelHeavenlyKitchen($natalChart.getHour(), $natalChart.getDay().getSky(), $angelHeavenlyKitchen);
+   addSpiritAngelHeavenlyKitchen($natalChart.getDay(), $natalChart.getDay().getSky(), $angelHeavenlyKitchen);
+   addSpiritAngelHeavenlyKitchen($natalChart.getMonth(), $natalChart.getDay().getSky(), $angelHeavenlyKitchen);
+   addSpiritAngelHeavenlyKitchen($natalChart.getYear(), $natalChart.getDay().getSky(), $angelHeavenlyKitchen);
+
+   addSpiritAngelStateStamps($natalChart.getHour(), $natalChart.getDay().getSky(), $angelStateStamps);
+   addSpiritAngelStateStamps($natalChart.getDay(), $natalChart.getDay().getSky(), $angelStateStamps);
+   addSpiritAngelStateStamps($natalChart.getMonth(), $natalChart.getDay().getSky(), $angelStateStamps);
+   addSpiritAngelStateStamps($natalChart.getYear(), $natalChart.getDay().getSky(), $angelStateStamps);
+
+   addSpiritAngelHeavenlyPower($natalChart.getHour(), $natalChart.getDay().getSky(), $angelHeavenlyPower);
+   addSpiritAngelHeavenlyPower($natalChart.getDay(), $natalChart.getDay().getSky(), $angelHeavenlyPower);
+   addSpiritAngelHeavenlyPower($natalChart.getMonth(), $natalChart.getDay().getSky(), $angelHeavenlyPower);
+   addSpiritAngelHeavenlyPower($natalChart.getYear(), $natalChart.getDay().getSky(), $angelHeavenlyPower);
+
+    addSpiritAngelHeavenlyOfficer($natalChart.getHour(), $natalChart.getDay().getSky(), $angelHeavenlyOfficer);
+    addSpiritAngelHeavenlyOfficer($natalChart.getDay(), $natalChart.getDay().getSky(), $angelHeavenlyOfficer);
+    addSpiritAngelHeavenlyOfficer($natalChart.getMonth(), $natalChart.getDay().getSky(), $angelHeavenlyOfficer);
+    addSpiritAngelHeavenlyOfficer($natalChart.getYear(), $natalChart.getDay().getSky(), $angelHeavenlyOfficer);
+
+    addSpiritAngelLiterature($natalChart.getHour(), $natalChart.getDay().getSky(), $angelLiterature);
+    addSpiritAngelLiterature($natalChart.getDay(), $natalChart.getDay().getSky(), $angelLiterature);
+    addSpiritAngelLiterature($natalChart.getMonth(), $natalChart.getDay().getSky(), $angelLiterature);
+    addSpiritAngelLiterature($natalChart.getYear(), $natalChart.getDay().getSky(), $angelLiterature);
+
+    addSpiritAngelCorrectSize($natalChart.getHour(), $natalChart.getDay().getSky(), $angelCorrectSize);
+    addSpiritAngelCorrectSize($natalChart.getDay(), $natalChart.getDay().getSky(), $angelCorrectSize);
+    addSpiritAngelCorrectSize($natalChart.getMonth(), $natalChart.getDay().getSky(), $angelCorrectSize);
+    addSpiritAngelCorrectSize($natalChart.getYear(), $natalChart.getDay().getSky(), $angelCorrectSize);
+
+   update($natalChart);
+end;
+

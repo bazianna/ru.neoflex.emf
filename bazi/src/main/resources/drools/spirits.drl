@@ -1,0 +1,120 @@
+package ru.neoflex.emf.bazi
+
+import ru.neoflex.emf.bazi.natalChart.NatalChart
+import ru.neoflex.emf.bazi.natalChart.InputParams
+import ru.neoflex.emf.bazi.calendar.Calendar
+import ru.neoflex.emf.bazi.calendar.Year
+import ru.neoflex.emf.bazi.calendar.CalendarFactory
+import ru.neoflex.emf.bazi.calendar.BaZiDate
+import ru.neoflex.emf.bazi.natalChart.NatalChartFactory
+import ru.neoflex.emf.bazi.natalChart.Pillar
+import ru.neoflex.emf.bazi.natalChart.Zoo
+import ru.neoflex.emf.bazi.natalChart.Elements
+import java.util.Arrays
+import java.util.List
+import ru.neoflex.emf.restserver.DBServerSvc
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectWriter
+import ru.neoflex.emf.bazi.natalChart.God
+import ru.neoflex.emf.bazi.natalChart.QiPhase
+import ru.neoflex.emf.bazi.spirit.Spirit
+import ru.neoflex.emf.bazi.spirit.SpiritFactory
+import ru.neoflex.emf.bazi.spirit.SpiritsCategory
+
+function Spirit createSpirit(String name, String description, SpiritsCategory spiritsCategory) {
+    Spirit spirit = SpiritFactory.eINSTANCE.createSpirit();
+    spirit.setName(name);
+    spirit.setDescription(description);
+    spirit.setSpiritsCategory(spiritsCategory);
+    return spirit;
+}
+
+rule "Create Spirit Angel Persolan"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit angelPersolan = createSpirit("angelPersolan", "Благородный Человек Личный", SpiritsCategory.PERSONAL);
+   insert(angelPersolan);
+end;
+
+rule "Create Spirit Angel Genus"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit angelGenus = createSpirit("angelGenus", "Благородный Человек Рода", SpiritsCategory.GENUS);
+   insert(angelGenus);
+end;
+
+rule "Create Spirit Angel Tai Chi"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit angelTaiChi = createSpirit("angelTaiChi", "Благородный Тайцзы", SpiritsCategory.PERSONAL);
+   insert(angelTaiChi);
+end;
+
+rule "Create Spirit Angel Personal Life"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit angelPersonalLife = createSpirit("angelPersonalLife", "Благородный Человек в Личной Жизни", SpiritsCategory.PERSONAL);
+   insert(angelPersonalLife);
+end;
+
+rule "Create Spirit Angel Heavenly Kitchen"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit angelHeavenlyKitchen = createSpirit("angelHeavenlyKitchen", "Благородный Человек Небесной Кухни", SpiritsCategory.PERSONAL);
+   insert(angelHeavenlyKitchen);
+end;
+
+rule "Create Spirit Angel State Stamps"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit angelStateStamps = createSpirit("angelStateStamps", "Благородный Человек Государственной Печати", SpiritsCategory.PERSONAL);
+   insert(angelStateStamps);
+end;
+
+rule "Create Spirit Angel Heavenly Power"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit angelHeavenlyPower = createSpirit("angelHeavenlyPower", "Благородный Человек Небесной Власти", SpiritsCategory.PERSONAL);
+   insert(angelHeavenlyPower);
+end;
+
+rule "Create Spirit Angel Heavenly Officer"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit angelHeavenlyOfficer = createSpirit("angelHeavenlyOfficer", "Благородный Человек Небесной Удачи (Небесный Чиновник)", SpiritsCategory.PERSONAL);
+   insert(angelHeavenlyOfficer);
+end;
+
+rule "Create Spirit Angel Literature"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit angelLiterature = createSpirit("angelLiterature", "Благородный Человек Литературы (совпадает со Звездой Академика)", SpiritsCategory.PERSONAL);
+   insert(angelLiterature);
+end;
+
+rule "Create Spirit Angel Correct Size"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit angelCorrectSize = createSpirit("angelCorrectSize", "Благородный Человек Правильного Размера", SpiritsCategory.PERSONAL);
+   insert(angelCorrectSize);
+end;

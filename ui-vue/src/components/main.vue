@@ -61,6 +61,12 @@
         </div>
 
 
+                                <div v-if="state.natalChart != null && state.spirits != null" class="card-hidden-element-first">
+                                  <div v-if="state.natalChart.hour.Spirit !== undefined" v-for="spirit in state.natalChart.hour.Spirit" :key="spirit.name">
+                                      {{state.spirits.find((cont) => cont['_id'] === spirit.$ref.substr(1) ).description}}
+                                  </div>
+                                </div>
+
                   <div v-if="state.natalChart != null && state.natalChart.hour.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
                     <span>{{getGodName(state.natalChart.hour.hiddenPillar[0].god)}}</span>
                     <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.hour.hiddenPillar[0].sky)>
@@ -99,6 +105,15 @@
           <span>{{getElementName(state.natalChart.day.qiPhaseFirstDegree)}} / {{getElementName(state.natalChart.day.qiPhaseSecondDegree)}}</span>
         </div>
 
+
+                        <div v-if="state.natalChart != null && state.spirits != null" class="card-hidden-element-first">
+                          <div v-if="state.natalChart.day.Spirit !== undefined" v-for="spirit in state.natalChart.day.Spirit" :key="spirit.name">
+                            {{state.spirits.find((cont) => cont['_id'] === spirit.$ref.substr(1) ).description}}
+                          </div>
+                        </div>
+
+
+
                 <div v-if="state.natalChart != null && state.natalChart.day.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
                   <span>{{getGodName(state.natalChart.day.hiddenPillar[0].god)}}</span>
                   <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.day.hiddenPillar[0].sky)>
@@ -136,6 +151,23 @@
         <div v-if="state.natalChart != null" class="card-qiPhase">
           <span>{{getElementName(state.natalChart.month.qiPhaseFirstDegree)}} / {{getElementName(state.natalChart.month.qiPhaseSecondDegree)}}</span>
         </div>
+
+
+
+
+
+
+
+
+
+                      <div v-if="state.natalChart != null && state.spirits != null" class="card-hidden-element-first">
+                        <div v-if="state.natalChart.month.Spirit !== undefined" v-for="spirit in state.natalChart.month.Spirit" :key="spirit.name">
+                          {{state.spirits.find((cont) => cont['_id'] === spirit.$ref.substr(1) ).description}}
+                        </div>
+                      </div>
+
+
+
 
 
                 <div v-if="state.natalChart != null && state.natalChart.month.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
@@ -179,6 +211,17 @@
           <span>{{getElementName(state.natalChart.year.qiPhaseFirstDegree)}} / {{getElementName(state.natalChart.year.qiPhaseSecondDegree)}}</span>
         </div>
 
+
+
+                          <div v-if="state.natalChart != null && state.spirits != null" class="card-hidden-element-first">
+                            <div v-if="state.natalChart.year.Spirit !== undefined" v-for="spirit in state.natalChart.year.Spirit" :key="spirit.name">
+                              {{state.spirits.find((cont) => cont['_id'] === spirit.$ref.substr(1) ).description }}
+                            </div>
+                          </div>
+
+
+
+
                   <div v-if="state.natalChart != null && state.natalChart.year.hiddenPillar[0] !== undefined" class="card-hidden-element-first">
                     <span>{{getGodName(state.natalChart.year.hiddenPillar[0].god)}}</span>
                     <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.year.hiddenPillar[0].sky)>
@@ -196,7 +239,6 @@
                     <img class="icon-hidden-elements" :src=getIconPath(state.natalChart.year.hiddenPillar[2].sky)>
                     <span>{{getElementName(state.natalChart.year.hiddenPillar[2].sky)}}</span>
                   </div>
-
 
       </div>
     </div>
@@ -238,7 +280,7 @@
       type: 'A',
       testState: '',
 
-
+      spirits: null,
     })
 
     const getElementName = (title) => {
@@ -308,8 +350,11 @@
           .then(data => {
             console.log(data)
             const natalChart = data.contents.find((cont) => cont['eClass'] === 'ru.neoflex.emf.bazi.natalChart#//NatalChart' )
+            const spirits = data.contents.filter((cont) => cont['eClass'] === 'ru.neoflex.emf.bazi.spirit#//Spirit' )
             state.natalChart = natalChart
+            state.spirits = spirits
             console.log(natalChart)
+            console.log(spirits)
           })
     }
 
