@@ -41,6 +41,13 @@ class NatalChart {
     contains Pillar year
     contains Tact[] tact
     contains BabyTact[] babyTact
+    contains Conclusion[] conclusions
+}
+
+@BaZi(documentation="Выводы по Карте")
+class Conclusion {
+    String title
+    String description
 }
 
 @BaZi(documentation="Столп во встроенном календаре. Всего 60. Создаются при старте приложения")

@@ -242,6 +242,13 @@
 
       </div>
     </div>
+    <div>
+        <div v-if="state.conclusions !== null && state.conclusions.length !== 0" v-for="conclusion in state.conclusions" :key="conclusion.title">
+          {{
+            conclusion.title + ": " + conclusion.description
+          }}
+        </div>
+    </div>
 
 
 <!--    <input type="radio" name="type" value="D" v-model="state.type" />-->
@@ -281,6 +288,7 @@
       testState: '',
 
       spirits: null,
+      conclusions: null,
     })
 
     const getElementName = (title) => {
@@ -353,6 +361,7 @@
             const spirits = data.contents.filter((cont) => cont['eClass'] === 'ru.neoflex.emf.bazi.spirit#//Spirit' )
             state.natalChart = natalChart
             state.spirits = spirits
+            state.conclusions = natalChart.conclusions
             console.log(natalChart)
             console.log(spirits)
           })

@@ -1,22 +1,6 @@
 package ru.neoflex.emf.bazi
 
 import ru.neoflex.emf.bazi.natalChart.NatalChart
-import ru.neoflex.emf.bazi.natalChart.InputParams
-import ru.neoflex.emf.bazi.calendar.Calendar
-import ru.neoflex.emf.bazi.calendar.Year
-import ru.neoflex.emf.bazi.calendar.CalendarFactory
-import ru.neoflex.emf.bazi.calendar.BaZiDate
-import ru.neoflex.emf.bazi.natalChart.NatalChartFactory
-import ru.neoflex.emf.bazi.natalChart.Pillar
-import ru.neoflex.emf.bazi.natalChart.Zoo
-import ru.neoflex.emf.bazi.natalChart.Elements
-import java.util.Arrays
-import java.util.List
-import ru.neoflex.emf.restserver.DBServerSvc
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.ObjectWriter
-import ru.neoflex.emf.bazi.natalChart.God
-import ru.neoflex.emf.bazi.natalChart.QiPhase
 import ru.neoflex.emf.bazi.spirit.Spirit
 import ru.neoflex.emf.bazi.spirit.SpiritFactory
 import ru.neoflex.emf.bazi.spirit.SpiritsCategory
@@ -117,4 +101,40 @@ when
 then
    Spirit angelCorrectSize = createSpirit("angelCorrectSize", "Благородный Человек Правильного Размера", SpiritsCategory.PERSONAL);
    insert(angelCorrectSize);
+end;
+
+rule "Create Spirit Heavenly Virtue"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit heavenlyVirtue = createSpirit("heavenlyVirtue", "Небесная Звезда Добродетели", SpiritsCategory.PERSONAL);
+   insert(heavenlyVirtue);
+end;
+
+rule "Create Spirit Lunar Virtue"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit lunarVirtue = createSpirit("lunarVirtue", "Лунная Добродетель (Месячная Добродетель)", SpiritsCategory.PERSONAL);
+   insert(lunarVirtue);
+end;
+
+rule "Create Spirit Three Mystics"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit threeMystics = createSpirit("threeMystics", "Три Мистика", SpiritsCategory.PERSONAL);
+   insert(threeMystics);
+end;
+
+rule "Create Spirit Helper Star"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit helperStar = createSpirit("helperStar", "Звезда Помощника", SpiritsCategory.PERSONAL);
+   insert(helperStar);
 end;

@@ -1,25 +1,12 @@
 package ru.neoflex.emf.bazi
 
 import ru.neoflex.emf.bazi.natalChart.NatalChart
-import ru.neoflex.emf.bazi.natalChart.InputParams
-import ru.neoflex.emf.bazi.calendar.Calendar
-import ru.neoflex.emf.bazi.calendar.Year
-import ru.neoflex.emf.bazi.calendar.CalendarFactory
-import ru.neoflex.emf.bazi.calendar.BaZiDate
-import ru.neoflex.emf.bazi.natalChart.NatalChartFactory
 import ru.neoflex.emf.bazi.natalChart.Pillar
 import ru.neoflex.emf.bazi.natalChart.Zoo
 import ru.neoflex.emf.bazi.natalChart.Elements
 import java.util.Arrays
 import java.util.List
-import ru.neoflex.emf.restserver.DBServerSvc
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.ObjectWriter
-import ru.neoflex.emf.bazi.natalChart.God
-import ru.neoflex.emf.bazi.natalChart.QiPhase
 import ru.neoflex.emf.bazi.spirit.Spirit
-import ru.neoflex.emf.bazi.spirit.SpiritFactory
-import ru.neoflex.emf.bazi.spirit.SpiritsCategory
 
 function Pillar addSpiritAngel(Pillar pillar, Elements skyElement, Spirit spirit) {
 
@@ -296,6 +283,94 @@ function Pillar addSpiritAngelCorrectSize(Pillar pillar, Elements skyElement, Sp
     return pillar;
 }
 
+function Pillar addSpiritHeavenlyVirtue(Pillar pillar, Zoo earthZoo, Spirit spirit) {
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthZooIndex = zoo.indexOf(earthZoo);
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Elements skyPillar = pillar.getSky();
+    Integer skyPillarIndex = elements.indexOf(skyPillar);
+
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+        earthZooIndex == 1 && earthPillarIndex == 6
+        ||
+            earthZooIndex == 2 && skyPillarIndex == 7
+            ||
+                earthZooIndex == 3 && skyPillarIndex == 4
+                ||
+                    earthZooIndex == 4 && earthPillarIndex == 9
+                    ||
+                        earthZooIndex == 5 && skyPillarIndex == 9
+                        ||
+                            earthZooIndex == 6 && skyPillarIndex == 8
+                            ||
+                                earthZooIndex == 7 && earthPillarIndex == 12
+                                ||
+                                    earthZooIndex == 8 && skyPillarIndex == 1
+                                    ||
+                                        earthZooIndex == 9 && skyPillarIndex == 10
+                                        ||
+                                            earthZooIndex == 10 && earthPillarIndex == 3
+                                            ||
+                                                earthZooIndex == 11 && skyPillarIndex == 3
+                                                ||
+                                                    earthZooIndex == 12 && skyPillarIndex == 2;
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritLunarVirtue(Pillar pillar, Zoo earthZoo, Spirit spirit) {
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthZooIndex = zoo.indexOf(earthZoo);
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Elements skyPillar = pillar.getSky();
+    Integer skyPillarIndex = elements.indexOf(skyPillar);
+
+    Boolean check =
+        ( earthZooIndex == 1 || earthZooIndex == 5 || earthZooIndex == 9 ) && skyPillarIndex == 9
+        ||
+            ( earthZooIndex == 2 || earthZooIndex == 6 || earthZooIndex == 10 ) && skyPillarIndex == 7
+            ||
+                ( earthZooIndex == 3 || earthZooIndex == 7 || earthZooIndex == 11 ) && skyPillarIndex == 3
+                ||
+                    ( earthZooIndex == 4 || earthZooIndex == 8 || earthZooIndex == 12 ) && skyPillarIndex == 1;
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritThreeMystics(Pillar pillar, Integer pillarIndex, Elements hour, Elements day, Elements month, Elements year, Spirit spirit) {
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyHourIndex = elements.indexOf(hour);
+    Integer skyDayIndex = elements.indexOf(day);
+    Integer skyMonthIndex = elements.indexOf(month);
+    Integer skyYearIndex = elements.indexOf(year);
+
+    Boolean check =
+        skyHourIndex == 7 && skyDayIndex == 5 && skyMonthIndex == 1 && pillarIndex != 4
+        ||
+            skyDayIndex == 7 && skyMonthIndex == 5 && skyYearIndex == 1 && pillarIndex != 1
+            ||
+                skyHourIndex == 4 && skyDayIndex == 5 && skyMonthIndex == 2 && pillarIndex != 4
+                ||
+                    skyDayIndex == 4 && skyMonthIndex == 5 && skyYearIndex == 2 && pillarIndex != 1
+                    ||
+                        skyHourIndex == 8 && skyDayIndex == 10 && skyMonthIndex == 9 && pillarIndex != 4
+                        ||
+                            skyDayIndex == 8 && skyMonthIndex == 10 && skyYearIndex == 9 && pillarIndex != 1;
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
 rule "Add Spirit Angel All"
 no-loop true
 when
@@ -310,8 +385,6 @@ when
     $angelHeavenlyOfficer: Spirit(name == "angelHeavenlyOfficer")
     $angelLiterature: Spirit(name == "angelLiterature")
     $angelCorrectSize: Spirit(name == "angelCorrectSize")
-
-
 then
    addSpiritAngel($natalChart.getHour(), $natalChart.getDay().getSky(), $angelPersolan);
    addSpiritAngel($natalChart.getMonth(), $natalChart.getDay().getSky(), $angelPersolan);
@@ -361,3 +434,34 @@ then
    update($natalChart);
 end;
 
+rule "Add Spirits of Fortune"
+no-loop true
+when
+    $natalChart: NatalChart(day != null, hour != null)
+    $heavenlyVirtue: Spirit(name == "heavenlyVirtue")
+    $lunarVirtue: Spirit(name == "lunarVirtue")
+    $threeMystics: Spirit(name == "threeMystics")
+    $helperStar: Spirit(name == "helperStar")
+then
+    addSpiritHeavenlyVirtue($natalChart.getHour(), $natalChart.getMonth().getEarth(), $heavenlyVirtue);
+    addSpiritHeavenlyVirtue($natalChart.getDay(), $natalChart.getMonth().getEarth(), $heavenlyVirtue);
+    addSpiritHeavenlyVirtue($natalChart.getMonth(), $natalChart.getMonth().getEarth(), $heavenlyVirtue);
+    addSpiritHeavenlyVirtue($natalChart.getYear(), $natalChart.getMonth().getEarth(), $heavenlyVirtue);
+
+    addSpiritLunarVirtue($natalChart.getHour(), $natalChart.getMonth().getEarth(), $lunarVirtue);
+    addSpiritLunarVirtue($natalChart.getDay(), $natalChart.getMonth().getEarth(), $lunarVirtue);
+    addSpiritLunarVirtue($natalChart.getMonth(), $natalChart.getMonth().getEarth(), $lunarVirtue);
+    addSpiritLunarVirtue($natalChart.getYear(), $natalChart.getMonth().getEarth(), $lunarVirtue);
+
+    addSpiritThreeMystics($natalChart.getHour(), 1, $natalChart.getHour().getSky(), $natalChart.getDay().getSky(), $natalChart.getMonth().getSky(), $natalChart.getYear().getSky(), $threeMystics);
+    addSpiritThreeMystics($natalChart.getDay(), 2, $natalChart.getHour().getSky(), $natalChart.getDay().getSky(), $natalChart.getMonth().getSky(), $natalChart.getYear().getSky(), $threeMystics);
+    addSpiritThreeMystics($natalChart.getMonth(), 3, $natalChart.getHour().getSky(), $natalChart.getDay().getSky(), $natalChart.getMonth().getSky(), $natalChart.getYear().getSky(), $threeMystics);
+    addSpiritThreeMystics($natalChart.getYear(), 4, $natalChart.getHour().getSky(), $natalChart.getDay().getSky(), $natalChart.getMonth().getSky(), $natalChart.getYear().getSky(), $threeMystics);
+
+    addSpiritLunarVirtue($natalChart.getHour(), $natalChart.getMonth().getEarth(), $helperStar);
+    addSpiritLunarVirtue($natalChart.getDay(), $natalChart.getMonth().getEarth(), $helperStar);
+    addSpiritLunarVirtue($natalChart.getMonth(), $natalChart.getMonth().getEarth(), $helperStar);
+    addSpiritLunarVirtue($natalChart.getYear(), $natalChart.getMonth().getEarth(), $helperStar);
+
+    update($natalChart);
+end;
