@@ -138,3 +138,22 @@ then
    Spirit helperStar = createSpirit("helperStar", "Звезда Помощника", SpiritsCategory.PERSONAL);
    insert(helperStar);
 end;
+
+rule "Create Spirit Dragon Star"
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit dragonStar = createSpirit("dragonStar", "Дух дракона", SpiritsCategory.PERSONAL);
+   insert(dragonStar);
+end;
+
+rule "Create Spirit Three Noble Combinations Star"
+
+no-loop true
+when
+    $natalChart: NatalChart()
+then
+   Spirit threeNobleCombinationsStar = createSpirit("threeNobleCombinationsStar", "Три благородных сочетания", SpiritsCategory.PERSONAL);
+   insert(threeNobleCombinationsStar);
+end;

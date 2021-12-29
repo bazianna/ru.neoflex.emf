@@ -371,6 +371,121 @@ function Pillar addSpiritThreeMystics(Pillar pillar, Integer pillarIndex, Elemen
     return pillar;
 }
 
+function Pillar addSpiritHelperStar(Pillar pillar, Zoo earthZoo, Spirit spirit) {
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthZooIndex = zoo.indexOf(earthZoo);
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Elements skyPillar = pillar.getSky();
+    Integer skyPillarIndex = elements.indexOf(skyPillar);
+
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+        earthZooIndex == 1 && earthPillarIndex == 6
+        ||
+            earthZooIndex == 2 && skyPillarIndex == 8
+            ||
+                earthZooIndex == 3 && skyPillarIndex == 4
+                ||
+                    earthZooIndex == 4 && earthPillarIndex == 9
+                    ||
+                        earthZooIndex == 5 && skyPillarIndex == 9
+                        ||
+                            earthZooIndex == 6 && skyPillarIndex == 8
+                            ||
+                                earthZooIndex == 7 && earthPillarIndex == 12
+                                ||
+                                    earthZooIndex == 8 && skyPillarIndex == 1
+                                    ||
+                                        earthZooIndex == 9 && skyPillarIndex == 10
+                                        ||
+                                            earthZooIndex == 10 && earthPillarIndex == 3
+                                            ||
+                                                earthZooIndex == 11 && skyPillarIndex == 3
+                                                ||
+                                                    earthZooIndex == 12 && skyPillarIndex == 2;
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addSpiritDragonStar(Pillar pillar, Zoo earthZoo, Spirit spirit) {
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthZooIndex = zoo.indexOf(earthZoo);
+
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+        earthZooIndex == 1 && earthPillarIndex == 8
+        ||
+            earthZooIndex == 2 && earthPillarIndex == 9
+            ||
+                earthZooIndex == 3 && earthPillarIndex == 10
+                ||
+                    earthZooIndex == 4 && earthPillarIndex == 11
+                    ||
+                        earthZooIndex == 5 && earthPillarIndex == 12
+                        ||
+                            earthZooIndex == 6 && earthPillarIndex == 1
+                            ||
+                                earthZooIndex == 7 && earthPillarIndex == 2
+                                ||
+                                    earthZooIndex == 8 && earthPillarIndex == 3
+                                    ||
+                                        earthZooIndex == 9 && earthPillarIndex == 4
+                                        ||
+                                            earthZooIndex == 10 && earthPillarIndex == 5
+                                            ||
+                                                earthZooIndex == 11 && earthPillarIndex == 6
+                                                ||
+                                                    earthZooIndex == 12 && earthPillarIndex == 7;
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
+function Pillar addThreeNobleCombinationsStar(Pillar pillar, Zoo earthZooH, Zoo earthZooD, Zoo earthZooM, Zoo earthZooY, Spirit spirit) {
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthZooHIndex = zoo.indexOf(earthZooH);
+    Integer earthZooDIndex = zoo.indexOf(earthZooD);
+    Integer earthZooMIndex = zoo.indexOf(earthZooM);
+    Integer earthZooYIndex = zoo.indexOf(earthZooY);
+
+    Zoo earthPillar = pillar.getEarth();
+    Integer earthPillarIndex = zoo.indexOf(earthPillar);
+
+    Boolean check =
+        earthPillarIndex == earthZooHIndex &&
+        (
+        earthZooHIndex == 3 && earthZooDIndex == 5 && earthZooMIndex == 9
+        ||
+        earthZooHIndex == 5 && earthZooDIndex == 9 && earthZooYIndex == 3
+        ||
+        earthZooHIndex == 9 && earthZooMIndex == 3 && earthZooYIndex == 5
+        ||
+        earthZooHIndex == 4 && earthZooDIndex == 6 && earthZooMIndex == 7
+        ||
+        earthZooHIndex == 6 && earthZooDIndex == 7 && earthZooYIndex == 4
+        ||
+        earthZooHIndex == 7 && earthZooMIndex == 4 && earthZooYIndex == 6
+        ||
+        earthZooHIndex == 12 && earthZooDIndex == 1 && earthZooMIndex == 10
+        ||
+        earthZooHIndex == 1 && earthZooDIndex == 10 && earthZooYIndex == 12
+        ||
+        earthZooHIndex == 10 && earthZooMIndex == 12 && earthZooYIndex == 1
+        );
+
+    if(check) { pillar.getSpirit().add(spirit);  }
+    return pillar;
+}
+
 rule "Add Spirit Angel All"
 no-loop true
 when
@@ -442,6 +557,8 @@ when
     $lunarVirtue: Spirit(name == "lunarVirtue")
     $threeMystics: Spirit(name == "threeMystics")
     $helperStar: Spirit(name == "helperStar")
+    $dragonStar: Spirit(name == "dragonStar")
+    $threeNobleCombinationsStar: Spirit(name == "threeNobleCombinationsStar")
 then
     addSpiritHeavenlyVirtue($natalChart.getHour(), $natalChart.getMonth().getEarth(), $heavenlyVirtue);
     addSpiritHeavenlyVirtue($natalChart.getDay(), $natalChart.getMonth().getEarth(), $heavenlyVirtue);
@@ -458,10 +575,19 @@ then
     addSpiritThreeMystics($natalChart.getMonth(), 3, $natalChart.getHour().getSky(), $natalChart.getDay().getSky(), $natalChart.getMonth().getSky(), $natalChart.getYear().getSky(), $threeMystics);
     addSpiritThreeMystics($natalChart.getYear(), 4, $natalChart.getHour().getSky(), $natalChart.getDay().getSky(), $natalChart.getMonth().getSky(), $natalChart.getYear().getSky(), $threeMystics);
 
-    addSpiritLunarVirtue($natalChart.getHour(), $natalChart.getMonth().getEarth(), $helperStar);
-    addSpiritLunarVirtue($natalChart.getDay(), $natalChart.getMonth().getEarth(), $helperStar);
-    addSpiritLunarVirtue($natalChart.getMonth(), $natalChart.getMonth().getEarth(), $helperStar);
-    addSpiritLunarVirtue($natalChart.getYear(), $natalChart.getMonth().getEarth(), $helperStar);
+    addSpiritHelperStar($natalChart.getHour(), $natalChart.getDay().getEarth(), $helperStar);
+    addSpiritHelperStar($natalChart.getDay(), $natalChart.getDay().getEarth(), $helperStar);
+    addSpiritHelperStar($natalChart.getMonth(), $natalChart.getDay().getEarth(), $helperStar);
+    addSpiritHelperStar($natalChart.getYear(), $natalChart.getDay().getEarth(), $helperStar);
 
+    addSpiritDragonStar($natalChart.getHour(), $natalChart.getDay().getEarth(), $dragonStar);
+    addSpiritDragonStar($natalChart.getDay(), $natalChart.getYear().getEarth(), $dragonStar);
+    addSpiritDragonStar($natalChart.getMonth(), $natalChart.getDay().getEarth(), $dragonStar);
+    addSpiritDragonStar($natalChart.getYear(), $natalChart.getDay().getEarth(), $dragonStar);
+
+    addThreeNobleCombinationsStar($natalChart.getHour(), $natalChart.getHour().getEarth(), $natalChart.getDay().getEarth(), $natalChart.getMonth().getEarth(), $natalChart.getYear().getEarth(), $threeNobleCombinationsStar);
+    addThreeNobleCombinationsStar($natalChart.getDay(), $natalChart.getHour().getEarth(), $natalChart.getDay().getEarth(), $natalChart.getMonth().getEarth(), $natalChart.getYear().getEarth(), $threeNobleCombinationsStar);
+    addThreeNobleCombinationsStar($natalChart.getMonth(), $natalChart.getHour().getEarth(), $natalChart.getDay().getEarth(), $natalChart.getMonth().getEarth(), $natalChart.getYear().getEarth(), $threeNobleCombinationsStar);
+    addThreeNobleCombinationsStar($natalChart.getYear(), $natalChart.getHour().getEarth(), $natalChart.getDay().getEarth(), $natalChart.getMonth().getEarth(), $natalChart.getYear().getEarth(), $threeNobleCombinationsStar);
     update($natalChart);
 end;
