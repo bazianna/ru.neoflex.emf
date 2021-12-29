@@ -165,6 +165,8 @@ public class BaziController {
 
                     // get user name from NatalChart
                     String name = ((InputParamsImpl) ((NatalChartImpl) resource.getContents().get(0)).getInputParams()).getName();
+                    String description = ((NatalChartImpl) resource.getContents().get(0)).getConclusions().get(0).getDescription();
+                    String title = ((NatalChartImpl) resource.getContents().get(0)).getConclusions().get(0).getTitle();
 
                     // create a paragraph
                     XWPFParagraph p1 = doc.createParagraph();
@@ -174,9 +176,12 @@ public class BaziController {
                     XWPFRun r1 = p1.createRun();
                     r1.setBold(true);
                     r1.setItalic(true);
-                    r1.setFontSize(22);
+                    r1.setFontSize(14);
                     r1.setFontFamily("New Roman");
                     r1.setText("I am first paragraph. " + name);
+                    r1.addBreak();
+                    r1.setText(title + ": " + description);
+
 
                     // save it to .docx file
                     try (FileOutputStream out = new FileOutputStream(folder + fileName)) {
