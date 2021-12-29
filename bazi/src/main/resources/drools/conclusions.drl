@@ -99,7 +99,7 @@ function NatalChart addPersonalityElement(NatalChart natalChart) {
                                      "Как большое раскидистое дерево. "
                                     :
                                     skyDayIndex == 8 ?
-                                         "Как большое раскидистое дерево. " +
+                                         "Как большое раскидистое дерево. "
                                         :
                                         skyDayIndex == 9 ?
                                              "Бурная река, океан. " +
