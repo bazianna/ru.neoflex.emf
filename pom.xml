@@ -21,7 +21,7 @@
         <emf-codegen-ecore.version>2.18.0</emf-codegen-ecore.version>
         <c3p0.version>0.9.5.5</c3p0.version>
         <hibernate.version>5.4.18.Final</hibernate.version>
-        <h2.version>1.4.200</h2.version>
+        <h2.version>2.1.210</h2.version>
         <drools.version>7.46.0.Final</drools.version>
         <build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
         <gmavenplus-plugin.version>1.7.1</gmavenplus-plugin.version>
