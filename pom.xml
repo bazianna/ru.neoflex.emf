@@ -33,7 +33,7 @@
         <slf4j-log4j12.version>1.7.5</slf4j-log4j12.version>
         <javax.persistence-api.version>2.2</javax.persistence-api.version>
         <org.eclipse.emf.codegen.ecore.version>2.24.0</org.eclipse.emf.codegen.ecore.version>
-        <postgresql.version>42.2.18</postgresql.version>
+        <postgresql.version>42.2.25</postgresql.version>
         <surefire-junit4.version>2.22.2</surefire-junit4.version>
         <org.eclipse.text.version>3.5.101</org.eclipse.text.version>
         <org.eclipse.core.resources.version>3.7.100</org.eclipse.core.resources.version>
