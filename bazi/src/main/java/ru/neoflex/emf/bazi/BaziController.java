@@ -67,7 +67,7 @@ public class BaziController {
             resources.add(DroolsSvc.createClassPathResource("drools/qiPhase.drl", null));
             resources.add(DroolsSvc.createClassPathResource("drools/spirits.drl", null));
             resources.add(DroolsSvc.createClassPathResource("drools/spiritsCalc.drl", null));
-//            resources.add(DroolsSvc.createDecisionTableResource("drools/conclusion.xls", DecisionTableInputType.XLS));
+            resources.add(DroolsSvc.createDecisionTableResource("drools/conclusion.xls", DecisionTableInputType.XLS));
             resources.add(DroolsSvc.createClassPathResource("drools/conclusions.drl", null));
 
 
@@ -165,8 +165,10 @@ public class BaziController {
 
                     // get user name from NatalChart
                     String name = ((InputParamsImpl) ((NatalChartImpl) resource.getContents().get(0)).getInputParams()).getName();
-                    String description = ((NatalChartImpl) resource.getContents().get(0)).getConclusions().get(0).getDescription();
-                    String title = ((NatalChartImpl) resource.getContents().get(0)).getConclusions().get(0).getTitle();
+//                    String description = ((NatalChartImpl) resource.getContents().get(0)).getConclusions().get(0).getDescription();
+//                    String title = ((NatalChartImpl) resource.getContents().get(0)).getConclusions().get(0).getTitle();
+                    String description = "TEST";
+                    String title = "YES";
 
                     // create a paragraph
                     XWPFParagraph p1 = doc.createParagraph();
@@ -178,10 +180,16 @@ public class BaziController {
                     r1.setItalic(true);
                     r1.setFontSize(14);
                     r1.setFontFamily("New Roman");
-                    r1.setText("I am first paragraph. " + name);
+                    r1.setText("Приветствую, " + name);
                     r1.addBreak();
-                    r1.setText(title + ": " + description);
 
+                    // create a paragraph
+                    XWPFParagraph p2 = doc.createParagraph();
+                    p2.setAlignment(ParagraphAlignment.LEFT);
+
+                    // set font
+                    XWPFRun r2 = p2.createRun();
+                    r2.setText(title + ": " + description);
 
                     // save it to .docx file
                     try (FileOutputStream out = new FileOutputStream(folder + fileName)) {

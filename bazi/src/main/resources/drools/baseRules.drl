@@ -48,8 +48,6 @@ query "EObjects"
 end
 
 
-
-
 function Date timeShiftStart(String year, String month, String day, String hour, String minutes, String placeOfBirth, TimezoneDBSvc timezoneDBSvc) {
 
     DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
