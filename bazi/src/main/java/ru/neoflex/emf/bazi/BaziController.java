@@ -17,10 +17,7 @@ import org.kie.internal.builder.DecisionTableInputType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-import ru.neoflex.emf.bazi.natalChart.InputParams;
-import ru.neoflex.emf.bazi.natalChart.NatalChartFactory;
-import ru.neoflex.emf.bazi.natalChart.NatalChartPackage;
-import ru.neoflex.emf.bazi.natalChart.Sex;
+import ru.neoflex.emf.bazi.natalChart.*;
 import ru.neoflex.emf.bazi.natalChart.impl.InputParamsImpl;
 import ru.neoflex.emf.bazi.natalChart.impl.NatalChartImpl;
 import ru.neoflex.emf.drools.DroolsSvc;
@@ -165,10 +162,6 @@ public class BaziController {
 
                     // get user name from NatalChart
                     String name = ((InputParamsImpl) ((NatalChartImpl) resource.getContents().get(0)).getInputParams()).getName();
-//                    String description = ((NatalChartImpl) resource.getContents().get(0)).getConclusions().get(0).getDescription();
-//                    String title = ((NatalChartImpl) resource.getContents().get(0)).getConclusions().get(0).getTitle();
-                    String description = "TEST";
-                    String title = "YES";
 
                     // create a paragraph
                     XWPFParagraph p1 = doc.createParagraph();
@@ -183,13 +176,17 @@ public class BaziController {
                     r1.setText("Приветствую, " + name);
                     r1.addBreak();
 
-                    // create a paragraph
-                    XWPFParagraph p2 = doc.createParagraph();
-                    p2.setAlignment(ParagraphAlignment.LEFT);
+                    // get conclusions from NatalChart
+                    Conclusions conclusions = ((NatalChartImpl) resource.getContents().get(0)).getConclusions();
+                    for (Result res: conclusions.getResults()) {
+                        // create a paragraph
+                        XWPFParagraph p2 = doc.createParagraph();
+                        p2.setAlignment(ParagraphAlignment.LEFT);
 
-                    // set font
-                    XWPFRun r2 = p2.createRun();
-                    r2.setText(title + ": " + description);
+                        // set font
+                        XWPFRun r2 = p2.createRun();
+                        r2.setText(res.getTitle() + ": " + res.getDescription());
+                    }
 
                     // save it to .docx file
                     try (FileOutputStream out = new FileOutputStream(folder + fileName)) {

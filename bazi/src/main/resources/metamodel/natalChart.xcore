@@ -41,7 +41,7 @@ class NatalChart {
     contains Pillar year
     contains Tact[] tact
     contains BabyTact[] babyTact
-    refers Conclusions conclusions
+    contains Conclusions conclusions
 }
 
 @BaZi(documentation="Выводы по Карте")

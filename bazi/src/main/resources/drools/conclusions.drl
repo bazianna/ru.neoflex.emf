@@ -18,35 +18,54 @@ import com.fasterxml.jackson.databind.ObjectWriter
 import ru.neoflex.emf.bazi.natalChart.God
 import ru.neoflex.emf.bazi.natalChart.Conclusions
 import ru.neoflex.emf.bazi.natalChart.Result
+import org.eclipse.emf.common.util.EList
 
-function Conclusions addPersonalityElement(NatalChart natalChart, Conclusions conclusions) {
+
+function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions conclusions) {
     Pillar day = natalChart.getDay();
     Elements personalityElement = day.getSky();
     List<Elements> elements = Arrays.asList(Elements.values());
     Integer skyDayIndex = elements.indexOf(personalityElement);
 
-    String description = skyDayIndex.toString();
+    Integer code = skyDayIndex;
+    Result result = NatalChartFactory.eINSTANCE.createResult();
+    for (Result res : conclusions.getResults()) {
+                    if (res.getCode().equals(code)) {
+                        result.setCode(code);
+                        result.setTitle(res.getTitle());
+                        result.setDescription(res.getDescription());
+                    }
+                }
 
-    return conclusions;
+    natalChart.getConclusions().getResults().add(result);
+    return natalChart;
 }
 
-rule "Create Conclusions"
+rule "Create All Conclusions"
 when
     $natalChart: NatalChart(day != null)
     not Conclusions()
 then
     Conclusions conclusions = NatalChartFactory.eINSTANCE.createConclusions();
-    $natalChart.setConclusions(conclusions);
     insert(conclusions);
 end;
 
-rule "Set Conclusion Personality Element"
+rule "Set Conclusion in NatalChart"
 no-loop true
 when
-    $conclusions: Conclusions()
     $natalChart: NatalChart(day != null)
-    $baZiDate: BaZiDate(day != null)
+then
+    Conclusions conclusions = NatalChartFactory.eINSTANCE.createConclusions();
+    $natalChart.setConclusions(conclusions);
+    update($natalChart);
+end;
+
+rule "Set Personality Element in NatalChart"
+no-loop true
+when
+    $natalChart: NatalChart(day != null)
+    $conclusions: Conclusions(results != null)
 then
     addPersonalityElement($natalChart, $conclusions);
-    update($conclusions);
+    update($natalChart);
 end;
