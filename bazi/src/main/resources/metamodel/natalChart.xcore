@@ -51,7 +51,7 @@ class Conclusions {
 
 @BaZi(documentation="Вывод по Карте")
 class Result {
-    Integer code
+    String code
     String title
     String description
 }

@@ -20,14 +20,14 @@ import ru.neoflex.emf.bazi.natalChart.Conclusions
 import ru.neoflex.emf.bazi.natalChart.Result
 import org.eclipse.emf.common.util.EList
 
-
 function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions conclusions) {
     Pillar day = natalChart.getDay();
-    Elements personalityElement = day.getSky();
+    Elements skyDay = day.getSky();
     List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyDayIndex = elements.indexOf(personalityElement);
+    Integer skyDayIndex = elements.indexOf(skyDay);
 
-    Integer code = skyDayIndex;
+    String code =  "1" + "-" + skyDayIndex.toString();
+
     Result result = NatalChartFactory.eINSTANCE.createResult();
     for (Result res : conclusions.getResults()) {
                     if (res.getCode().equals(code)) {
@@ -38,6 +38,40 @@ function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions con
                 }
 
     natalChart.getConclusions().getResults().add(result);
+    return natalChart;
+}
+
+function NatalChart addTalents(NatalChart natalChart, Conclusions conclusions) {
+    Pillar month = natalChart.getMonth();
+    God monthGod = month.getGod();
+    List<God> gods = Arrays.asList(God.values());
+    Integer monthGodIndex = gods.indexOf(monthGod);
+
+    String code =  "2" + "-" + monthGodIndex.toString();
+
+    Result result = NatalChartFactory.eINSTANCE.createResult();
+    for (Result res : conclusions.getResults()) {
+                    if (res.getCode().equals(code)) {
+                        result.setCode(code);
+                        result.setTitle(res.getTitle());
+                        result.setDescription(res.getDescription());
+                    }
+                }
+
+    natalChart.getConclusions().getResults().add(result);
+
+    String code2 =  "3" + "-" + monthGodIndex.toString();
+
+    Result result2 = NatalChartFactory.eINSTANCE.createResult();
+    for (Result res : conclusions.getResults()) {
+                    if (res.getCode().equals(code2)) {
+                        result2.setCode(code2);
+                        result2.setTitle(res.getTitle());
+                        result2.setDescription(res.getDescription());
+                    }
+                }
+
+    natalChart.getConclusions().getResults().add(result2);
     return natalChart;
 }
 
@@ -67,5 +101,15 @@ when
     $conclusions: Conclusions(results != null)
 then
     addPersonalityElement($natalChart, $conclusions);
+    update($natalChart);
+end;
+
+rule "Set Talents in NatalChart"
+no-loop true
+when
+    $natalChart: NatalChart(day != null)
+    $conclusions: Conclusions(results != null)
+then
+    addTalents($natalChart, $conclusions);
     update($natalChart);
 end;
