@@ -47,7 +47,6 @@ class NatalChart {
 @BaZi(documentation="Выводы по Карте")
 class Conclusions {
     contains Result[] results
-    boolean done
 }
 
 @BaZi(documentation="Вывод по Карте")
