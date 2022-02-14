@@ -1,6 +1,7 @@
 package ru.neoflex.emf.bazi;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.poi.ooxml.POIXMLDocument;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -27,6 +28,7 @@ import ru.neoflex.emf.timezonedb.TimezoneDBSvc;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.AbstractMap;
@@ -158,7 +160,9 @@ public class BaziController {
                     fn.delete();
                 }
 
-                try (XWPFDocument doc = new XWPFDocument()) {
+                String templatePath = System.getProperty("user.dir") + "\\bazi\\src\\main\\resources\\template.docx";
+                try {
+                    XWPFDocument doc = new XWPFDocument(POIXMLDocument.openPackage(templatePath));
 
                     // get user name from NatalChart
                     String name = ((InputParamsImpl) ((NatalChartImpl) resource.getContents().get(0)).getInputParams()).getName();
@@ -188,13 +192,15 @@ public class BaziController {
                         r2.setText(res.getTitle() + ": " + res.getDescription());
                     }
 
-                    // save it to .docx file
                     try (FileOutputStream out = new FileOutputStream(folder + fileName)) {
                         doc.write(out);
                         logger.info("file saved to path: " + folder + fileName);
                     }
-
-                } catch (IOException e) {
+                }
+                catch(FileNotFoundException e){
+                    e.printStackTrace();
+                }
+                catch(IOException e){
                     e.printStackTrace();
                 }
                 return jsonHelper.toJson(resource);

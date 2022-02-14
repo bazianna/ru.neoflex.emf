@@ -289,7 +289,7 @@ no-loop true
 when
     $natalChart: NatalChart()
     $inputParams: InputParams()
-    $baZiDate: BaZiDate(daysBetween != null, chineseYear != null)
+    $baZiDate: BaZiDate(daysBetween != null, chineseYear != null, hour != null)
 then
     Pillar day = createDayPillar($baZiDate);
     Pillar dayWithHidden = setHiddenPillar(day);
