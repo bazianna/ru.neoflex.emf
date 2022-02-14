@@ -68,7 +68,7 @@ class Pillar extends CalendarPillar {
     God god
     QiPhase qiPhaseFirstDegree
     QiPhase qiPhaseSecondDegree
-    refers Spirit[] Spirit
+    contains Spirit[] Spirit
     contains SpiritConclusion[] spiritConclusions
     String testField
 }

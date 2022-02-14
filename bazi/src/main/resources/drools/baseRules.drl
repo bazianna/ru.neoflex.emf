@@ -44,7 +44,7 @@ global TimezoneDBSvc timezoneDBSvc;
 global HbTransaction tx;
 
 query "EObjects"
-    $eObject : EObject()
+    $natalChart : NatalChart()
 end
 
 
