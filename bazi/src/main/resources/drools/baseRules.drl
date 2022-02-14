@@ -44,7 +44,7 @@ global TimezoneDBSvc timezoneDBSvc;
 global HbTransaction tx;
 
 query "EObjects"
-    $natalChart : NatalChart()
+    $eObject : EObject()
 end
 
 
@@ -287,7 +287,7 @@ end;
 rule "Set Day Pillar"
 no-loop true
 when
-    $natalChart: NatalChart()
+    $natalChart: NatalChart(month != null)
     $inputParams: InputParams()
     $baZiDate: BaZiDate(daysBetween != null, chineseYear != null, hour != null)
 then
