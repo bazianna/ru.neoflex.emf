@@ -69,7 +69,6 @@ public class BaziController {
             resources.add(DroolsSvc.createDecisionTableResource("drools/conclusion.xls", DecisionTableInputType.XLS));
             resources.add(DroolsSvc.createClassPathResource("drools/conclusions.drl", null));
 
-
 //            try {
 //                byte[] bazi = Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "bazi", "rules", "bazi.drl"));
 //                resources.add(DroolsSvc.createByteArrayResource("bazi.drl", null, bazi));

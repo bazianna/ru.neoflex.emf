@@ -34,10 +34,10 @@ function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions con
                         result.setCode(code);
                         result.setTitle(res.getTitle());
                         result.setDescription(res.getDescription());
+                        natalChart.getConclusions().getResults().add(result);
                     }
                 }
 
-    natalChart.getConclusions().getResults().add(result);
     return natalChart;
 }
 
@@ -55,10 +55,18 @@ function NatalChart addTalents(NatalChart natalChart, Conclusions conclusions) {
                         result.setCode(code);
                         result.setTitle(res.getTitle());
                         result.setDescription(res.getDescription());
+                        natalChart.getConclusions().getResults().add(result);
                     }
                 }
 
-    natalChart.getConclusions().getResults().add(result);
+    return natalChart;
+}
+
+function NatalChart addHiddenTalents(NatalChart natalChart, Conclusions conclusions) {
+    Pillar month = natalChart.getMonth();
+    God monthGod = month.getGod();
+    List<God> gods = Arrays.asList(God.values());
+    Integer monthGodIndex = gods.indexOf(monthGod);
 
     String code2 =  "3" + "-" + monthGodIndex.toString();
 
@@ -68,10 +76,10 @@ function NatalChart addTalents(NatalChart natalChart, Conclusions conclusions) {
                         result2.setCode(code2);
                         result2.setTitle(res.getTitle());
                         result2.setDescription(res.getDescription());
+                        natalChart.getConclusions().getResults().add(result2);
                     }
                 }
 
-    natalChart.getConclusions().getResults().add(result2);
     return natalChart;
 }
 
@@ -81,6 +89,7 @@ when
     not Conclusions()
 then
     Conclusions conclusions = NatalChartFactory.eINSTANCE.createConclusions();
+    conclusions.setAllDone(false);
     insert(conclusions);
 end;
 
@@ -98,7 +107,7 @@ rule "Set Personality Element in NatalChart"
 no-loop true
 when
     $natalChart: NatalChart(day != null)
-    $conclusions: Conclusions(results != null)
+    $conclusions: Conclusions(results != null, allDone == true)
 then
     addPersonalityElement($natalChart, $conclusions);
     update($natalChart);
@@ -108,8 +117,18 @@ rule "Set Talents in NatalChart"
 no-loop true
 when
     $natalChart: NatalChart(day != null)
-    $conclusions: Conclusions(results != null)
+    $conclusions: Conclusions(results != null, allDone == true)
 then
     addTalents($natalChart, $conclusions);
+    update($natalChart);
+end;
+
+rule "Set Hidden Talents in NatalChart"
+no-loop true
+when
+    $natalChart: NatalChart(day != null)
+    $conclusions: Conclusions(results != null, allDone == true)
+then
+    addHiddenTalents($natalChart, $conclusions);
     update($natalChart);
 end;
