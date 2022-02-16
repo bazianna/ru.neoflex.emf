@@ -2,7 +2,7 @@
   "name": "ui-vue",
   "version": "0.1.0",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --open",
     "build": "vite build",
     "serve": "vite preview"
   },
