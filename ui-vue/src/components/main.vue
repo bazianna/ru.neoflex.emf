@@ -116,7 +116,7 @@
 
     const state = reactive({
       name: 'Анна',
-      day: 5,
+      day: 3,
       month: 7,
       year: 2020,
       hour: 15,

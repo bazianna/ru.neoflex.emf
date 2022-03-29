@@ -20,6 +20,7 @@ import ru.neoflex.emf.bazi.natalChart.Conclusions
 import ru.neoflex.emf.bazi.natalChart.Result
 import org.eclipse.emf.common.util.EList
 import ru.neoflex.emf.bazi.natalChart.HiddenPillar
+import java.util.Objects
 
 function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions conclusions) {
     Pillar day = natalChart.getDay();
@@ -66,22 +67,26 @@ function NatalChart addTalents(NatalChart natalChart, Conclusions conclusions) {
 function NatalChart addHiddenTalents(NatalChart natalChart, Conclusions conclusions) {
     Pillar month = natalChart.getMonth();
     List<God> gods = Arrays.asList(God.values());
+    God monthGod = month.getGod();
+    Integer monthGodIndex = gods.indexOf(monthGod);
 
     if (month.getHiddenPillar().size() != 0) {
         for (HiddenPillar hiddenPillar : month.getHiddenPillar()) {
-            God monthGod = hiddenPillar.getGod();
-            Integer monthGodIndex = gods.indexOf(monthGod);
+            God monthGodHidden = hiddenPillar.getGod();
+            Integer monthGodIndexHidden = gods.indexOf(monthGodHidden);
 
-            String code =  "3" + "-" + monthGodIndex.toString();
+            if(!Objects.equals(monthGodIndex,monthGodIndexHidden)) {
+                String code =  "3" + "-" + monthGodIndexHidden.toString();
 
-            Result result = NatalChartFactory.eINSTANCE.createResult();
+                Result result = NatalChartFactory.eINSTANCE.createResult();
 
-            for (Result res : conclusions.getResults()) {
-                if (res.getCode().equals(code)) {
-                    result.setCode(code);
-                    result.setTitle(res.getTitle());
-                    result.setDescription(res.getDescription());
-                    natalChart.getConclusions().getResults().add(result);
+                for (Result res : conclusions.getResults()) {
+                    if (res.getCode().equals(code)) {
+                        result.setCode(code);
+                        result.setTitle(res.getTitle());
+                        result.setDescription(res.getDescription());
+                        natalChart.getConclusions().getResults().add(result);
+                    }
                 }
             }
         }

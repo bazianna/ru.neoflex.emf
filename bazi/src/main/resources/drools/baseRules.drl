@@ -233,7 +233,7 @@ end;
 rule "Create BaZiDate LOCAL_SOLAR_TIME"
 when
     $inputParams: InputParams(hourNotKnown == false, $inputYear: year, $inputMonth: month, $inputDay: day, $inputHour: hour, $placeOfBirth: placeOfBirth, $inputMinutes: minutes)
-    not BaZiDate(gregorianYear == null)
+    not BaZiDate()
 then
     Date newDay = timeShiftStart($inputYear.toString(), $inputMonth.toString(), $inputDay.toString(), $inputHour.toString(), $inputMinutes.toString(), $placeOfBirth, timezoneDBSvc);
 
@@ -284,19 +284,6 @@ then
     update($natalChart);
 end;
 
-rule "Set Day Pillar"
-no-loop true
-when
-    $natalChart: NatalChart(month != null)
-    $inputParams: InputParams()
-    $baZiDate: BaZiDate(daysBetween != null, chineseYear != null, hour != null)
-then
-    Pillar day = createDayPillar($baZiDate);
-    Pillar dayWithHidden = setHiddenPillar(day);
-    $natalChart.setDay(dayWithHidden);
-    update($natalChart);
-end;
-
 rule "Set daysBetween in BaZiDate"
 no-loop true
 when
@@ -309,6 +296,19 @@ then
     Integer days = daysBetween(dayStart, dayEnd);
     $baZiDate.setDaysBetween(days);
     update($baZiDate);
+end;
+
+rule "Set Day Pillar"
+no-loop true
+when
+    $natalChart: NatalChart(month != null)
+    $inputParams: InputParams()
+    $baZiDate: BaZiDate(daysBetween != null, chineseYear != null, hour != null)
+then
+    Pillar day = createDayPillar($baZiDate);
+    Pillar dayWithHidden = setHiddenPillar(day);
+    $natalChart.setDay(dayWithHidden);
+    update($natalChart);
 end;
 
 rule "Set Hour Pillar"

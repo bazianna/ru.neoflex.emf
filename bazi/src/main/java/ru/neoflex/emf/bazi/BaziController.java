@@ -190,11 +190,23 @@ public class BaziController {
                         r2.setFontSize(13);
                         r2.addBreak();
 
-                        // set font
-                        XWPFRun r3 = p2.createRun();
-                        r3.setText(res.getDescription());
-                        r3.setFontSize(9);
-                        r3.addBreak();
+                        if (res.getDescription().contains("•")) {
+                            for (String description: res.getDescription().split("•")) {
+                                XWPFRun r3 = p2.createRun();
+                                r3.addBreak();
+                                r3.setText("• " + description);
+                                r3.setFontSize(9);
+                                r3.addBreak();
+                            }
+                        }
+                        else {
+                            XWPFRun r3 = p2.createRun();
+                            r3.addBreak();
+                            r3.setText(res.getDescription());
+                            r3.setFontSize(9);
+                            r3.addBreak();
+                        }
+
                     }
 
                     try (FileOutputStream out = new FileOutputStream(folder + fileName)) {
