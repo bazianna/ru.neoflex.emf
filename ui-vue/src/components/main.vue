@@ -40,6 +40,7 @@
     <section class="item">
 
       <button @click="getBaZiDate()">run</button>
+      <button @click="getDocx()">getWord</button>
     </section>
     <div style="display: inline-flex">
 
@@ -129,6 +130,8 @@
       testState: '',
 
       conclusions: null,
+
+      natalChartId: 0
     })
 
     const getElementName = (title) => {
@@ -216,7 +219,21 @@
             const natalChart = data.contents.find((cont) => cont['eClass'] === 'ru.neoflex.emf.bazi.natalChart#//NatalChart' )
             state.natalChart = natalChart
             state.conclusions = natalChart.conclusions
+            state.natalChartId = natalChart._id
+          })
+    }
 
+    const getDocx = () => {
+      fetch(`/bazi/createWordPoi?id=${state.natalChartId}`,
+          {
+            method: "POST",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(data => {
+            console.log('getDocx OK')
           })
     }
 

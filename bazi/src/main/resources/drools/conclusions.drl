@@ -19,6 +19,7 @@ import ru.neoflex.emf.bazi.natalChart.God
 import ru.neoflex.emf.bazi.natalChart.Conclusions
 import ru.neoflex.emf.bazi.natalChart.Result
 import org.eclipse.emf.common.util.EList
+import ru.neoflex.emf.bazi.natalChart.HiddenPillar
 
 function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions conclusions) {
     Pillar day = natalChart.getDay();
@@ -51,34 +52,40 @@ function NatalChart addTalents(NatalChart natalChart, Conclusions conclusions) {
 
     Result result = NatalChartFactory.eINSTANCE.createResult();
     for (Result res : conclusions.getResults()) {
-                    if (res.getCode().equals(code)) {
-                        result.setCode(code);
-                        result.setTitle(res.getTitle());
-                        result.setDescription(res.getDescription());
-                        natalChart.getConclusions().getResults().add(result);
-                    }
-                }
+        if (res.getCode().equals(code)) {
+            result.setCode(code);
+            result.setTitle(res.getTitle());
+            result.setDescription(res.getDescription());
+            natalChart.getConclusions().getResults().add(result);
+        }
+    }
 
     return natalChart;
 }
 
 function NatalChart addHiddenTalents(NatalChart natalChart, Conclusions conclusions) {
     Pillar month = natalChart.getMonth();
-    God monthGod = month.getGod();
     List<God> gods = Arrays.asList(God.values());
-    Integer monthGodIndex = gods.indexOf(monthGod);
 
-    String code2 =  "3" + "-" + monthGodIndex.toString();
+    if (month.getHiddenPillar().size() != 0) {
+        for (HiddenPillar hiddenPillar : month.getHiddenPillar()) {
+            God monthGod = hiddenPillar.getGod();
+            Integer monthGodIndex = gods.indexOf(monthGod);
 
-    Result result2 = NatalChartFactory.eINSTANCE.createResult();
-    for (Result res : conclusions.getResults()) {
-                    if (res.getCode().equals(code2)) {
-                        result2.setCode(code2);
-                        result2.setTitle(res.getTitle());
-                        result2.setDescription(res.getDescription());
-                        natalChart.getConclusions().getResults().add(result2);
-                    }
+            String code =  "3" + "-" + monthGodIndex.toString();
+
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    natalChart.getConclusions().getResults().add(result);
                 }
+            }
+        }
+    }
 
     return natalChart;
 }

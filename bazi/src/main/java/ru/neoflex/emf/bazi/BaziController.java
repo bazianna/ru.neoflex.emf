@@ -2,10 +2,7 @@ package ru.neoflex.emf.bazi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.poi.ooxml.POIXMLDocument;
-import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.*;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -185,14 +182,24 @@ public class BaziController {
                         // create a paragraph
                         XWPFParagraph p2 = doc.createParagraph();
                         p2.setAlignment(ParagraphAlignment.LEFT);
+                        p2.setBorderBetween(Borders.SINGLE);
 
                         // set font
                         XWPFRun r2 = p2.createRun();
-                        r2.setText(res.getTitle() + ": " + res.getDescription());
+                        r2.setText(res.getTitle());
+                        r2.setFontSize(13);
+                        r2.addBreak();
+
+                        // set font
+                        XWPFRun r3 = p2.createRun();
+                        r3.setText(res.getDescription());
+                        r3.setFontSize(9);
+                        r3.addBreak();
                     }
 
                     try (FileOutputStream out = new FileOutputStream(folder + fileName)) {
                         doc.write(out);
+                        out.close();
                         logger.info("file saved to path: " + folder + fileName);
                     }
                 }
@@ -209,9 +216,6 @@ public class BaziController {
                 return null;
             }
         });
-
-
     }
-
 
 }
