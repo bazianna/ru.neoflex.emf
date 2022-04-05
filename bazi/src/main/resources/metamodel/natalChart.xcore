@@ -60,7 +60,9 @@ class Result {
 @BaZi(documentation="Столп во встроенном календаре. Всего 60. Создаются при старте приложения")
 class CalendarPillar {
     Elements sky
+    Elements skyTransformed
     Zoo earth
+    Zoo earthTransformed
     contains HiddenPillar[] hiddenPillar
 }
 
@@ -69,6 +71,10 @@ class Pillar extends CalendarPillar {
     God god
     QiPhase qiPhaseFirstDegree
     QiPhase qiPhaseSecondDegree
+    boolean supportedByTheSeasonSky
+    boolean supportedByTheSeasonEarth
+    boolean stableSky
+    boolean stableEarth
     contains Spirit[] Spirit
     contains SpiritConclusion[] spiritConclusions
     String testField

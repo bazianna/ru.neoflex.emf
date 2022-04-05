@@ -32,13 +32,13 @@ function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions con
 
     Result result = NatalChartFactory.eINSTANCE.createResult();
     for (Result res : conclusions.getResults()) {
-                    if (res.getCode().equals(code)) {
-                        result.setCode(code);
-                        result.setTitle(res.getTitle());
-                        result.setDescription(res.getDescription());
-                        natalChart.getConclusions().getResults().add(result);
-                    }
-                }
+        if (res.getCode().equals(code)) {
+            result.setCode(code);
+            result.setTitle(res.getTitle());
+            result.setDescription(res.getDescription());
+            natalChart.getConclusions().getResults().add(result);
+        }
+    }
 
     return natalChart;
 }
