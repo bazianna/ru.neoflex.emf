@@ -29,11 +29,18 @@ function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions con
     Integer skyDayIndex = elements.indexOf(skyDay);
 
     String code =  "1" + "-" + skyDayIndex.toString();
+    String code6 =  "6" + "-" + skyDayIndex.toString();
 
     Result result = NatalChartFactory.eINSTANCE.createResult();
     for (Result res : conclusions.getResults()) {
         if (res.getCode().equals(code)) {
             result.setCode(code);
+            result.setTitle(res.getTitle());
+            result.setDescription(res.getDescription());
+            natalChart.getConclusions().getResults().add(result);
+        }
+        if (res.getCode().equals(code6)) {
+            result.setCode(code6);
             result.setTitle(res.getTitle());
             result.setDescription(res.getDescription());
             natalChart.getConclusions().getResults().add(result);
