@@ -30,17 +30,68 @@ function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions con
 
     String code =  "1" + "-" + skyDayIndex.toString();
     String code6 =  "6" + "-" + skyDayIndex.toString();
+    String code7 =  "7" + "-" + skyDayIndex.toString();
+    String code8 =  "8" + "-" + skyDayIndex.toString();
 
-    Result result = NatalChartFactory.eINSTANCE.createResult();
     for (Result res : conclusions.getResults()) {
         if (res.getCode().equals(code)) {
+            Result result = NatalChartFactory.eINSTANCE.createResult();
             result.setCode(code);
             result.setTitle(res.getTitle());
             result.setDescription(res.getDescription());
             natalChart.getConclusions().getResults().add(result);
         }
         if (res.getCode().equals(code6)) {
+            Result result = NatalChartFactory.eINSTANCE.createResult();
             result.setCode(code6);
+            result.setTitle(res.getTitle());
+            result.setDescription(res.getDescription());
+            natalChart.getConclusions().getResults().add(result);
+        }
+        if (res.getCode().equals(code7)) {
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            result.setCode(code7);
+            result.setTitle(res.getTitle());
+            result.setDescription(res.getDescription());
+            natalChart.getConclusions().getResults().add(result);
+        }
+        if (res.getCode().equals(code8)) {
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            result.setCode(code8);
+            result.setTitle(res.getTitle());
+            result.setDescription(res.getDescription());
+            natalChart.getConclusions().getResults().add(result);
+        }
+    }
+
+    return natalChart;
+}
+
+function NatalChart addEnergyLevel(NatalChart natalChart, Conclusions conclusions) {
+    Pillar day = natalChart.getDay();
+    Elements skyDay = day.getSky();
+    List<Elements> elements = Arrays.asList(Elements.values());
+    Integer skyDayIndex = elements.indexOf(skyDay);
+
+    Pillar month = natalChart.getMonth();
+    Zoo earthMonth = month.getEarth();
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+    Integer earthMonthIndex = zoo.indexOf(earthMonth);
+
+    Integer codeIndex = skyDayIndex == 1 || skyDayIndex == 2 ? 1 :
+                            skyDayIndex == 3 || skyDayIndex == 4 ? 2 :
+                                skyDayIndex == 7 || skyDayIndex == 8 ? 3 :
+                                    skyDayIndex == 9 || skyDayIndex == 10 ? 4 :
+                                        earthMonthIndex == 12 || earthMonthIndex == 1 || earthMonthIndex == 2 ? 4 :
+                                        earthMonthIndex == 3 || earthMonthIndex == 4 || earthMonthIndex == 5 ? 1 :
+                                        earthMonthIndex == 6 || earthMonthIndex == 7 || earthMonthIndex == 8 ? 2 : 3;
+
+    String code =  "9" + "-" + codeIndex.toString();
+
+    for (Result res : conclusions.getResults()) {
+        if (res.getCode().equals(code)) {
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            result.setCode(code);
             result.setTitle(res.getTitle());
             result.setDescription(res.getDescription());
             natalChart.getConclusions().getResults().add(result);
@@ -129,6 +180,16 @@ when
     $conclusions: Conclusions(results != null, allDone == true)
 then
     addPersonalityElement($natalChart, $conclusions);
+    update($natalChart);
+end;
+
+rule "Set Energy Level in NatalChart"
+no-loop true
+when
+    $natalChart: NatalChart(day != null)
+    $conclusions: Conclusions(results != null, allDone == true)
+then
+    addEnergyLevel($natalChart, $conclusions);
     update($natalChart);
 end;
 
