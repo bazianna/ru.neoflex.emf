@@ -22,7 +22,7 @@
       <span class="name">Дата и время рождения:</span>
         <input type="number" placeholder="день" v-model="state.day"/>
         <input type="number" placeholder="месяц" v-model="state.month"/>
-        <input type="number" placeholder="год" v-model="state.year"/>
+        <input type="number" placeholder="год" v-model="state.year" min="1930"/>
         <input type="number" placeholder="час" v-model="state.hour"/>
         <input type="number" placeholder="минуты" v-model="state.minutes"/>
     </section>
