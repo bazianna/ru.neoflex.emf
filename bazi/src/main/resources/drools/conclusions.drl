@@ -39,6 +39,7 @@ function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions con
             result.setCode(code);
             result.setTitle(res.getTitle());
             result.setDescription(res.getDescription());
+            result.setContent(res.getContent());
             natalChart.getConclusions().getResults().add(result);
         }
         if (res.getCode().equals(code6)) {
@@ -46,6 +47,7 @@ function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions con
             result.setCode(code6);
             result.setTitle(res.getTitle());
             result.setDescription(res.getDescription());
+            result.setContent(res.getContent());
             natalChart.getConclusions().getResults().add(result);
         }
         if (res.getCode().equals(code7)) {
@@ -53,6 +55,7 @@ function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions con
             result.setCode(code7);
             result.setTitle(res.getTitle());
             result.setDescription(res.getDescription());
+            result.setContent(res.getContent());
             natalChart.getConclusions().getResults().add(result);
         }
         if (res.getCode().equals(code8)) {
@@ -60,6 +63,7 @@ function NatalChart addPersonalityElement(NatalChart natalChart, Conclusions con
             result.setCode(code8);
             result.setTitle(res.getTitle());
             result.setDescription(res.getDescription());
+            result.setContent(res.getContent());
             natalChart.getConclusions().getResults().add(result);
         }
     }
@@ -94,6 +98,7 @@ function NatalChart addEnergyLevel(NatalChart natalChart, Conclusions conclusion
             result.setCode(code);
             result.setTitle(res.getTitle());
             result.setDescription(res.getDescription());
+            result.setContent(res.getContent());
             natalChart.getConclusions().getResults().add(result);
         }
     }
@@ -115,6 +120,7 @@ function NatalChart addTalents(NatalChart natalChart, Conclusions conclusions) {
             result.setCode(code);
             result.setTitle(res.getTitle());
             result.setDescription(res.getDescription());
+            result.setContent(res.getContent());
             natalChart.getConclusions().getResults().add(result);
         }
     }
@@ -143,6 +149,7 @@ function NatalChart addHiddenTalents(NatalChart natalChart, Conclusions conclusi
                         result.setCode(code);
                         result.setTitle(res.getTitle());
                         result.setDescription(res.getDescription());
+                        result.setContent(res.getContent());
                         natalChart.getConclusions().getResults().add(result);
                     }
                 }

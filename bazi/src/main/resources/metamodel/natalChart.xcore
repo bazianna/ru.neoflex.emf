@@ -55,6 +55,7 @@ class Result {
     String code
     String title
     String description
+    String content
 }
 
 @BaZi(documentation="Столп во встроенном календаре. Всего 60. Создаются при старте приложения")

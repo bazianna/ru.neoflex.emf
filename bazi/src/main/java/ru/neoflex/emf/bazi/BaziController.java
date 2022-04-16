@@ -183,29 +183,34 @@ public class BaziController {
                         // create a paragraph
                         XWPFParagraph p2 = doc.createParagraph();
                         p2.setAlignment(ParagraphAlignment.LEFT);
-                        p2.setBorderBetween(Borders.SINGLE);
+                        p2.setBorderBetween(Borders.DOUBLE);
 
                         // set font
                         XWPFRun r2 = p2.createRun();
                         r2.setText(res.getTitle());
-                        r2.setFontSize(13);
+                        r2.setFontSize(20);
                         r2.addBreak();
 
-                        if (res.getDescription().contains("•")) {
-                            for (String description: res.getDescription().split("•")) {
-                                XWPFRun r3 = p2.createRun();
-                                r3.addBreak();
-                                r3.setText("• " + description);
-                                r3.setFontSize(9);
-                                r3.addBreak();
+                        XWPFRun r3 = p2.createRun();
+                        r3.setText(res.getDescription());
+                        r3.setFontSize(11);
+                        r3.addBreak();
+
+                        if (res.getContent().contains("•")) {
+                            for (String content: res.getContent().split("•")) {
+                                XWPFRun r4 = p2.createRun();
+                                r4.addBreak();
+                                r4.setText("• " + content);
+                                r4.setFontSize(9);
+                                r4.addBreak();
                             }
                         }
                         else {
-                            XWPFRun r3 = p2.createRun();
-                            r3.addBreak();
-                            r3.setText(res.getDescription());
-                            r3.setFontSize(9);
-                            r3.addBreak();
+                            XWPFRun r4 = p2.createRun();
+                            r4.addBreak();
+                            r4.setText(res.getContent());
+                            r4.setFontSize(9);
+                            r4.addBreak();
                         }
 
                     }

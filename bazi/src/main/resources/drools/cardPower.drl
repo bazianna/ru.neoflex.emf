@@ -127,6 +127,7 @@ function NatalChart addMergerSkyEarth(Pillar onePillar, Pillar twoPillar, Pillar
                     result.setCode(code);
                     result.setTitle(res.getTitle());
                     result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
                     natalChart.getConclusions().getResults().add(result);
                 }
             }
@@ -141,6 +142,7 @@ function NatalChart addMergerSkyEarth(Pillar onePillar, Pillar twoPillar, Pillar
                 result.setCode(code);
                 result.setTitle(res.getTitle());
                 result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
                 natalChart.getConclusions().getResults().add(result);
             }
         }
@@ -161,6 +163,7 @@ function NatalChart addMergerSkyEarth(Pillar onePillar, Pillar twoPillar, Pillar
                     result.setCode(code);
                     result.setTitle(res.getTitle());
                     result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
                     natalChart.getConclusions().getResults().add(result);
                 }
             }
@@ -175,6 +178,7 @@ function NatalChart addMergerSkyEarth(Pillar onePillar, Pillar twoPillar, Pillar
                 result.setCode(code);
                 result.setTitle(res.getTitle());
                 result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
                 natalChart.getConclusions().getResults().add(result);
             }
         }
@@ -216,6 +220,7 @@ function NatalChart addMergerSkyMetal(Pillar onePillar, Pillar twoPillar, Pillar
                     result.setCode(code);
                     result.setTitle(res.getTitle());
                     result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
                     natalChart.getConclusions().getResults().add(result);
                 }
             }
@@ -230,6 +235,7 @@ function NatalChart addMergerSkyMetal(Pillar onePillar, Pillar twoPillar, Pillar
                 result.setCode(code);
                 result.setTitle(res.getTitle());
                 result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
                 natalChart.getConclusions().getResults().add(result);
             }
         }
@@ -250,6 +256,7 @@ function NatalChart addMergerSkyMetal(Pillar onePillar, Pillar twoPillar, Pillar
                     result.setCode(code);
                     result.setTitle(res.getTitle());
                     result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
                     natalChart.getConclusions().getResults().add(result);
                 }
             }
@@ -264,6 +271,7 @@ function NatalChart addMergerSkyMetal(Pillar onePillar, Pillar twoPillar, Pillar
                 result.setCode(code);
                 result.setTitle(res.getTitle());
                 result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
                 natalChart.getConclusions().getResults().add(result);
             }
         }
@@ -305,6 +313,7 @@ function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar
                     result.setCode(code);
                     result.setTitle(res.getTitle());
                     result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
                     natalChart.getConclusions().getResults().add(result);
                 }
             }
@@ -319,6 +328,7 @@ function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar
                 result.setCode(code);
                 result.setTitle(res.getTitle());
                 result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
                 natalChart.getConclusions().getResults().add(result);
             }
         }
@@ -339,6 +349,7 @@ function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar
                     result.setCode(code);
                     result.setTitle(res.getTitle());
                     result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
                     natalChart.getConclusions().getResults().add(result);
                 }
             }
@@ -353,6 +364,7 @@ function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar
                 result.setCode(code);
                 result.setTitle(res.getTitle());
                 result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
                 natalChart.getConclusions().getResults().add(result);
             }
         }
@@ -394,6 +406,7 @@ function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar 
                     result.setCode(code);
                     result.setTitle(res.getTitle());
                     result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
                     natalChart.getConclusions().getResults().add(result);
                 }
             }
@@ -408,6 +421,7 @@ function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar 
                 result.setCode(code);
                 result.setTitle(res.getTitle());
                 result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
                 natalChart.getConclusions().getResults().add(result);
             }
         }
@@ -428,6 +442,7 @@ function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar 
                     result.setCode(code);
                     result.setTitle(res.getTitle());
                     result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
                     natalChart.getConclusions().getResults().add(result);
                 }
             }
@@ -442,6 +457,7 @@ function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar 
                 result.setCode(code);
                 result.setTitle(res.getTitle());
                 result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
                 natalChart.getConclusions().getResults().add(result);
             }
         }
@@ -483,6 +499,7 @@ function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar 
                     result.setCode(code);
                     result.setTitle(res.getTitle());
                     result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
                     natalChart.getConclusions().getResults().add(result);
                 }
             }
@@ -497,6 +514,7 @@ function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar 
                 result.setCode(code);
                 result.setTitle(res.getTitle());
                 result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
                 natalChart.getConclusions().getResults().add(result);
             }
         }
@@ -517,6 +535,7 @@ function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar 
                     result.setCode(code);
                     result.setTitle(res.getTitle());
                     result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
                     natalChart.getConclusions().getResults().add(result);
                 }
             }
@@ -531,6 +550,7 @@ function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar 
                 result.setCode(code);
                 result.setTitle(res.getTitle());
                 result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
                 natalChart.getConclusions().getResults().add(result);
             }
         }
