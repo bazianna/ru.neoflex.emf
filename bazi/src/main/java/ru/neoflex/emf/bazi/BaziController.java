@@ -15,6 +15,7 @@ import org.kie.internal.builder.DecisionTableInputType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
+import ru.neoflex.emf.bazi.calendar.BaZiDate;
 import ru.neoflex.emf.bazi.natalChart.*;
 import ru.neoflex.emf.bazi.natalChart.impl.InputParamsImpl;
 import ru.neoflex.emf.bazi.natalChart.impl.NatalChartImpl;
@@ -122,7 +123,7 @@ public class BaziController {
                         }
                     }
                 }
-                eObjects.getContents().removeIf(eObject -> !(eObject instanceof NatalChart || eObject instanceof Conclusions));
+                eObjects.getContents().removeIf(eObject -> !(eObject instanceof NatalChart || eObject instanceof BaZiDate));
                 eObjects.save(null);
                 eObjects.load(null);
                 return DBServerSvc.createJsonHelper().toJson(eObjects);
