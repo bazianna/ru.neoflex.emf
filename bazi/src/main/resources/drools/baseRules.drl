@@ -118,13 +118,13 @@ function Integer daysBetween(Date d1, Date d2){
              return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function Pillar createHourPillarEarth(BaZiDate baZiDate) {
+function Pillar createHourPillarEarth(InputParams inputParams) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
-    Float hour = (float)(baZiDate.getHour()) / 2;
+    Float hour = (float)(inputParams.getHour()) / 2;
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
-    Integer earthIndex = baZiDate.getHour() == 23 ? 1 : Math.round(hour) + 1;
+    Integer earthIndex = inputParams.getHour() == 23 ? 1 : Math.round(hour) + 1;
     Zoo earth = zoo.get(earthIndex);
 
     pillar.setEarth(earth);
@@ -317,7 +317,7 @@ when
     $natalChart: NatalChart(day != null)
     $baZiDate: BaZiDate(hour != null)
 then
-    Pillar hour = createHourPillarEarth($baZiDate);
+    Pillar hour = createHourPillarEarth($natalChart.getInputParams());
     $natalChart.setHour(hour);
 
     createHourPillarSky($natalChart.getHour(), $baZiDate, $natalChart);

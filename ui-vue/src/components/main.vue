@@ -116,12 +116,12 @@
 
     const state = reactive({
       name: 'Анна',
-      day: 3,
+      day: 5,
       month: 7,
-      year: 2020,
+      year: 1993,
       hour: 15,
       minutes: 30,
-      placeOfBirth: 'Asia/Shanghai',
+      placeOfBirth: 'Europe/Moscow',
       sex: 2,
       hourNotKnown: false,
       natalChart: null,
