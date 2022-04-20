@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -41,6 +42,13 @@ public class LoaderApplication {
                                 Files.copy(zipIn, csv);
                             }
                         }
+                    }
+                    try {
+                        Path sourceDir = Paths.get(Thread.currentThread().getContextClassLoader().getResource("cityBase/pb_city.csv").toURI());
+                        Path targetPath = Paths.get(tempDir + "\\pb_city.csv");
+                        Files.copy(sourceDir, targetPath);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
                 String loaddb = new String(

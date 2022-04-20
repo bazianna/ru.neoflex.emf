@@ -34,3 +34,20 @@ CREATE TABLE country
 SELECT *
 FROM CSVREAD('%1$s/country.csv');
 CREATE INDEX idx_country_country_code ON country (country_code);
+DROP TABLE IF EXISTS bp_city;
+CREATE TABLE bp_city
+(
+    id      INT(10)     NOT NULL,
+    name    VARCHAR(35) NOT NULL,
+    latitude    FLOAT NOT NULL,
+    longitude   FLOAT NOT NULL,
+    time_zone INT(10)     NOT NULL,
+    country_code VARCHAR(35)     NOT NULL,
+    sound VARCHAR(35)     NOT NULL,
+    level INT(10)     NOT NULL,
+    vid INT(10)    NOT NULL
+)
+AS
+SELECT *
+FROM CSVREAD('%1$s/bp_city.csv');
+CREATE INDEX idx_bp_city_id ON bp_city (id);
