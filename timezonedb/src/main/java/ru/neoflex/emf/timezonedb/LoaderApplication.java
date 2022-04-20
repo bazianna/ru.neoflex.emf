@@ -44,8 +44,15 @@ public class LoaderApplication {
                         }
                     }
                     try {
-                        Path sourceDir = Paths.get(Thread.currentThread().getContextClassLoader().getResource("cityBase/pb_city.csv").toURI());
-                        Path targetPath = Paths.get(tempDir + "\\pb_city.csv");
+                        Path sourceDir = Paths.get(Thread.currentThread().getContextClassLoader().getResource("cityBase/cityBase.csv").toURI());
+                        Path targetPath = Paths.get(tempDir + "\\cityBase.csv");
+                        Files.copy(sourceDir, targetPath);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        Path sourceDir = Paths.get(Thread.currentThread().getContextClassLoader().getResource("cityBase/countryBase.csv").toURI());
+                        Path targetPath = Paths.get(tempDir + "\\countryBase.csv");
                         Files.copy(sourceDir, targetPath);
                     } catch (IOException e) {
                         e.printStackTrace();

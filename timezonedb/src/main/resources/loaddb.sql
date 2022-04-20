@@ -34,20 +34,40 @@ CREATE TABLE country
 SELECT *
 FROM CSVREAD('%1$s/country.csv');
 CREATE INDEX idx_country_country_code ON country (country_code);
-DROP TABLE IF EXISTS bp_city;
-CREATE TABLE bp_city
+DROP TABLE IF EXISTS cityBase;
+CREATE TABLE cityBase
 (
-    id      INT(10)     NOT NULL,
-    name    VARCHAR(35) NOT NULL,
-    latitude    FLOAT NOT NULL,
-    longitude   FLOAT NOT NULL,
-    time_zone INT(10)     NOT NULL,
-    country_code VARCHAR(35)     NOT NULL,
-    sound VARCHAR(35)     NOT NULL,
-    level INT(10)     NOT NULL,
-    vid INT(10)    NOT NULL
+    id           INT(10)     NOT NULL,
+    name         VARCHAR(35) NOT NULL,
+    latitude     FLOAT       NOT NULL,
+    longitude    FLOAT       NOT NULL,
+    time_zone    CHAR(4),
+    country_code CHAR(2)     NOT NULL,
+    sound        CHAR(4)     NOT NULL,
+    level        INT(10)     NOT NULL,
+    ISO          CHAR,
+    vid          INT(10)     NOT NULL
 )
 AS
 SELECT *
-FROM CSVREAD('%1$s/bp_city.csv');
-CREATE INDEX idx_bp_city_id ON bp_city (id);
+FROM CSVREAD('%1$s/cityBase.csv');
+CREATE INDEX idx_cityBase_country_code ON cityBase (country_code);
+CREATE INDEX idx_cityBase_name ON cityBase (name);
+
+
+DROP TABLE IF EXISTS countryBase;
+CREATE TABLE countryBase
+(
+    id            CHAR(2)     NOT NULL,
+    name          VARCHAR(70) NOT NULL,
+    fullname      VARCHAR(128) NOT NULL,
+    country_code3 VARCHAR(70) NOT NULL,
+    location      VARCHAR(70) NOT NULL,
+    iso           CHAR,
+    capital       INT(10)     NOT NULL
+)
+AS
+SELECT *
+FROM CSVREAD('%1$s/countryBase.csv');
+CREATE INDEX idx_countryBase_id ON countryBase (id);
+CREATE INDEX idx_countryBase_name ON countryBase (name);
