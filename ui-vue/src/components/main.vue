@@ -121,7 +121,7 @@
       year: 1993,
       hour: 15,
       minutes: 30,
-      placeOfBirth: 'Europe/Moscow',
+      placeOfBirth: 'Москва',
       sex: 2,
       hourNotKnown: false,
       natalChart: null,

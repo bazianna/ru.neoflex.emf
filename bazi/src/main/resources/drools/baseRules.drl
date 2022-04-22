@@ -53,9 +53,9 @@ function Date timeShiftStart(String year, String month, String day, String hour,
     DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     Date dayStart = formatter.parse(year + "-" + month + "-" + day + " " + hour + ":" + minutes + ":00");
 
-    List <ru.neoflex.emf.timezonedb.TimeShift> timeShifts = timezoneDBSvc.timeShift(dayStart, placeOfBirth, "Asia/Shanghai");
+    ru.neoflex.emf.timezonedb.SolarTime solarTime = timezoneDBSvc.toSolar(dayStart, placeOfBirth);
 
-    return formatter.parse(timeShifts.get(1).getLocalDT());
+    return formatter.parse(solarTime.getSolarDT());
 }
 
 function Pillar createYearPillar(BaZiDate baZiDate) {

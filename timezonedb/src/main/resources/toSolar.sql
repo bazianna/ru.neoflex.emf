@@ -3,6 +3,6 @@ SELECT
        DATEADD('minute', DATEDIFF('minute', DATE '1970-01-01', TIMESTAMP '%1$s') + ((tz.gmt_offset / 3600 * 15 ) - cb.longitude ) * 4, DATE '1970-01-01') AS solar_time
 FROM zone z JOIN citybase cb ON cb.country_code=z.country_code
             JOIN timezone tz ON tz.zone_id=z.zone_id
-WHERE tz.time_start <= DATEDIFF('SECOND', DATE '1970-01-01', TIMESTAMP '%1$s')
+WHERE tz.time_start <= DATEDIFF('minute', DATE '1970-01-01', TIMESTAMP '%1$s')
   AND cb.name = '%2$s'
 ORDER BY tz.time_start DESC LIMIT 1
