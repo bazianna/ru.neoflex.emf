@@ -42,6 +42,7 @@ CREATE TABLE cityBase
     latitude     FLOAT       NOT NULL,
     longitude    FLOAT       NOT NULL,
     time_zone    CHAR(4),
+    tz           VARCHAR(35) NOT NULL,
     country_code CHAR(2)     NOT NULL,
     sound        CHAR(4)     NOT NULL,
     level        INT(10)     NOT NULL,
