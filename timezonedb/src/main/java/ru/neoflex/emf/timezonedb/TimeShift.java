@@ -7,9 +7,7 @@ public class TimeShift {
     private int gmtOffset;
     private String localDT;
 
-    public String getGmtDT() {
-        return gmtDT;
-    }
+    public String getGmtDT() {return gmtDT;}
 
     public void setGmtDT(String gmtDT) {
         this.gmtDT = gmtDT;

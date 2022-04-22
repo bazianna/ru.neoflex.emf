@@ -39,4 +39,11 @@ public class TimezoneDBController {
             @RequestParam String toZone) throws IOException, URISyntaxException, ParseException {
         return timezoneDBSvc.timeShift(fromDT, fromZone, toZone);
     }
+
+    @GetMapping("/toSolar")
+    public SolarTime toSolar(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date gmtDT,
+            @RequestParam String city) throws IOException, URISyntaxException {
+        return timezoneDBSvc.toSolar(gmtDT, city);
+    }
 }

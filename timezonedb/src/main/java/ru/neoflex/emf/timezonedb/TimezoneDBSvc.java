@@ -69,8 +69,29 @@ public class TimezoneDBSvc {
         return timeShifts.get(0);
     }
 
+    private SolarTime getTimeShiftByTemplateSolar(String templateName, Date dt, String city) throws IOException, URISyntaxException {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(pool);
+        String template = new String(
+                Files.readAllBytes(Paths.get(Thread.currentThread().getContextClassLoader().getResource(templateName).toURI())
+                ), StandardCharsets.UTF_8);
+        String sql = String.format(template, DATE_TIME_FORMAT.format(dt), city);
+        List<SolarTime> solarTimes = jdbcTemplate.query(sql, (resultSet, i) -> {
+            SolarTime solarTime = new SolarTime();
+            solarTime.setSolarDT(resultSet.getString(1));
+            return solarTime;
+        });
+        if (solarTimes.size() == 0) {
+            throw new IllegalArgumentException(city);
+        }
+        return solarTimes.get(0);
+    }
+
      public TimeShift toLocal(Date gmtDT, String timeZone) throws IOException, URISyntaxException {
         return getTimeShiftByTemplate("tolocal.sql", gmtDT, timeZone);
+    }
+
+    public SolarTime toSolar(Date gmtDT, String city) throws IOException, URISyntaxException {
+        return getTimeShiftByTemplateSolar("toSolar.sql", gmtDT, city);
     }
 
     public List<TimeShift> timeShift(Date fromDT, String fromZone, String toZone) throws IOException, URISyntaxException, ParseException {
