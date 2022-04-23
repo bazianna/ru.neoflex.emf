@@ -36,6 +36,7 @@ import java.util.ArrayList
 import ru.neoflex.emf.timezonedb.TimezoneDBSvc
 import ru.neoflex.emf.timezonedb.TimeShift
 import ru.neoflex.emf.bazi.natalChart.HiddenPillar
+import java.util.Calendar
 
 dialect  "mvel"
 
@@ -48,14 +49,24 @@ query "EObjects"
 end
 
 
+function Date getSolarTime(String year, String month, String day, String hour, String minutes, String placeOfBirth, TimezoneDBSvc timezoneDBSvc) {
+
+    DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    Date dayStart = formatter.parse(year + "-" + month + "-" + day + " " + hour + ":" + minutes + ":00");
+
+    ru.neoflex.emf.timezonedb.SolarTime solarTime = timezoneDBSvc.getSolar(dayStart, placeOfBirth);
+
+    return formatter.parse(solarTime.getSolarDT());
+}
+
 function Date timeShiftStart(String year, String month, String day, String hour, String minutes, String placeOfBirth, TimezoneDBSvc timezoneDBSvc) {
 
     DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     Date dayStart = formatter.parse(year + "-" + month + "-" + day + " " + hour + ":" + minutes + ":00");
 
-    ru.neoflex.emf.timezonedb.SolarTime solarTime = timezoneDBSvc.toSolar(dayStart, placeOfBirth);
+    List <ru.neoflex.emf.timezonedb.TimeShift> timeShifts = timezoneDBSvc.timeShift(dayStart, "Europe/Samara", "Asia/Shanghai");
 
-    return formatter.parse(solarTime.getSolarDT());
+    return formatter.parse(timeShifts.get(1).getLocalDT());
 }
 
 function Pillar createYearPillar(BaZiDate baZiDate) {
@@ -235,10 +246,10 @@ when
     $inputParams: InputParams(hourNotKnown == false, $inputYear: year, $inputMonth: month, $inputDay: day, $inputHour: hour, $placeOfBirth: placeOfBirth, $inputMinutes: minutes)
     not BaZiDate()
 then
-    Date newDay = timeShiftStart($inputYear.toString(), $inputMonth.toString(), $inputDay.toString(), $inputHour.toString(), $inputMinutes.toString(), $placeOfBirth, timezoneDBSvc);
+    Date solarTime = getSolarTime($inputYear.toString(), $inputMonth.toString(), $inputDay.toString(), $inputHour.toString(), $inputMinutes.toString(), $placeOfBirth, timezoneDBSvc);
 
     java.util.Calendar cal = java.util.Calendar.getInstance();
-    cal.setTime(newDay);
+    cal.setTime(solarTime);
 
     BaZiDate baZiDate = CalendarFactory.eINSTANCE.createBaZiDate();
     baZiDate.setGregorianYear(cal.get(java.util.Calendar.YEAR));
@@ -246,6 +257,10 @@ then
     baZiDate.setDay(cal.get(java.util.Calendar.DAY_OF_MONTH));
     baZiDate.setHour(cal.get(java.util.Calendar.HOUR_OF_DAY));
     baZiDate.setMinutes(cal.get(java.util.Calendar.MINUTE));
+
+//    Date utcTime = timeShiftStart($inputYear.toString(), $inputMonth.toString(), $inputDay.toString(), $inputHour.toString(), $inputMinutes.toString(), $placeOfBirth, timezoneDBSvc);
+//    java.util.Calendar calUTC = java.util.Calendar.getInstance();
+//    calUTC.setTime(utcTime);
 
     String year = baZiDate.getGregorianYear() > 999 ? "" + baZiDate.getGregorianYear() : "0" + baZiDate.getGregorianYear();
     String month = baZiDate.getGregorianMonth() > 9 ? "" + baZiDate.getGregorianMonth() : "0" + baZiDate.getGregorianMonth();
