@@ -90,8 +90,8 @@ public class TimezoneDBSvc {
         return getTimeShiftByTemplate("tolocal.sql", gmtDT, timeZone);
     }
 
-    public SolarTime toSolar(Date gmtDT, String city) throws IOException, URISyntaxException {
-        return getTimeShiftByTemplateSolar("toSolar.sql", gmtDT, city);
+    public SolarTime getSolar(Date gmtDT, String city) throws IOException, URISyntaxException {
+        return getTimeShiftByTemplateSolar("getSolar.sql", gmtDT, city);
     }
 
     public List<TimeShift> timeShift(Date fromDT, String fromZone, String toZone) throws IOException, URISyntaxException, ParseException {

@@ -100,12 +100,12 @@ function Pillar createDayPillar(BaZiDate baZiDate) {
     Integer correctionByTheHour = hour >= 23 && hour < 0 ? 1 : 0;
 
     List<Elements> elements = Arrays.asList(Elements.values());
-    Integer skyIndex = daysBetween % 10 < 7 ? daysBetween % 10 + 4 : daysBetween % 10 - 6;
+    Integer skyIndex = daysBetween % 10 < 9 ? daysBetween % 10 + 5 : daysBetween % 10 - 5;
     Integer skyIndexCorrection = skyIndex + correctionByTheHour > 10 ? 1 : skyIndex + correctionByTheHour;
     Elements sky = elements.get(skyIndexCorrection);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
-    Integer earthIndex = daysBetween % 12 < 11 ? daysBetween % 12 + 2 : daysBetween % 12 - 10;
+    Integer earthIndex = daysBetween % 12 < 10 ? daysBetween % 12 + 3 : daysBetween % 12 - 9;
     Integer earthIndexCorrection = earthIndex + correctionByTheHour > 12 ? 1 : earthIndex + correctionByTheHour;
     Zoo earth = zoo.get(earthIndexCorrection);
 
@@ -118,13 +118,13 @@ function Integer daysBetween(Date d1, Date d2){
              return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function Pillar createHourPillarEarth(InputParams inputParams) {
+function Pillar createHourPillarEarth(Integer baziHour) {
     Pillar pillar = NatalChartFactory.eINSTANCE.createPillar();
 
-    Float hour = (float)(inputParams.getHour()) / 2;
+    Float hour = (float)(baziHour) / 2;
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
-    Integer earthIndex = inputParams.getHour() == 23 ? 1 : Math.round(hour) + 1;
+    Integer earthIndex = baziHour == 23 ? 1 : Math.round(hour) + 1;
     Zoo earth = zoo.get(earthIndex);
 
     pillar.setEarth(earth);
@@ -249,9 +249,9 @@ then
 
     String year = baZiDate.getGregorianYear() > 999 ? "" + baZiDate.getGregorianYear() : "0" + baZiDate.getGregorianYear();
     String month = baZiDate.getGregorianMonth() > 9 ? "" + baZiDate.getGregorianMonth() : "0" + baZiDate.getGregorianMonth();
-    String day = baZiDate.getDay() > 9 ? "" + baZiDate.getDay() : "0" + baZiDate.getDay();
-    String hour = baZiDate.getHour() > 9 ? "" + baZiDate.getHour() : "0" + baZiDate.getHour();
-    String minutes = baZiDate.getMinutes() > 9 ? "" + baZiDate.getMinutes() : "0" + baZiDate.getMinutes() ;
+    String day = $inputParams.getDay() > 9 ? "" + $inputParams.getDay() : "0" + $inputParams.getDay();
+    String hour = $inputParams.getHour() > 9 ? "" + $inputParams.getHour() : "0" + $inputParams.getHour();
+    String minutes = $inputParams.getMinutes() > 9 ? "" + $inputParams.getMinutes() : "0" + $inputParams.getMinutes() ;
 
     String fullDate = year + month + day + hour + minutes;
 
@@ -317,7 +317,7 @@ when
     $natalChart: NatalChart(day != null)
     $baZiDate: BaZiDate(hour != null)
 then
-    Pillar hour = createHourPillarEarth($natalChart.getInputParams());
+    Pillar hour = createHourPillarEarth($baZiDate.getHour());
     $natalChart.setHour(hour);
 
     createHourPillarSky($natalChart.getHour(), $baZiDate, $natalChart);

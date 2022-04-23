@@ -40,10 +40,10 @@ public class TimezoneDBController {
         return timezoneDBSvc.timeShift(fromDT, fromZone, toZone);
     }
 
-    @GetMapping("/toSolar")
-    public SolarTime toSolar(
+    @GetMapping("/getSolar")
+    public SolarTime getSolar(
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date gmtDT,
             @RequestParam String city) throws IOException, URISyntaxException {
-        return timezoneDBSvc.toSolar(gmtDT, city);
+        return timezoneDBSvc.getSolar(gmtDT, city);
     }
 }
