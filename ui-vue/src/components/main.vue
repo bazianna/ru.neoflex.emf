@@ -20,11 +20,11 @@
 
     <section class="item">
       <span class="name">Дата и время рождения:</span>
-        <input type="number" placeholder="день" v-model="state.day"/>
-        <input type="number" placeholder="месяц" v-model="state.month"/>
-        <input type="number" placeholder="год" v-model="state.year" min="1930"/>
-        <input type="number" placeholder="час" v-model="state.hour"/>
-        <input type="number" placeholder="минуты" v-model="state.minutes"/>
+        <input type="number" placeholder="день" v-model="state.day" min="0" max="31"/>
+        <input type="number" placeholder="месяц" v-model="state.month" min="1" max="12"/>
+        <input type="number" placeholder="год" v-model="state.year" min="1930" max="2049"/>
+        <input type="number" placeholder="час" v-model="state.hour" min="0" max="23"/>
+        <input type="number" placeholder="минуты" v-model="state.minutes" min="0" max="59"/>
     </section>
 
     <section class="item">
