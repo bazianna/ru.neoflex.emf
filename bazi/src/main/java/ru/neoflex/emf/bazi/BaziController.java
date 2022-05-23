@@ -165,18 +165,23 @@ public class BaziController {
                     // get user name from NatalChart
                     String name = ((InputParamsImpl) ((NatalChartImpl) resource.getContents().get(0)).getInputParams()).getName();
 
-                    // create a paragraph
+                    // start Page
                     XWPFParagraph p1 = doc.createParagraph();
                     p1.setAlignment(ParagraphAlignment.CENTER);
+                    p1.setVerticalAlignment(TextAlignment.CENTER);
 
                     // set font
                     XWPFRun r1 = p1.createRun();
                     r1.setBold(true);
                     r1.setItalic(true);
-                    r1.setFontSize(14);
-                    r1.setFontFamily("New Roman");
-                    r1.setText("Приветствую, " + name);
+                    r1.setFontSize(55);
+                    r1.setFontFamily("Century Gothic (Заголовки)");
+                    r1.setText("Приветствую,");
                     r1.addBreak();
+                    r1.setText(name);
+                    r1.addBreak(BreakType.PAGE);
+
+
 
                     // get conclusions from NatalChart
                     Conclusions conclusions = ((NatalChartImpl) resource.getContents().get(0)).getConclusions();
