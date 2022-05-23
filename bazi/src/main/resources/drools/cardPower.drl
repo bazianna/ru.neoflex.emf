@@ -618,7 +618,7 @@ function NatalChart addBumpEarth(Pillar onePillar, Pillar rightPillar, Pillar le
         || ( onePillarEarthIndex == 2 && rightPillarEarthIndex == 8 )
         || ( onePillarEarthIndex == 8 && rightPillarEarthIndex == 2 )
     ) {
-        String code =  "10-" + (startIndex);
+        String code =  "11-" + (startIndex);
 
         Result result = NatalChartFactory.eINSTANCE.createResult();
         for (Result res : conclusions.getResults()) {
@@ -653,7 +653,7 @@ function NatalChart addPunishmentEarth(Pillar onePillar, Pillar rightPillar, Pil
         || ( onePillarEarthIndex == 6 && rightPillarEarthIndex == 9 )
         || ( onePillarEarthIndex == 9 && rightPillarEarthIndex == 6 )
     ) {
-        String code =  "10-" + (startIndex);
+        String code =  "12-" + (startIndex);
 
         Result result = NatalChartFactory.eINSTANCE.createResult();
         for (Result res : conclusions.getResults()) {
@@ -674,7 +674,7 @@ function NatalChart addPunishmentEarth(Pillar onePillar, Pillar rightPillar, Pil
         || ( onePillarEarthIndex == 8 && rightPillarEarthIndex == 11 )
         || ( onePillarEarthIndex == 11 && rightPillarEarthIndex == 8 )
     ) {
-        String code =  "10-" + (startIndex + 1);
+        String code =  "12-" + (startIndex + 1);
 
         Result result = NatalChartFactory.eINSTANCE.createResult();
         for (Result res : conclusions.getResults()) {
@@ -691,7 +691,7 @@ function NatalChart addPunishmentEarth(Pillar onePillar, Pillar rightPillar, Pil
         ( onePillarEarthIndex == 1 && rightPillarEarthIndex == 4 )
         || ( onePillarEarthIndex == 4 && rightPillarEarthIndex == 1 )
     ) {
-        String code =  "10-" + (startIndex + 2);
+        String code =  "12-" + (startIndex + 2);
 
         Result result = NatalChartFactory.eINSTANCE.createResult();
         for (Result res : conclusions.getResults()) {
@@ -710,7 +710,7 @@ function NatalChart addPunishmentEarth(Pillar onePillar, Pillar rightPillar, Pil
         || ( onePillarEarthIndex == 5 && rightPillarEarthIndex == 5 )
         || ( onePillarEarthIndex == 7 && rightPillarEarthIndex == 7 )
     ) {
-        String code =  "10-" + (startIndex + 3);
+        String code =  "12-" + (startIndex + 3);
 
         Result result = NatalChartFactory.eINSTANCE.createResult();
         for (Result res : conclusions.getResults()) {
@@ -750,7 +750,7 @@ function NatalChart addDestructionEarth(Pillar onePillar, Pillar rightPillar, Pi
         || ( onePillarEarthIndex == 8 && rightPillarEarthIndex == 11 )
         || ( onePillarEarthIndex == 11 && rightPillarEarthIndex == 8 )
     ) {
-        String code =  "10-" + (startIndex);
+        String code =  "13-" + (startIndex);
 
         Result result = NatalChartFactory.eINSTANCE.createResult();
         for (Result res : conclusions.getResults()) {
@@ -790,7 +790,7 @@ function NatalChart addHarmEarth(Pillar onePillar, Pillar rightPillar, Pillar le
         || ( onePillarEarthIndex == 10 && rightPillarEarthIndex == 11 )
         || ( onePillarEarthIndex == 11 && rightPillarEarthIndex == 10 )
     ) {
-        String code =  "10-" + (startIndex);
+        String code =  "14-" + (startIndex);
 
         Result result = NatalChartFactory.eINSTANCE.createResult();
         for (Result res : conclusions.getResults()) {
@@ -885,10 +885,10 @@ when
     $natalChart: NatalChart(day != null, hour != null, month != null, year != null)
     $conclusions: Conclusions(results != null, allDone == true)
 then
-    addBumpEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getYear(), $natalChart, $conclusions, 5);
-    addBumpEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 6);
-    addBumpEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 7);
-    addBumpEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 8);
+    addBumpEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getYear(), $natalChart, $conclusions, 1);
+    addBumpEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 2);
+    addBumpEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 3);
+    addBumpEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 4);
 
     update($natalChart);
 end;
@@ -899,10 +899,10 @@ when
     $natalChart: NatalChart(day != null, hour != null, month != null, year != null)
     $conclusions: Conclusions(results != null, allDone == true)
 then
-    addPunishmentEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getYear(), $natalChart, $conclusions, 9);
-    addPunishmentEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 9);
-    addPunishmentEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 9);
-    addPunishmentEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 9);
+    addPunishmentEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getYear(), $natalChart, $conclusions, 1);
+    addPunishmentEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 1);
+    addPunishmentEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 1);
+    addPunishmentEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 1);
 
     update($natalChart);
 end;
@@ -913,10 +913,10 @@ when
     $natalChart: NatalChart(day != null, hour != null, month != null, year != null)
     $conclusions: Conclusions(results != null, allDone == true)
 then
-    addDestructionEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getYear(), $natalChart, $conclusions, 13);
-    addDestructionEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 14);
-    addDestructionEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 15);
-    addDestructionEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 16);
+    addDestructionEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getYear(), $natalChart, $conclusions, 1);
+    addDestructionEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 2);
+    addDestructionEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 3);
+    addDestructionEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 4);
 
     update($natalChart);
 end;
@@ -927,10 +927,10 @@ when
     $natalChart: NatalChart(day != null, hour != null, month != null, year != null)
     $conclusions: Conclusions(results != null, allDone == true)
 then
-    addHarmEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getYear(), $natalChart, $conclusions, 17);
-    addHarmEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 18);
-    addHarmEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 19);
-    addHarmEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 20);
+    addHarmEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getYear(), $natalChart, $conclusions, 1);
+    addHarmEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 2);
+    addHarmEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 3);
+    addHarmEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 4);
 
     update($natalChart);
 end;
