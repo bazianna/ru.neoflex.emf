@@ -559,6 +559,174 @@ function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar 
     return natalChart;
 }
 
+function NatalChart addBumpSky(Pillar onePillar, Pillar rightPillar, NatalChart natalChart, Conclusions conclusions, Integer startIndex) {
+    Elements onePillarSky = onePillar.getSky();
+    Elements rightPillarSky = rightPillar.getSky();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+
+    Integer onePillarSkyIndex = elements.indexOf(onePillarSky);
+    Integer rightPillarSkyIndex = elements.indexOf(rightPillarSky);
+
+    if (
+        ( onePillarSkyIndex == 1 && rightPillarSkyIndex == 7 )
+        || ( onePillarSkyIndex == 7 && rightPillarSkyIndex == 1 )
+        || ( onePillarSkyIndex == 2 && rightPillarSkyIndex == 8 )
+        || ( onePillarSkyIndex == 8 && rightPillarSkyIndex == 2 )
+        || ( onePillarSkyIndex == 3 && rightPillarSkyIndex == 9 )
+        || ( onePillarSkyIndex == 9 && rightPillarSkyIndex == 3 )
+        || ( onePillarSkyIndex == 4 && rightPillarSkyIndex == 10 )
+        || ( onePillarSkyIndex == 10 && rightPillarSkyIndex == 4 )
+    ) {
+        String code =  "10-" + (startIndex);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    return natalChart;
+}
+
+function NatalChart addBumpEarth(Pillar onePillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Integer startIndex) {
+    Zoo onePillarEarth = onePillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+
+    if (
+        ( onePillarEarthIndex == 3 && rightPillarEarthIndex == 9 )
+        || ( onePillarEarthIndex == 9 && rightPillarEarthIndex == 3 )
+        || ( onePillarEarthIndex == 4 && rightPillarEarthIndex == 10 )
+        || ( onePillarEarthIndex == 10 && rightPillarEarthIndex == 4 )
+        || ( onePillarEarthIndex == 5 && rightPillarEarthIndex == 11 )
+        || ( onePillarEarthIndex == 11 && rightPillarEarthIndex == 5 )
+        || ( onePillarEarthIndex == 6 && rightPillarEarthIndex == 12 )
+        || ( onePillarEarthIndex == 12 && rightPillarEarthIndex == 6 )
+        || ( onePillarEarthIndex == 1 && rightPillarEarthIndex == 7 )
+        || ( onePillarEarthIndex == 7 && rightPillarEarthIndex == 1 )
+        || ( onePillarEarthIndex == 2 && rightPillarEarthIndex == 8 )
+        || ( onePillarEarthIndex == 8 && rightPillarEarthIndex == 2 )
+    ) {
+        String code =  "10-" + (startIndex);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    return natalChart;
+}
+
+
+function NatalChart addPunishmentEarth(Pillar onePillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Integer startIndex) {
+    Zoo onePillarEarth = onePillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+
+    if (
+        ( onePillarEarthIndex == 3 && rightPillarEarthIndex == 6 )
+        || ( onePillarEarthIndex == 6 && rightPillarEarthIndex == 3 )
+        || ( onePillarEarthIndex == 3 && rightPillarEarthIndex == 9 )
+        || ( onePillarEarthIndex == 9 && rightPillarEarthIndex == 3 )
+        || ( onePillarEarthIndex == 6 && rightPillarEarthIndex == 9 )
+        || ( onePillarEarthIndex == 9 && rightPillarEarthIndex == 6 )
+    ) {
+        String code =  "10-" + (startIndex);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+    else if (
+        ( onePillarEarthIndex == 2 && rightPillarEarthIndex == 8 )
+        || ( onePillarEarthIndex == 8 && rightPillarEarthIndex == 2 )
+        || ( onePillarEarthIndex == 2 && rightPillarEarthIndex == 11 )
+        || ( onePillarEarthIndex == 11 && rightPillarEarthIndex == 2 )
+        || ( onePillarEarthIndex == 8 && rightPillarEarthIndex == 11 )
+        || ( onePillarEarthIndex == 11 && rightPillarEarthIndex == 8 )
+    ) {
+        String code =  "10-" + (startIndex + 1);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+    else if (
+        ( onePillarEarthIndex == 1 && rightPillarEarthIndex == 4 )
+        || ( onePillarEarthIndex == 4 && rightPillarEarthIndex == 1 )
+    ) {
+        String code =  "10-" + (startIndex + 2);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+    else if (
+        ( onePillarEarthIndex == 10 && rightPillarEarthIndex == 10 )
+        || ( onePillarEarthIndex == 12 && rightPillarEarthIndex == 12 )
+        || ( onePillarEarthIndex == 5 && rightPillarEarthIndex == 5 )
+        || ( onePillarEarthIndex == 7 && rightPillarEarthIndex == 7 )
+    ) {
+        String code =  "10-" + (startIndex + 3);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    return natalChart;
+}
+
 rule "Set Stable"
 no-loop true
 when
@@ -617,6 +785,47 @@ then
     update($natalChart);
 end;
 
+rule "Set Bump Sky"
+no-loop true
+when
+    $natalChart: NatalChart(day != null, hour != null, month != null, year != null)
+    $conclusions: Conclusions(results != null, allDone == true)
+then
+    addBumpSky($natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, 1);
+    addBumpSky($natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, 2);
+    addBumpSky($natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, 3);
+    addBumpSky($natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, 4);
+
+    update($natalChart);
+end;
+
+rule "Set Bump Earth"
+no-loop true
+when
+    $natalChart: NatalChart(day != null, hour != null, month != null, year != null)
+    $conclusions: Conclusions(results != null, allDone == true)
+then
+    addBumpEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getYear(), $natalChart, $conclusions, 5);
+    addBumpEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 6);
+    addBumpEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 7);
+    addBumpEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 8);
+
+    update($natalChart);
+end;
+
+rule "Set Punishment Earth"
+no-loop true
+when
+    $natalChart: NatalChart(day != null, hour != null, month != null, year != null)
+    $conclusions: Conclusions(results != null, allDone == true)
+then
+    addPunishmentEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getYear(), $natalChart, $conclusions, 9);
+    addPunishmentEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 9);
+    addPunishmentEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 9);
+    addPunishmentEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 9);
+
+    update($natalChart);
+end;
 //rule "Set Card Power"
 //no-loop true
 //when
