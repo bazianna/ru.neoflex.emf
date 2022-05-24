@@ -92,11 +92,16 @@ function Pillar addSupportedByTheSeason(Pillar pillar, Pillar seasonPillar) {
 
 }
 
-function NatalChart addMergerSkyEarth(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer startIndex) {
+function NatalChart addMergerSkyEarth(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
     Elements onePillarSky = onePillar.getSky();
     Elements twoPillarSky = twoPillar.getSky();
     Elements rightPillarSky = rightPillar.getSky();
     Elements leftPillarSky = leftPillar.getSky();
+
+    Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
 
     Elements personalityElement = natalChart.getDay().getSky();
 
@@ -108,14 +113,50 @@ function NatalChart addMergerSkyEarth(Pillar onePillar, Pillar twoPillar, Pillar
     Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
     Zoo season = seasonPillar.getEarth();
     Integer seasonIndex = zoo.indexOf(season);
 
     if (
         onePillarSkyIndex == 1 && twoPillarSkyIndex == 6
-        && (seasonIndex == 2 || seasonIndex == 5 || seasonIndex == 8 || seasonIndex == 11 || seasonIndex == 6 || seasonIndex == 7)
-        && !onePillar.isStableSky() && !onePillar.isSupportedByTheSeasonSky()
+        && (
+            seasonIndex == 6
+            || seasonIndex == 7
+            || ( seasonIndex == 2
+                && onePillarSkyIndex != 9 && onePillarSkyIndex != 10
+                && twoPillarSkyIndex != 9 && twoPillarSkyIndex != 10
+                && rightPillarSkyIndex != 9 && rightPillarSkyIndex != 10
+                && leftPillarSkyIndex != 9 && leftPillarSkyIndex != 10 )
+            || ( seasonIndex == 5
+                && onePillarSkyIndex != 1 && onePillarSkyIndex != 2
+                && twoPillarSkyIndex != 1 && twoPillarSkyIndex != 2
+                && rightPillarSkyIndex != 1 && rightPillarSkyIndex != 2
+                && leftPillarSkyIndex != 1 && leftPillarSkyIndex != 2 )
+            || seasonIndex == 8
+            || ( seasonIndex == 11
+                && onePillarSkyIndex != 7 && onePillarSkyIndex != 8
+                && twoPillarSkyIndex != 7 && twoPillarSkyIndex != 8
+                && rightPillarSkyIndex != 7 && rightPillarSkyIndex != 8
+                && leftPillarSkyIndex != 7 && leftPillarSkyIndex != 8 )
+        )
+        && !onePillar.isStableSky()
         && !Objects.equals(leftPillarSkyIndex,twoPillarSkyIndex)
+        && (
+            onePillarIndex != 2
+            || (
+                ( twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4 || twoPillarSkyIndex == 5 || twoPillarSkyIndex == 6 )
+                && ( rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4 || rightPillarSkyIndex == 5 || rightPillarSkyIndex == 6 )
+                && ( leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 || leftPillarSkyIndex == 5 || leftPillarSkyIndex == 6 )
+                && ( onePillarEarthIndex == 2 || onePillarEarthIndex == 5 || onePillarEarthIndex == 6 || onePillarEarthIndex == 7 || onePillarEarthIndex == 8 || onePillarEarthIndex == 11 )
+                && ( rightPillarEarthIndex == 2 || rightPillarEarthIndex == 5 || rightPillarEarthIndex == 6 || rightPillarEarthIndex == 7 || rightPillarEarthIndex == 8 || rightPillarEarthIndex == 11 )
+                && ( leftPillarEarthIndex == 2 || leftPillarEarthIndex == 5 || leftPillarEarthIndex == 6 || leftPillarEarthIndex == 7 || leftPillarEarthIndex == 8 || leftPillarEarthIndex == 11 )
+            )
+        )
         ) {
             onePillar.setSkyTransformed( elements.get(6) );
 
@@ -149,9 +190,39 @@ function NatalChart addMergerSkyEarth(Pillar onePillar, Pillar twoPillar, Pillar
     }
     else if (
         onePillarSkyIndex == 6 && twoPillarSkyIndex == 1
-        && (seasonIndex == 2 || seasonIndex == 5 || seasonIndex == 8 || seasonIndex == 11 || seasonIndex == 6 || seasonIndex == 7)
-        && !twoPillar.isStableSky() && !twoPillar.isSupportedByTheSeasonSky()
+        && (
+            seasonIndex == 6
+            || seasonIndex == 7
+            || ( seasonIndex == 2
+                && onePillarSkyIndex != 9 && onePillarSkyIndex != 10
+                && twoPillarSkyIndex != 9 && twoPillarSkyIndex != 10
+                && rightPillarSkyIndex != 9 && rightPillarSkyIndex != 10
+                && leftPillarSkyIndex != 9 && leftPillarSkyIndex != 10 )
+            || ( seasonIndex == 5
+                && onePillarSkyIndex != 1 && onePillarSkyIndex != 2
+                && twoPillarSkyIndex != 1 && twoPillarSkyIndex != 2
+                && rightPillarSkyIndex != 1 && rightPillarSkyIndex != 2
+                && leftPillarSkyIndex != 1 && leftPillarSkyIndex != 2 )
+            || seasonIndex == 8
+            || ( seasonIndex == 11
+                && onePillarSkyIndex != 7 && onePillarSkyIndex != 8
+                && twoPillarSkyIndex != 7 && twoPillarSkyIndex != 8
+                && rightPillarSkyIndex != 7 && rightPillarSkyIndex != 8
+                && leftPillarSkyIndex != 7 && leftPillarSkyIndex != 8 )
+        )
+        && !twoPillar.isStableSky()
         && !Objects.equals(rightPillarSkyIndex,onePillarSkyIndex)
+        && (
+            onePillarIndex != 1
+            || (
+                ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4 || onePillarSkyIndex == 5 || onePillarSkyIndex == 6 )
+                && ( rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4 || rightPillarSkyIndex == 5 || rightPillarSkyIndex == 6 )
+                && ( leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 || leftPillarSkyIndex == 5 || leftPillarSkyIndex == 6 )
+                && ( onePillarEarthIndex == 2 || onePillarEarthIndex == 5 || onePillarEarthIndex == 6 || onePillarEarthIndex == 7 || onePillarEarthIndex == 8 || onePillarEarthIndex == 11 )
+                && ( twoPillarEarthIndex == 2 || twoPillarEarthIndex == 5 || twoPillarEarthIndex == 6 || twoPillarEarthIndex == 7 || twoPillarEarthIndex == 8 || twoPillarEarthIndex == 11 )
+                && ( leftPillarEarthIndex == 2 || leftPillarEarthIndex == 5 || leftPillarEarthIndex == 6 || leftPillarEarthIndex == 7 || leftPillarEarthIndex == 8 || leftPillarEarthIndex == 11 )
+            )
+        )
         ) {
             twoPillar.setSkyTransformed( elements.get(6) );
 
@@ -187,11 +258,16 @@ function NatalChart addMergerSkyEarth(Pillar onePillar, Pillar twoPillar, Pillar
     return natalChart;
 }
 
-function NatalChart addMergerSkyMetal(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer startIndex) {
+function NatalChart addMergerSkyMetal(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
     Elements onePillarSky = onePillar.getSky();
     Elements twoPillarSky = twoPillar.getSky();
     Elements rightPillarSky = rightPillar.getSky();
     Elements leftPillarSky = leftPillar.getSky();
+
+	Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
 
     List<Elements> elements = Arrays.asList(Elements.values());
 
@@ -201,14 +277,50 @@ function NatalChart addMergerSkyMetal(Pillar onePillar, Pillar twoPillar, Pillar
     Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+	Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
     Zoo season = seasonPillar.getEarth();
     Integer seasonIndex = zoo.indexOf(season);
 
     if (
         onePillarSkyIndex == 2 && twoPillarSkyIndex == 7
-        && (seasonIndex == 2 || seasonIndex == 5 || seasonIndex == 8 || seasonIndex == 11 || seasonIndex == 9 || seasonIndex == 10)
-        && !onePillar.isStableSky() && !onePillar.isSupportedByTheSeasonSky()
+        && (
+            seasonIndex == 9
+            || seasonIndex == 10
+            || ( seasonIndex == 2
+                && onePillarSkyIndex != 9 && onePillarSkyIndex != 10
+                && twoPillarSkyIndex != 9 && twoPillarSkyIndex != 10
+                && rightPillarSkyIndex != 9 && rightPillarSkyIndex != 10
+                && leftPillarSkyIndex != 9 && leftPillarSkyIndex != 10 )
+            || ( seasonIndex == 5
+                && onePillarSkyIndex != 1 && onePillarSkyIndex != 2
+                && twoPillarSkyIndex != 1 && twoPillarSkyIndex != 2
+                && rightPillarSkyIndex != 1 && rightPillarSkyIndex != 2
+                && leftPillarSkyIndex != 1 && leftPillarSkyIndex != 2 )
+            || ( seasonIndex == 8
+                && onePillarSkyIndex != 3 && onePillarSkyIndex != 4
+                && twoPillarSkyIndex != 3 && twoPillarSkyIndex != 4
+                && rightPillarSkyIndex != 3 && rightPillarSkyIndex != 4
+                && leftPillarSkyIndex != 3 && leftPillarSkyIndex != 4 )
+            || seasonIndex == 11
+        )
+        && !onePillar.isStableSky()
         && !Objects.equals(leftPillarSkyIndex,twoPillarSkyIndex)
+       && (
+            onePillarIndex != 2
+            || (
+                ( twoPillarSkyIndex == 5 || twoPillarSkyIndex == 6 || twoPillarSkyIndex == 7 || twoPillarSkyIndex == 8 )
+                && ( rightPillarSkyIndex == 5 || rightPillarSkyIndex == 6 || rightPillarSkyIndex == 7 || rightPillarSkyIndex == 8 )
+                && ( leftPillarSkyIndex == 5 || leftPillarSkyIndex == 6 || leftPillarSkyIndex == 7 || leftPillarSkyIndex == 8 )
+                && ( onePillarEarthIndex == 2 || onePillarEarthIndex == 5 || onePillarEarthIndex == 8 || onePillarEarthIndex == 9 || onePillarEarthIndex == 10 || onePillarEarthIndex == 11 )
+                && ( rightPillarEarthIndex == 2 || rightPillarEarthIndex == 5 || rightPillarEarthIndex == 8 || rightPillarEarthIndex == 9 || rightPillarEarthIndex == 10 || rightPillarEarthIndex == 11 )
+                && ( leftPillarEarthIndex == 2 || leftPillarEarthIndex == 5 || leftPillarEarthIndex == 8 || leftPillarEarthIndex == 9 || leftPillarEarthIndex == 10 || leftPillarEarthIndex == 11 )
+            )
+        )
         ) {
             onePillar.setSkyTransformed( elements.get(7) );
 
@@ -242,9 +354,39 @@ function NatalChart addMergerSkyMetal(Pillar onePillar, Pillar twoPillar, Pillar
     }
     else if (
         onePillarSkyIndex == 7 && twoPillarSkyIndex == 2
-        && (seasonIndex == 2 || seasonIndex == 5 || seasonIndex == 8 || seasonIndex == 11 || seasonIndex == 9 || seasonIndex == 10)
-        && !twoPillar.isStableSky() && !twoPillar.isSupportedByTheSeasonSky()
+        && (
+            seasonIndex == 9
+            || seasonIndex == 10
+            || ( seasonIndex == 2
+                && onePillarSkyIndex != 9 && onePillarSkyIndex != 10
+                && twoPillarSkyIndex != 9 && twoPillarSkyIndex != 10
+                && rightPillarSkyIndex != 9 && rightPillarSkyIndex != 10
+                && leftPillarSkyIndex != 9 && leftPillarSkyIndex != 10 )
+            || ( seasonIndex == 5
+                && onePillarSkyIndex != 1 && onePillarSkyIndex != 2
+                && twoPillarSkyIndex != 1 && twoPillarSkyIndex != 2
+                && rightPillarSkyIndex != 1 && rightPillarSkyIndex != 2
+                && leftPillarSkyIndex != 1 && leftPillarSkyIndex != 2 )
+            || ( seasonIndex == 8
+                && onePillarSkyIndex != 3 && onePillarSkyIndex != 4
+                && twoPillarSkyIndex != 3 && twoPillarSkyIndex != 4
+                && rightPillarSkyIndex != 3 && rightPillarSkyIndex != 4
+                && leftPillarSkyIndex != 3 && leftPillarSkyIndex != 4 )
+            || seasonIndex == 11
+        )
+        && !twoPillar.isStableSky()
         && !Objects.equals(rightPillarSkyIndex,onePillarSkyIndex)
+        && (
+            onePillarIndex != 1
+            || (
+                ( onePillarSkyIndex == 5 || onePillarSkyIndex == 6 || onePillarSkyIndex == 7 || onePillarSkyIndex == 8 )
+                && ( rightPillarSkyIndex == 5 || rightPillarSkyIndex == 6 || rightPillarSkyIndex == 7 || rightPillarSkyIndex == 8 )
+                && ( leftPillarSkyIndex == 5 || leftPillarSkyIndex == 6 || leftPillarSkyIndex == 7 || leftPillarSkyIndex == 8 )
+                && ( onePillarEarthIndex == 2 || onePillarEarthIndex == 5 || onePillarEarthIndex == 8 || onePillarEarthIndex == 9 || onePillarEarthIndex == 10 || onePillarEarthIndex == 11 )
+                && ( twoPillarEarthIndex == 2 || twoPillarEarthIndex == 5 || twoPillarEarthIndex == 8 || twoPillarEarthIndex == 9 || twoPillarEarthIndex == 10 || twoPillarEarthIndex == 11 )
+                && ( leftPillarEarthIndex == 2 || leftPillarEarthIndex == 5 || leftPillarEarthIndex == 8 || leftPillarEarthIndex == 9 || leftPillarEarthIndex == 10 || leftPillarEarthIndex == 11 )
+            )
+        )
         ) {
             twoPillar.setSkyTransformed( elements.get(7) );
 
@@ -280,11 +422,16 @@ function NatalChart addMergerSkyMetal(Pillar onePillar, Pillar twoPillar, Pillar
     return natalChart;
 }
 
-function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer startIndex) {
+function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
     Elements onePillarSky = onePillar.getSky();
     Elements twoPillarSky = twoPillar.getSky();
     Elements rightPillarSky = rightPillar.getSky();
     Elements leftPillarSky = leftPillar.getSky();
+
+	Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
 
     List<Elements> elements = Arrays.asList(Elements.values());
 
@@ -294,14 +441,47 @@ function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar
     Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
     Zoo season = seasonPillar.getEarth();
     Integer seasonIndex = zoo.indexOf(season);
 
     if (
-        onePillarSkyIndex == 3 && twoPillarSkyIndex == 8
-        && (seasonIndex == 1 || seasonIndex == 12 || seasonIndex == 9 || seasonIndex == 10 )
-        && !onePillar.isStableSky() && !onePillar.isSupportedByTheSeasonSky()
+        ( ( onePillarSkyIndex == 3 && twoPillarSkyIndex == 8 ) || ( onePillarSkyIndex == 8 && twoPillarSkyIndex == 3 ) )
+        && (
+            seasonIndex == 1 || seasonIndex == 12 || seasonIndex == 9 || seasonIndex == 10
+            || (
+                seasonIndex == 2
+                && ( onePillarSkyIndex == 9 || onePillarSkyIndex == 10
+                || twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10
+                || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10
+                || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+            )
+            || (
+                seasonIndex == 11
+                && ( onePillarSkyIndex == 7 || onePillarSkyIndex == 8
+                || twoPillarSkyIndex == 7 || twoPillarSkyIndex == 8
+                || rightPillarSkyIndex == 7 || rightPillarSkyIndex == 8
+                || leftPillarSkyIndex == 7 || leftPillarSkyIndex == 8 )
+            )
+        )
+        && !onePillar.isStableSky()
         && !Objects.equals(leftPillarSkyIndex,twoPillarSkyIndex)
+        && (
+        	onePillarIndex != 2
+        	|| (
+        		( twoPillarSkyIndex == 7 || twoPillarSkyIndex == 8 || twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10 )
+        		&& ( rightPillarSkyIndex == 7 || rightPillarSkyIndex == 8 || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10 )
+        		&& ( leftPillarSkyIndex == 7 || leftPillarSkyIndex == 8 || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+        		&& ( onePillarEarthIndex == 1 || onePillarEarthIndex == 9 || onePillarEarthIndex == 10 || onePillarEarthIndex == 12 )
+        		&& ( rightPillarEarthIndex == 1 || rightPillarEarthIndex == 9 || rightPillarEarthIndex == 10 || rightPillarEarthIndex == 12 )
+        		&& ( leftPillarEarthIndex == 1 || leftPillarEarthIndex == 9 || leftPillarEarthIndex == 10 || leftPillarEarthIndex == 12 )
+        	)
+        )
         ) {
             onePillar.setSkyTransformed( elements.get(9) );
 
@@ -318,7 +498,7 @@ function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar
                 }
             }
     }
-    else if ( onePillarSkyIndex == 3 && twoPillarSkyIndex == 8 ) {
+    else if ( ( onePillarSkyIndex == 3 && twoPillarSkyIndex == 8 ) || ( onePillarSkyIndex == 8 && twoPillarSkyIndex == 3 ) ) {
 
         String code =  "5-" + startIndex;
 
@@ -333,11 +513,39 @@ function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar
             }
         }
     }
-    else if (
-        onePillarSkyIndex == 8 && twoPillarSkyIndex == 3
-        && (seasonIndex == 1 || seasonIndex == 12 || seasonIndex == 9 || seasonIndex == 10)
-        && !twoPillar.isStableSky() && !twoPillar.isSupportedByTheSeasonSky()
+
+    if (
+        ( ( onePillarSkyIndex == 3 && twoPillarSkyIndex == 8 ) || ( onePillarSkyIndex == 8 && twoPillarSkyIndex == 3 ) )
+        && (
+            seasonIndex == 1 || seasonIndex == 12 || seasonIndex == 9 || seasonIndex == 10
+            || (
+                seasonIndex == 2
+                && ( onePillarSkyIndex == 9 || onePillarSkyIndex == 10
+                || twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10
+                || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10
+                || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+            )
+            || (
+                seasonIndex == 11
+                && ( onePillarSkyIndex == 7 || onePillarSkyIndex == 8
+                || twoPillarSkyIndex == 7 || twoPillarSkyIndex == 8
+                || rightPillarSkyIndex == 7 || rightPillarSkyIndex == 8
+                || leftPillarSkyIndex == 7 || leftPillarSkyIndex == 8 )
+            )
+        )
+        && !twoPillar.isStableSky()
         && !Objects.equals(rightPillarSkyIndex,onePillarSkyIndex)
+        && (
+            onePillarIndex != 1
+            || (
+                ( onePillarSkyIndex == 7 || onePillarSkyIndex == 8 || onePillarSkyIndex == 9 || onePillarSkyIndex == 10 )
+                && ( rightPillarSkyIndex == 7 || rightPillarSkyIndex == 8 || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10 )
+                && ( leftPillarSkyIndex == 7 || leftPillarSkyIndex == 8 || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+                && ( onePillarEarthIndex == 1 || onePillarEarthIndex == 9 || onePillarEarthIndex == 10 || onePillarEarthIndex == 12 )
+                && ( twoPillarEarthIndex == 1 || twoPillarEarthIndex == 9 || twoPillarEarthIndex == 10 || twoPillarEarthIndex == 12 )
+                && ( leftPillarEarthIndex == 1 || leftPillarEarthIndex == 9 || leftPillarEarthIndex == 10 || leftPillarEarthIndex == 12 )
+            )
+        )
         ) {
             twoPillar.setSkyTransformed( elements.get(9) );
 
@@ -354,7 +562,7 @@ function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar
                 }
             }
     }
-    else if ( onePillarSkyIndex == 8 && twoPillarSkyIndex == 3 ) {
+    else if ( ( onePillarSkyIndex == 3 && twoPillarSkyIndex == 8 ) || ( onePillarSkyIndex == 8 && twoPillarSkyIndex == 3 ) ) {
 
         String code =  "5-" + (startIndex + 2);
 
@@ -373,11 +581,16 @@ function NatalChart addMergerSkyWater(Pillar onePillar, Pillar twoPillar, Pillar
     return natalChart;
 }
 
-function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer startIndex) {
+function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
     Elements onePillarSky = onePillar.getSky();
     Elements twoPillarSky = twoPillar.getSky();
     Elements rightPillarSky = rightPillar.getSky();
     Elements leftPillarSky = leftPillar.getSky();
+
+	Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
 
     List<Elements> elements = Arrays.asList(Elements.values());
 
@@ -387,14 +600,47 @@ function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar 
     Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
     Zoo season = seasonPillar.getEarth();
     Integer seasonIndex = zoo.indexOf(season);
 
     if (
-        onePillarSkyIndex == 4 && twoPillarSkyIndex == 9
-        && (seasonIndex == 3 || seasonIndex == 4 || seasonIndex == 12 || seasonIndex == 1 )
-        && !onePillar.isStableSky() && !onePillar.isSupportedByTheSeasonSky()
+        ( ( onePillarSkyIndex == 4 && twoPillarSkyIndex == 9 ) || ( onePillarSkyIndex == 9 && twoPillarSkyIndex == 4 ) )
+        && (
+            seasonIndex == 3 || seasonIndex == 4 || seasonIndex == 12 || seasonIndex == 1
+            || (
+                seasonIndex == 5
+                && ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2
+                || twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2
+                || rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2
+                || leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 )
+            )
+            || (
+                seasonIndex == 2
+                && ( onePillarSkyIndex == 9 || onePillarSkyIndex == 10
+                || twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10
+                || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10
+                || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+            )
+        )
+        && !onePillar.isStableSky()
         && !Objects.equals(leftPillarSkyIndex,twoPillarSkyIndex)
+        && (
+        	onePillarIndex != 2
+        	|| (
+        		( twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2 || twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10 )
+        		&& ( rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2 || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10 )
+        		&& ( leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+        		&& ( onePillarEarthIndex == 1 || onePillarEarthIndex == 3 || onePillarEarthIndex == 4 || onePillarEarthIndex == 12 )
+        		&& ( rightPillarEarthIndex == 1 || rightPillarEarthIndex == 3 || rightPillarEarthIndex == 4 || rightPillarEarthIndex == 12 )
+        		&& ( leftPillarEarthIndex == 1 || leftPillarEarthIndex == 3 || leftPillarEarthIndex == 4 || leftPillarEarthIndex == 12 )
+        	)
+        )
         ) {
             onePillar.setSkyTransformed( elements.get(1) );
 
@@ -411,7 +657,7 @@ function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar 
                 }
             }
     }
-    else if ( onePillarSkyIndex == 4 && twoPillarSkyIndex == 9 ) {
+    else if ( ( onePillarSkyIndex == 4 && twoPillarSkyIndex == 9 ) || ( onePillarSkyIndex == 9 && twoPillarSkyIndex == 4 ) ) {
 
         String code =  "5-" + startIndex;
 
@@ -426,11 +672,39 @@ function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar 
             }
         }
     }
-    else if (
-        onePillarSkyIndex == 9 && twoPillarSkyIndex == 4
-        && (seasonIndex == 3 || seasonIndex == 4 || seasonIndex == 12 || seasonIndex == 1)
-        && !twoPillar.isStableSky() && !twoPillar.isSupportedByTheSeasonSky()
+
+    if (
+        ( ( onePillarSkyIndex == 4 && twoPillarSkyIndex == 9 ) || ( onePillarSkyIndex == 9 && twoPillarSkyIndex == 4 ) )
+        && (
+            seasonIndex == 3 || seasonIndex == 4 || seasonIndex == 12 || seasonIndex == 1
+            || (
+                seasonIndex == 5
+                && ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2
+                || twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2
+                || rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2
+                || leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 )
+            )
+            || (
+                seasonIndex == 2
+                && ( onePillarSkyIndex == 9 || onePillarSkyIndex == 10
+                || twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10
+                || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10
+                || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+            )
+        )
+        && !twoPillar.isStableSky()
         && !Objects.equals(rightPillarSkyIndex,onePillarSkyIndex)
+        && (
+        	onePillarIndex != 1
+        	|| (
+        		( onePillarSkyIndex == 1 || onePillarSkyIndex == 2 || onePillarSkyIndex == 9 || onePillarSkyIndex == 10 )
+        		&& ( rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2 || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10 )
+        		&& ( leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+        		&& ( onePillarEarthIndex == 1 || onePillarEarthIndex == 3 || onePillarEarthIndex == 4 || onePillarEarthIndex == 12 )
+        		&& ( twoPillarEarthIndex == 1 || twoPillarEarthIndex == 3 || twoPillarEarthIndex == 4 || twoPillarEarthIndex == 12 )
+        		&& ( leftPillarEarthIndex == 1 || leftPillarEarthIndex == 3 || leftPillarEarthIndex == 4 || leftPillarEarthIndex == 12 )
+        	)
+        )
         ) {
             twoPillar.setSkyTransformed( elements.get(1) );
 
@@ -447,7 +721,7 @@ function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar 
                 }
             }
     }
-    else if ( onePillarSkyIndex == 9 && twoPillarSkyIndex == 4 ) {
+    else if ( ( onePillarSkyIndex == 4 && twoPillarSkyIndex == 9 ) || ( onePillarSkyIndex == 9 && twoPillarSkyIndex == 4 ) ) {
 
         String code =  "5-" + (startIndex + 2);
 
@@ -466,11 +740,16 @@ function NatalChart addMergerSkyTree(Pillar onePillar, Pillar twoPillar, Pillar 
     return natalChart;
 }
 
-function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer startIndex) {
+function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
     Elements onePillarSky = onePillar.getSky();
     Elements twoPillarSky = twoPillar.getSky();
     Elements rightPillarSky = rightPillar.getSky();
     Elements leftPillarSky = leftPillar.getSky();
+
+	Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
 
     List<Elements> elements = Arrays.asList(Elements.values());
 
@@ -480,14 +759,47 @@ function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar 
     Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
 
     List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+	Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
     Zoo season = seasonPillar.getEarth();
     Integer seasonIndex = zoo.indexOf(season);
 
     if (
-        onePillarSkyIndex == 5 && twoPillarSkyIndex == 10
-        && (seasonIndex == 6 || seasonIndex == 7 || seasonIndex == 3 || seasonIndex == 4 )
-        && !onePillar.isStableSky() && !onePillar.isSupportedByTheSeasonSky()
+    ( ( onePillarSkyIndex == 5 && twoPillarSkyIndex == 10 ) || ( onePillarSkyIndex == 10 && twoPillarSkyIndex == 5 ) )
+        && (
+            seasonIndex == 6 || seasonIndex == 7 || seasonIndex == 3 || seasonIndex == 4
+            || (
+                seasonIndex == 8
+                && ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4
+                || twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4
+                || rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4
+                || leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 )
+            )
+            || (
+                seasonIndex == 5
+                && ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2
+                || twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2
+                || rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2
+                || leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 )
+            )
+        )
+        && !onePillar.isStableSky()
         && !Objects.equals(leftPillarSkyIndex,twoPillarSkyIndex)
+        && (
+        	onePillarIndex != 2
+        	|| (
+        		( twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2 || twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4 )
+        		&& ( rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2 || rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4 )
+        		&& ( leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 || leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 )
+        		&& ( onePillarEarthIndex == 3 || onePillarEarthIndex == 4 || onePillarEarthIndex == 6 || onePillarEarthIndex == 7 )
+        		&& ( rightPillarEarthIndex == 3 || rightPillarEarthIndex == 4 || rightPillarEarthIndex == 6 || rightPillarEarthIndex == 7 )
+        		&& ( leftPillarEarthIndex == 3 || leftPillarEarthIndex == 4 || leftPillarEarthIndex == 6 || leftPillarEarthIndex == 7 )
+        	)
+        )
         ) {
             onePillar.setSkyTransformed( elements.get(3) );
 
@@ -504,7 +816,7 @@ function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar 
                 }
             }
     }
-    else if ( onePillarSkyIndex == 5 && twoPillarSkyIndex == 10 ) {
+    else if ( ( onePillarSkyIndex == 5 && twoPillarSkyIndex == 10 ) || ( onePillarSkyIndex == 10 && twoPillarSkyIndex == 5 ) ) {
 
         String code =  "5-" + startIndex;
 
@@ -519,11 +831,39 @@ function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar 
             }
         }
     }
-    else if (
-        onePillarSkyIndex == 10 && twoPillarSkyIndex == 5
-        && (seasonIndex == 6 || seasonIndex == 7 || seasonIndex == 3 || seasonIndex == 4)
-        && !twoPillar.isStableSky() && !twoPillar.isSupportedByTheSeasonSky()
+
+    if (
+        ( ( onePillarSkyIndex == 5 && twoPillarSkyIndex == 10 ) || ( onePillarSkyIndex == 10 && twoPillarSkyIndex == 5 ) )
+        && (
+            seasonIndex == 6 || seasonIndex == 7 || seasonIndex == 3 || seasonIndex == 4
+            || (
+                seasonIndex == 8
+                && ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4
+                || twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4
+                || rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4
+                || leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 )
+            )
+            || (
+                seasonIndex == 5
+                && ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2
+                || twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2
+                || rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2
+                || leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 )
+            )
+        )
+        && !twoPillar.isStableSky()
         && !Objects.equals(rightPillarSkyIndex,onePillarSkyIndex)
+        && (
+        	onePillarIndex != 1
+        	|| (
+        		( onePillarSkyIndex == 1 || onePillarSkyIndex == 2 || onePillarSkyIndex == 3 || onePillarSkyIndex == 4 )
+        		&& ( rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2 || rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4 )
+        		&& ( leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 || leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 )
+        		&& ( onePillarEarthIndex == 3 || onePillarEarthIndex == 4 || onePillarEarthIndex == 6 || onePillarEarthIndex == 7 )
+        		&& ( twoPillarEarthIndex == 3 || twoPillarEarthIndex == 4 || twoPillarEarthIndex == 6 || twoPillarEarthIndex == 7 )
+        		&& ( leftPillarEarthIndex == 3 || leftPillarEarthIndex == 4 || leftPillarEarthIndex == 6 || leftPillarEarthIndex == 7 )
+        	)
+        )
         ) {
             twoPillar.setSkyTransformed( elements.get(3) );
 
@@ -540,7 +880,7 @@ function NatalChart addMergerSkyFire(Pillar onePillar, Pillar twoPillar, Pillar 
                 }
             }
     }
-    else if ( onePillarSkyIndex == 10 && twoPillarSkyIndex == 5 ) {
+    else if ( ( onePillarSkyIndex == 5 && twoPillarSkyIndex == 10 ) || ( onePillarSkyIndex == 10 && twoPillarSkyIndex == 5 ) ) {
 
         String code =  "5-" + (startIndex + 2);
 
@@ -807,6 +1147,948 @@ function NatalChart addHarmEarth(Pillar onePillar, Pillar rightPillar, Pillar le
     return natalChart;
 }
 
+function NatalChart addMergerEarthEarth(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
+    Elements onePillarSky = onePillar.getSky();
+    Elements twoPillarSky = twoPillar.getSky();
+    Elements rightPillarSky = rightPillar.getSky();
+    Elements leftPillarSky = leftPillar.getSky();
+
+    Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
+
+    Elements personalityElement = natalChart.getDay().getSky();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+
+    Integer onePillarSkyIndex = elements.indexOf(onePillarSky);
+    Integer twoPillarSkyIndex = elements.indexOf(twoPillarSky);
+    Integer rightPillarSkyIndex = elements.indexOf(rightPillarSky);
+    Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
+    Zoo season = seasonPillar.getEarth();
+    Integer seasonIndex = zoo.indexOf(season);
+
+    if (
+        onePillarEarthIndex == 1 && twoPillarEarthIndex == 2
+        && (
+            seasonIndex == 6 || seasonIndex == 7 || seasonIndex == 8
+            || (
+                seasonIndex == 2
+                && onePillarSkyIndex != 9 && onePillarSkyIndex != 10
+                && twoPillarSkyIndex != 9 && twoPillarSkyIndex != 10
+                && rightPillarSkyIndex != 9 && rightPillarSkyIndex != 10
+                && leftPillarSkyIndex != 9 && leftPillarSkyIndex != 10
+            )
+            || (
+                seasonIndex == 5
+                && onePillarSkyIndex != 1 && onePillarSkyIndex != 2
+                && twoPillarSkyIndex != 1 && twoPillarSkyIndex != 2
+                && rightPillarSkyIndex != 1 && rightPillarSkyIndex != 2
+                && leftPillarSkyIndex != 1 && leftPillarSkyIndex != 2
+            )
+            || (
+                seasonIndex == 11
+                && onePillarSkyIndex != 7 && onePillarSkyIndex != 8
+                && twoPillarSkyIndex != 7 && twoPillarSkyIndex != 8
+                && rightPillarSkyIndex != 7 && rightPillarSkyIndex != 8
+                && leftPillarSkyIndex != 7 && leftPillarSkyIndex != 8
+            )
+        )
+        && !onePillar.isStableEarth()
+        && !Objects.equals(leftPillarEarthIndex,twoPillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 5 || onePillarSkyIndex == 6 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 5 || twoPillarSkyIndex == 6 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 5 || rightPillarSkyIndex == 6 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 5 || leftPillarSkyIndex == 6 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 3
+        ) {
+            onePillar.setEarthTransformed( zoo.get(2) );
+
+            String code =  "15-" + (startIndex + 1);
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+        }
+    else if ( onePillarEarthIndex == 1 && twoPillarEarthIndex == 2 ) {
+
+        String code =  "15-" + startIndex;
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    else if (
+        onePillarEarthIndex == 2 && twoPillarEarthIndex == 1
+        && (
+            seasonIndex == 6 || seasonIndex == 7 || seasonIndex == 8
+            || (
+                seasonIndex == 2
+                && onePillarSkyIndex != 9 && onePillarSkyIndex != 10
+                && twoPillarSkyIndex != 9 && twoPillarSkyIndex != 10
+                && rightPillarSkyIndex != 9 && rightPillarSkyIndex != 10
+                && leftPillarSkyIndex != 9 && leftPillarSkyIndex != 10
+            )
+            || (
+                seasonIndex == 5
+                && onePillarSkyIndex != 1 && onePillarSkyIndex != 2
+                && twoPillarSkyIndex != 1 && twoPillarSkyIndex != 2
+                && rightPillarSkyIndex != 1 && rightPillarSkyIndex != 2
+                && leftPillarSkyIndex != 1 && leftPillarSkyIndex != 2
+            )
+            || (
+                seasonIndex == 11
+                && onePillarSkyIndex != 7 && onePillarSkyIndex != 8
+                && twoPillarSkyIndex != 7 && twoPillarSkyIndex != 8
+                && rightPillarSkyIndex != 7 && rightPillarSkyIndex != 8
+                && leftPillarSkyIndex != 7 && leftPillarSkyIndex != 8
+            )
+        )
+        && !twoPillar.isStableEarth()
+        && !Objects.equals(rightPillarEarthIndex,onePillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 5 || onePillarSkyIndex == 6 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 5 || twoPillarSkyIndex == 6 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 5 || rightPillarSkyIndex == 6 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 5 || leftPillarSkyIndex == 6 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 2
+        ) {
+            twoPillar.setEarthTransformed( zoo.get(2) );
+
+            String code =  "15-" + (startIndex + 3);
+
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+    }
+    else if ( onePillarEarthIndex == 2 && twoPillarEarthIndex == 1 ) {
+
+        String code =  "15-" + (startIndex + 2);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    return natalChart;
+}
+
+function NatalChart addMergerEarthTree(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
+    Elements onePillarSky = onePillar.getSky();
+    Elements twoPillarSky = twoPillar.getSky();
+    Elements rightPillarSky = rightPillar.getSky();
+    Elements leftPillarSky = leftPillar.getSky();
+
+    Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
+
+    Elements personalityElement = natalChart.getDay().getSky();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+
+    Integer onePillarSkyIndex = elements.indexOf(onePillarSky);
+    Integer twoPillarSkyIndex = elements.indexOf(twoPillarSky);
+    Integer rightPillarSkyIndex = elements.indexOf(rightPillarSky);
+    Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
+    Zoo season = seasonPillar.getEarth();
+    Integer seasonIndex = zoo.indexOf(season);
+
+    if (
+        onePillarEarthIndex == 12 && twoPillarEarthIndex == 3
+        && (
+            seasonIndex == 3 || seasonIndex == 4 || seasonIndex == 1 || seasonIndex == 12
+            || (
+                seasonIndex == 2
+                && ( onePillarSkyIndex == 9 || onePillarSkyIndex == 10
+                || twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10
+                || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10
+                || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+            )
+            || (
+                seasonIndex == 5
+                && ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2
+                || twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2
+                || rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2
+                || leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 )
+            )
+        )
+        && !onePillar.isStableEarth()
+        && !Objects.equals(leftPillarEarthIndex,twoPillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 3
+        ) {
+            onePillar.setEarthTransformed( zoo.get(3) );
+
+            String code =  "15-" + (startIndex + 1);
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+        }
+    else if ( onePillarEarthIndex == 12 && twoPillarEarthIndex ==3 ) {
+
+        String code =  "15-" + startIndex;
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    else if (
+        onePillarEarthIndex == 3 && twoPillarEarthIndex == 12
+        && (
+            seasonIndex == 3 || seasonIndex == 4 || seasonIndex == 1 || seasonIndex == 12
+            || (
+                seasonIndex == 2
+                && ( onePillarSkyIndex == 9 || onePillarSkyIndex == 10
+                || twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10
+                || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10
+                || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+            )
+            || (
+                seasonIndex == 5
+                && ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2
+                || twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2
+                || rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2
+                || leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 )
+            )
+        )
+        && !twoPillar.isStableEarth()
+        && !Objects.equals(rightPillarEarthIndex,onePillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 2
+        ) {
+            twoPillar.setEarthTransformed( zoo.get(3) );
+
+            String code =  "15-" + (startIndex + 3);
+
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+    }
+    else if ( onePillarEarthIndex == 3 && twoPillarEarthIndex == 12 ) {
+
+        String code =  "15-" + (startIndex + 2);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    return natalChart;
+}
+
+function NatalChart addMergerEarthFire(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
+    Elements onePillarSky = onePillar.getSky();
+    Elements twoPillarSky = twoPillar.getSky();
+    Elements rightPillarSky = rightPillar.getSky();
+    Elements leftPillarSky = leftPillar.getSky();
+
+    Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
+
+    Elements personalityElement = natalChart.getDay().getSky();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+
+    Integer onePillarSkyIndex = elements.indexOf(onePillarSky);
+    Integer twoPillarSkyIndex = elements.indexOf(twoPillarSky);
+    Integer rightPillarSkyIndex = elements.indexOf(rightPillarSky);
+    Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
+    Zoo season = seasonPillar.getEarth();
+    Integer seasonIndex = zoo.indexOf(season);
+
+    if (
+        ( ( onePillarEarthIndex == 4 && twoPillarEarthIndex == 11 ) || ( onePillarEarthIndex == 11 && twoPillarEarthIndex == 4 ) )
+        && (
+            seasonIndex == 6 || seasonIndex == 7 || seasonIndex == 3 || seasonIndex == 4
+            || (
+                seasonIndex == 8
+                && ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4
+                || twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4
+                || rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4
+                || leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 )
+            )
+            || (
+                seasonIndex == 5
+                && ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2
+                || twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2
+                || rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2
+                || leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 )
+            )
+        )
+        && !onePillar.isStableEarth()
+        && !Objects.equals(leftPillarEarthIndex,twoPillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 3
+        ) {
+            onePillar.setEarthTransformed( zoo.get(6) );
+
+            String code =  "15-" + (startIndex + 1);
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+        }
+    else if ( ( onePillarEarthIndex == 4 && twoPillarEarthIndex == 11 ) || ( onePillarEarthIndex == 11 && twoPillarEarthIndex == 4 ) ) {
+
+        String code =  "15-" + startIndex;
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    if (
+        ( ( onePillarEarthIndex == 4 && twoPillarEarthIndex == 11 ) || ( onePillarEarthIndex == 11 && twoPillarEarthIndex == 4 ) )
+        && (
+            seasonIndex == 6 || seasonIndex == 7 || seasonIndex == 3 || seasonIndex == 4
+            || (
+                seasonIndex == 8
+                && ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4
+                || twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4
+                || rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4
+                || leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 )
+            )
+            || (
+                seasonIndex == 5
+                && ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2
+                || twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2
+                || rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2
+                || leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 )
+            )
+        )
+        && !twoPillar.isStableEarth()
+        && !Objects.equals(rightPillarEarthIndex,onePillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 2
+        ) {
+            twoPillar.setEarthTransformed( zoo.get(6) );
+
+            String code =  "15-" + (startIndex + 3);
+
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+    }
+    else if ( ( onePillarEarthIndex == 4 && twoPillarEarthIndex == 11 ) || ( onePillarEarthIndex == 11 && twoPillarEarthIndex == 4 ) ) {
+
+        String code =  "15-" + (startIndex + 2);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    return natalChart;
+}
+
+function NatalChart addMergerEarthMetal(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
+    Elements onePillarSky = onePillar.getSky();
+    Elements twoPillarSky = twoPillar.getSky();
+    Elements rightPillarSky = rightPillar.getSky();
+    Elements leftPillarSky = leftPillar.getSky();
+
+    Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
+
+    Elements personalityElement = natalChart.getDay().getSky();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+
+    Integer onePillarSkyIndex = elements.indexOf(onePillarSky);
+    Integer twoPillarSkyIndex = elements.indexOf(twoPillarSky);
+    Integer rightPillarSkyIndex = elements.indexOf(rightPillarSky);
+    Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
+    Zoo season = seasonPillar.getEarth();
+    Integer seasonIndex = zoo.indexOf(season);
+
+    if (
+        onePillarEarthIndex == 5 && twoPillarEarthIndex == 10
+        && (
+            seasonIndex == 9 || seasonIndex == 10
+            || (
+                seasonIndex == 2
+                && onePillarSkyIndex != 9 && onePillarSkyIndex != 10
+                && twoPillarSkyIndex != 9 && twoPillarSkyIndex != 10
+                && rightPillarSkyIndex != 9 && rightPillarSkyIndex != 10
+                && leftPillarSkyIndex != 9 && leftPillarSkyIndex != 10
+            )
+            || (
+                seasonIndex == 5
+                && onePillarSkyIndex != 1 && onePillarSkyIndex != 2
+                && twoPillarSkyIndex != 1 && twoPillarSkyIndex != 2
+                && rightPillarSkyIndex != 1 && rightPillarSkyIndex != 2
+                && leftPillarSkyIndex != 1 && leftPillarSkyIndex != 2
+            )
+            || (
+                seasonIndex == 8
+                && onePillarSkyIndex != 3 && onePillarSkyIndex != 4
+                && twoPillarSkyIndex != 3 && twoPillarSkyIndex != 4
+                && rightPillarSkyIndex != 3 && rightPillarSkyIndex != 4
+                && leftPillarSkyIndex != 3 && leftPillarSkyIndex != 4
+            )
+            || seasonIndex == 11
+        )
+        && !onePillar.isStableEarth()
+        && !Objects.equals(leftPillarEarthIndex,twoPillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 7 || onePillarSkyIndex == 8 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 7 || twoPillarSkyIndex == 8 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 7 || rightPillarSkyIndex == 8 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 7 || leftPillarSkyIndex == 8 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 3
+        ) {
+            onePillar.setEarthTransformed( zoo.get(9) );
+
+            String code =  "15-" + (startIndex + 1);
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+        }
+    else if ( onePillarEarthIndex == 5 && twoPillarEarthIndex == 10 ) {
+
+        String code =  "15-" + startIndex;
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    else if (
+        onePillarEarthIndex == 10 && twoPillarEarthIndex == 5
+        && (
+            seasonIndex == 9 || seasonIndex == 10
+            || (
+                seasonIndex == 2
+                && onePillarSkyIndex != 9 && onePillarSkyIndex != 10
+                && twoPillarSkyIndex != 9 && twoPillarSkyIndex != 10
+                && rightPillarSkyIndex != 9 && rightPillarSkyIndex != 10
+                && leftPillarSkyIndex != 9 && leftPillarSkyIndex != 10
+            )
+            || (
+                seasonIndex == 5
+                && onePillarSkyIndex != 1 && onePillarSkyIndex != 2
+                && twoPillarSkyIndex != 1 && twoPillarSkyIndex != 2
+                && rightPillarSkyIndex != 1 && rightPillarSkyIndex != 2
+                && leftPillarSkyIndex != 1 && leftPillarSkyIndex != 2
+            )
+            || (
+                seasonIndex == 8
+                && onePillarSkyIndex != 3 && onePillarSkyIndex != 4
+                && twoPillarSkyIndex != 3 && twoPillarSkyIndex != 4
+                && rightPillarSkyIndex != 3 && rightPillarSkyIndex != 4
+                && leftPillarSkyIndex != 3 && leftPillarSkyIndex != 4
+            )
+            || seasonIndex == 11
+        )
+        && !twoPillar.isStableEarth()
+        && !Objects.equals(rightPillarEarthIndex,onePillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 7 || onePillarSkyIndex == 8 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 7 || twoPillarSkyIndex == 8 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 7 || rightPillarSkyIndex == 8 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 7 || leftPillarSkyIndex == 8 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 2
+        ) {
+            twoPillar.setEarthTransformed( zoo.get(9) );
+
+            String code =  "15-" + (startIndex + 3);
+
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+    }
+    else if ( onePillarEarthIndex == 10 && twoPillarEarthIndex == 5 ) {
+
+        String code =  "15-" + (startIndex + 2);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    return natalChart;
+}
+
+function NatalChart addMergerEarthWater(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
+    Elements onePillarSky = onePillar.getSky();
+    Elements twoPillarSky = twoPillar.getSky();
+    Elements rightPillarSky = rightPillar.getSky();
+    Elements leftPillarSky = leftPillar.getSky();
+
+    Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
+
+    Elements personalityElement = natalChart.getDay().getSky();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+
+    Integer onePillarSkyIndex = elements.indexOf(onePillarSky);
+    Integer twoPillarSkyIndex = elements.indexOf(twoPillarSky);
+    Integer rightPillarSkyIndex = elements.indexOf(rightPillarSky);
+    Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
+    Zoo season = seasonPillar.getEarth();
+    Integer seasonIndex = zoo.indexOf(season);
+
+    if (
+        ( ( onePillarEarthIndex == 6 && twoPillarEarthIndex == 9 ) || ( onePillarEarthIndex == 9 && twoPillarEarthIndex == 6 ) )
+        && (
+            seasonIndex == 1 || seasonIndex == 12 || seasonIndex == 9 || seasonIndex == 10
+            || (
+                seasonIndex == 2
+                && ( onePillarSkyIndex == 9 || onePillarSkyIndex == 10
+                || twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10
+                || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10
+                || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+            )
+            || (
+                seasonIndex == 11
+                && ( onePillarSkyIndex == 7 || onePillarSkyIndex == 8
+                || twoPillarSkyIndex == 7 || twoPillarSkyIndex == 8
+                || rightPillarSkyIndex == 7 || rightPillarSkyIndex == 8
+                || leftPillarSkyIndex == 7 || leftPillarSkyIndex == 8 )
+            )
+        )
+        && !onePillar.isStableEarth()
+        && !Objects.equals(leftPillarEarthIndex,twoPillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 9 || onePillarSkyIndex == 10 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 3
+        ) {
+            onePillar.setEarthTransformed( zoo.get(12) );
+
+            String code =  "15-" + (startIndex + 1);
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+        }
+    else if ( ( onePillarEarthIndex == 6 && twoPillarEarthIndex == 9 ) || ( onePillarEarthIndex == 9 && twoPillarEarthIndex == 6 ) ) {
+
+        String code =  "15-" + startIndex;
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    if (
+        ( ( onePillarEarthIndex == 6 && twoPillarEarthIndex == 9 ) || ( onePillarEarthIndex == 9 && twoPillarEarthIndex == 6 ) )
+        && (
+            seasonIndex == 1 || seasonIndex == 12 || seasonIndex == 9 || seasonIndex == 10
+            || (
+                seasonIndex == 2
+                && ( onePillarSkyIndex == 9 || onePillarSkyIndex == 10
+                || twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10
+                || rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10
+                || leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 )
+            )
+            || (
+                seasonIndex == 11
+                && ( onePillarSkyIndex == 7 || onePillarSkyIndex == 8
+                || twoPillarSkyIndex == 7 || twoPillarSkyIndex == 8
+                || rightPillarSkyIndex == 7 || rightPillarSkyIndex == 8
+                || leftPillarSkyIndex == 7 || leftPillarSkyIndex == 8 )
+            )
+        )
+        && !twoPillar.isStableEarth()
+        && !Objects.equals(rightPillarEarthIndex,onePillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 9 || onePillarSkyIndex == 10 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 9 || twoPillarSkyIndex == 10 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 9 || rightPillarSkyIndex == 10 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 9 || leftPillarSkyIndex == 10 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 2
+        ) {
+            twoPillar.setEarthTransformed( zoo.get(12) );
+
+            String code =  "15-" + (startIndex + 3);
+
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+    }
+    else if ( ( onePillarEarthIndex == 6 && twoPillarEarthIndex == 9 ) || ( onePillarEarthIndex == 9 && twoPillarEarthIndex == 6 ) ) {
+
+        String code =  "15-" + (startIndex + 2);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    return natalChart;
+}
+
+function NatalChart addMergerEarthFire_(Pillar onePillar, Pillar twoPillar, Pillar rightPillar, Pillar leftPillar, NatalChart natalChart, Conclusions conclusions, Pillar seasonPillar, Integer onePillarIndex, Integer startIndex) {
+    Elements onePillarSky = onePillar.getSky();
+    Elements twoPillarSky = twoPillar.getSky();
+    Elements rightPillarSky = rightPillar.getSky();
+    Elements leftPillarSky = leftPillar.getSky();
+
+    Zoo onePillarEarth = onePillar.getEarth();
+    Zoo twoPillarEarth = twoPillar.getEarth();
+    Zoo rightPillarEarth = rightPillar.getEarth();
+    Zoo leftPillarEarth = leftPillar.getEarth();
+
+    Elements personalityElement = natalChart.getDay().getSky();
+
+    List<Elements> elements = Arrays.asList(Elements.values());
+
+    Integer onePillarSkyIndex = elements.indexOf(onePillarSky);
+    Integer twoPillarSkyIndex = elements.indexOf(twoPillarSky);
+    Integer rightPillarSkyIndex = elements.indexOf(rightPillarSky);
+    Integer leftPillarSkyIndex = elements.indexOf(leftPillarSky);
+
+    List<Zoo> zoo = Arrays.asList(Zoo.values());
+
+    Integer onePillarEarthIndex = zoo.indexOf(onePillarEarth);
+    Integer twoPillarEarthIndex = zoo.indexOf(twoPillarEarth);
+    Integer rightPillarEarthIndex = zoo.indexOf(rightPillarEarth);
+    Integer leftPillarEarthIndex = zoo.indexOf(leftPillarEarth);
+
+    Zoo season = seasonPillar.getEarth();
+    Integer seasonIndex = zoo.indexOf(season);
+
+    if (
+        onePillarEarthIndex == 8 && twoPillarEarthIndex == 7
+        && (
+            seasonIndex == 6 || seasonIndex == 7 || seasonIndex == 3 || seasonIndex == 4
+            || (
+                seasonIndex == 8
+                && ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4
+                || twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4
+                || rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4
+                || leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 )
+            )
+            || (
+                seasonIndex == 5
+                && ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2
+                || twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2
+                || rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2
+                || leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 )
+            )
+        )
+        && !onePillar.isStableEarth()
+        && !Objects.equals(leftPillarEarthIndex,twoPillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 3
+        ) {
+            onePillar.setEarthTransformed( zoo.get(6) );
+
+            String code =  "15-" + (startIndex + 1);
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+        }
+    else if ( onePillarEarthIndex == 8 && twoPillarEarthIndex == 7 ) {
+
+        String code =  "15-" + startIndex;
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    else if (
+        onePillarEarthIndex == 7 && twoPillarEarthIndex == 8
+        && (
+            seasonIndex == 6 || seasonIndex == 7 || seasonIndex == 3 || seasonIndex == 4
+            || (
+                seasonIndex == 8
+                && ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4
+                || twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4
+                || rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4
+                || leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 )
+            )
+            || (
+                seasonIndex == 5
+                && ( onePillarSkyIndex == 1 || onePillarSkyIndex == 2
+                || twoPillarSkyIndex == 1 || twoPillarSkyIndex == 2
+                || rightPillarSkyIndex == 1 || rightPillarSkyIndex == 2
+                || leftPillarSkyIndex == 1 || leftPillarSkyIndex == 2 )
+            )
+        )
+        && !twoPillar.isStableEarth()
+        && !Objects.equals(rightPillarEarthIndex,onePillarEarthIndex)
+        && (
+            ( onePillarSkyIndex == 3 || onePillarSkyIndex == 4 ) && onePillarIndex != 2
+            || ( twoPillarSkyIndex == 3 || twoPillarSkyIndex == 4 ) && onePillarIndex != 1
+            || ( rightPillarSkyIndex == 3 || rightPillarSkyIndex == 4 ) && onePillarIndex != 4
+            || ( leftPillarSkyIndex == 3 || leftPillarSkyIndex == 4 ) && onePillarIndex != 3
+        )
+        && onePillarIndex != 2
+        ) {
+            twoPillar.setEarthTransformed( zoo.get(6) );
+
+            String code =  "15-" + (startIndex + 3);
+
+            Result result = NatalChartFactory.eINSTANCE.createResult();
+            for (Result res : conclusions.getResults()) {
+                if (res.getCode().equals(code)) {
+                    result.setCode(code);
+                    result.setTitle(res.getTitle());
+                    result.setDescription(res.getDescription());
+                    result.setContent(res.getContent());
+                    natalChart.getConclusions().getResults().add(result);
+                }
+            }
+    }
+    else if ( onePillarEarthIndex == 7 && twoPillarEarthIndex == 8 ) {
+
+        String code =  "15-" + (startIndex + 2);
+
+        Result result = NatalChartFactory.eINSTANCE.createResult();
+        for (Result res : conclusions.getResults()) {
+            if (res.getCode().equals(code)) {
+                result.setCode(code);
+                result.setTitle(res.getTitle());
+                result.setDescription(res.getDescription());
+                result.setContent(res.getContent());
+                natalChart.getConclusions().getResults().add(result);
+            }
+        }
+    }
+
+    return natalChart;
+}
+
 rule "Set Stable"
 no-loop true
 when
@@ -837,30 +2119,30 @@ when
     $natalChart: NatalChart(day != null, hour != null, month != null, year != null)
     $conclusions: Conclusions(results != null, allDone == true)
 then
-    addMergerSkyEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1);
-    addMergerSkyEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 5);
-    addMergerSkyEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 9);
-    addMergerSkyEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 13);
+    addMergerSkyEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 1);
+    addMergerSkyEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 5);
+    addMergerSkyEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 9);
+    addMergerSkyEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 13);
 
-    addMergerSkyMetal($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 17);
-    addMergerSkyMetal($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 21);
-    addMergerSkyMetal($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 25);
-    addMergerSkyMetal($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 29);
+    addMergerSkyMetal($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 17);
+    addMergerSkyMetal($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 21);
+    addMergerSkyMetal($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 25);
+    addMergerSkyMetal($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 29);
 
-    addMergerSkyWater($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 33);
-    addMergerSkyWater($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 37);
-    addMergerSkyWater($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 41);
-    addMergerSkyWater($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 45);
+    addMergerSkyWater($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 33);
+    addMergerSkyWater($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 37);
+    addMergerSkyWater($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 41);
+    addMergerSkyWater($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 45);
 
-    addMergerSkyTree($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 49);
-    addMergerSkyTree($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 53);
-    addMergerSkyTree($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 57);
-    addMergerSkyTree($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 61);
+    addMergerSkyTree($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 49);
+    addMergerSkyTree($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 53);
+    addMergerSkyTree($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 57);
+    addMergerSkyTree($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 61);
 
-    addMergerSkyFire($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 65);
-    addMergerSkyFire($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 69);
-    addMergerSkyFire($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 73);
-    addMergerSkyFire($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 77);
+    addMergerSkyFire($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 65);
+    addMergerSkyFire($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 69);
+    addMergerSkyFire($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 73);
+    addMergerSkyFire($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 77);
 
     update($natalChart);
 end;
@@ -931,6 +2213,45 @@ then
     addHarmEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getHour(), $natalChart, $conclusions, 2);
     addHarmEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getDay(), $natalChart, $conclusions, 3);
     addHarmEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getMonth(), $natalChart, $conclusions, 4);
+
+    update($natalChart);
+end;
+
+rule "Set Merger Earth"
+no-loop true
+when
+    $natalChart: NatalChart(day != null, hour != null, month != null, year != null)
+    $conclusions: Conclusions(results != null, allDone == true)
+then
+    addMergerEarthEarth($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 1);
+    addMergerEarthEarth($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 5);
+    addMergerEarthEarth($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 9);
+    addMergerEarthEarth($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 13);
+
+    addMergerEarthTree($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 17);
+    addMergerEarthTree($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 21);
+    addMergerEarthTree($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 25);
+    addMergerEarthTree($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 29);
+
+    addMergerEarthFire($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 33);
+    addMergerEarthFire($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 37);
+    addMergerEarthFire($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 41);
+    addMergerEarthFire($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 45);
+
+    addMergerEarthMetal($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 49);
+    addMergerEarthMetal($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 53);
+    addMergerEarthMetal($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 57);
+    addMergerEarthMetal($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 61);
+
+    addMergerEarthWater($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 65);
+    addMergerEarthWater($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 69);
+    addMergerEarthWater($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 73);
+    addMergerEarthWater($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 77);
+
+    addMergerEarthFire_($natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart, $conclusions, $natalChart.getMonth(), 1, 33);
+    addMergerEarthFire_($natalChart.getDay(), $natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart, $conclusions, $natalChart.getMonth(), 2, 37);
+    addMergerEarthFire_($natalChart.getMonth(), $natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart, $conclusions, $natalChart.getMonth(), 3, 41);
+    addMergerEarthFire_($natalChart.getYear(), $natalChart.getHour(), $natalChart.getDay(), $natalChart.getMonth(), $natalChart, $conclusions, $natalChart.getMonth(), 4, 45);
 
     update($natalChart);
 end;
