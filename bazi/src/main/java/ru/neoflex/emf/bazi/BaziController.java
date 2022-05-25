@@ -186,6 +186,10 @@ public class BaziController {
                     // get conclusions from NatalChart
                     Conclusions conclusions = ((NatalChartImpl) resource.getContents().get(0)).getConclusions();
                     for (Result res: conclusions.getResults()) {
+
+                        if (res.getCode().contains("15-") || res.getCode().contains("5-")) {
+                            logger.info(res.getContent());
+                        }
                         // create a paragraph
                         XWPFParagraph p2 = doc.createParagraph();
                         p2.setAlignment(ParagraphAlignment.LEFT);
